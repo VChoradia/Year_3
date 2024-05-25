@@ -1,0 +1,7 @@
+
+# ProUpdThing ################################################################
+
+A provisioning and OTA update example (like Ex10 but an alternative approach).
+
+**Note**: HTTPS root certificate checking as used here doesn't work in IDF
+4.2.

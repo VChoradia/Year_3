@@ -1,0 +1,8 @@
+Conversion of esp-idf/examples/get-started/blink...
+===
+
+...to build with mkesp or ArdIDE, e.g.:
+
+```bash
+../../[n]magic.sh mkesp-burn sketch/sketch.ino 
+```

@@ -1,0 +1,80 @@
+
+### Binary Diff for Incremental OTA #########################################
+
+(This project doesn't require any additional hardware, using just a bare
+ESP32, so is a good choice if you're not interested in the electronics
+prototyping side of things.)
+
+As we discussed earlier in the course, the resource-constrained nature of IoT
+devices makes keeping them up-to-date with security patches and new features a
+significant challenge, and in situations where network connectivity may be
+interrupted it is common to allocate two or three times the requisite amount
+of flash memory to store firmware: one for the current version and one to
+download the next (updated) version into (and sometimes another one to hold a
+"factory reset" version). This adds a significant cost to the device.
+
+This project is to port an approach to incremental updates that is used to
+minimise the size of updates in several contexts including [Ubuntu's
+_snap_](https://ubuntu.com/blog/snap-updates-are-getting-smaller-heres-why)
+package manager and Google Chrome's [_courgette_ updates
+process](https://blog.chromium.org/2009/07/smaller-is-faster-and-safer-too.html).
+Incremental updates work by analysing the difference (or delta) between a new
+version of (in our case) firmware and the previous version, then sending only
+the list of changes. A client-side routine is then required to check that the
+change bundle has come down the pipe successfully and if so apply the change
+list to the firmware image.
+
+This isn't a new approach; binary diff for software update is quite common.
+This [blog post has a good
+summary](https://www.ably.io/blog/practical-guide-to-diff-algorithms); systems
+often use [bsdiff](https://github.com/mendsley/bsdiff) or
+[xdelta](https://github.com/jmacd/xdelta). The disadvantage is that when
+differencing object files small changes in source can result in huge changes
+in the binary: "compiled code is full of internal references where some
+instruction or datum contains the address (or offset) of another instruction
+or datum". The Chrome [courgette
+system](https://www.chromium.org/developers/design-documents/software-updates-courgette)
+is particularly interesting however, because it performs a limited decompile
+of the object code and then analyses the changes between versions with the
+address changes separated out from instruction-level changes. This can result
+in a much smaller diff. (Recent versions of Firefox have [taken up the same
+system](https://bugzilla.mozilla.org/show_bug.cgi?id=504624), I believe.)
+Chromium (the open source version of Chrome), for example, sometimes achieves
+a huge reduction in update size using courgette:
+
+> - Full update: 10,385,920 bytes
+> - bsdiff update: 704,512 bytes
+> - Courgette update: 78,848 bytes  
+> 
+> ([Posted
+> here.](https://blog.chromium.org/2009/07/smaller-is-faster-and-safer-too.html))
+
+To do this type of update on an ESP32 we would need to:
+
+- derive an appropriate ELF delta generator (luckily courgette supports the
+  ELF binary format used by the Xtensa chips already)
+- adapt the build and burn script `idf.py` to call this generator while
+  creating `build/MyFirmware.elf` and `build/MyFirmware.bin`
+- adapt an OTA process like that in Ex09 (or ESP's own RainMaker) to use the
+  new deltas
+- write firmware to apply deltas on the ESP32 and verify their correctness
+
+This project is not an easy option, but if successful would be a real
+contribution to the community :)
+
+
+#### Advanced Topic: Drag&Drop Update #######################################
+
+As an advanced topic, it would be interesting to consider the possibility of
+closing the gap between the old world of C++ firmware burn tooling and the new
+one of drag-and-drop Python or JavaScript script update that has started to be
+a common development mode for microcontrollers such as the BBC's Micro:bit or
+boards supporting CirciutPython or the Espruino JavaScript port (now including
+the unPhone; see [Appendix
+B](#appendix-b-circuitpython-on-feather-s3-and-unphone). Can we compress
+binary firmware updates sufficiently to rival the new approaches?
+
+Another issue to consider here is board support for USB OTG: if we can treat
+the board as a mass storage device then drag-and-drop becomes trivial in most
+operating systems. This is one of the key differences between the ESP32 and
+the ESP32S2 / ESP32S3, for example.

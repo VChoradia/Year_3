@@ -1,0 +1,416 @@
+# COM3505 Lab Assessment 2 - DIY Alexa - IoT-Based Personal Assistant
+
+## Section 1. Introduction
+### 1.1 Overview
+<center>
+<img src="./images/main_esp.jpg" alt="Main Diagram" width="400" style="transform: rotate(270deg);">
+<p><em>Figure 1: DIY ALEXA</em></p>
+</center>
+
+
+Traditional voice-controlled systems like Amazon Alexa typically require substantial computational resources and complex software. In contrast, IoT devices demonstrate their efficiency by performing similar tasks using considerably less hardware and memory. This not only demonstrates the compact and efficient nature of IoT technology but also shows how versatile the devices can be. IoT devices are not only effective in their current configurations, but they also hold vast potential for future enhancements and broader applications. This project explores how minimalistic IoT setups can achieve complex functionalities and underscores the innovative possibilities of integrating simple IoT devices into everyday tasks.
+
+
+### 1.2 Objectives
+The main objectives of this project is to develop an IoT-based personal assistant. Listed below are the key features.
+
+#### Features:
+- **Lights On/Off**: Controls lighting using an Adafruit LED Strip Light, with a basic LED as a backup.
+- **Good Morning/Night**: Provides customized greetings for morning and night routines.
+- **Dynamic Speech Files**: Allows for multipurpose functionalities with dynamic speech files, improving on atomic14’s static file implementation.
+- **Search Functionality**: Performs searches (e.g., "Search ...") using ChatGPT and provides brief outputs which are less than 10 words.
+- **Complete the Song**: Completes song lyrics using ChatGPT by providing the next two lines of the song.
+- **Weather Check**: Retrieves and announces the current weather of the user's city.
+- **Send Text Messages**: Sends text messages to specified contacts (friends) with given messages.
+- **Todo List Management**: Creates and manages a todo list.
+- **Reminders/Tasks**: Adds reminders and tasks, and reads out current tasks.
+- **Tells Jokes**: Tells jokes using atomic14’s implementation.
+- **Web Interface**: Provides a web interface to access user details, friends' contact list, and todo list.
+
+#### Inspiration
+The project draws significant inspiration from other popular software and IoT devices such as **Siri**, **Alexa**, and **Google Home**. These devices have revolutionized how users interact with technology through voice commands and have set a high standard for any such kind of personal assistants. By understanding these systems, the aim is to incorporate some of their most successful features and adding unique functionalities tailored to our specific use cases.
+
+- **Siri**: Apple's virtual assistant (found in iOS devices) is known for its natural language processing and seamless integration with other Apple services. Siri's ability to perform tasks, provide information, and manage smart home devices has been a significant influence.
+- **Alexa**: Amazon's Alexa (found in Echo devices) offers extensive third-party integration and a wide range of skills that allow users to interact with various services and smart home products. Its ease of use and expansive skill library provides a model for developing versatile and user-friendly assistants.
+- **Google Home**: Google Assistant (found in Google Home Devices) excels in search capabilities and contextual understanding. It provides accurate responses and performing complex tasks with natural language commands. Its integration with Google services like Calendar, Maps, and Gmail adds to its utility and user appeal.
+
+
+## Section 2. System Design
+
+### 2.1 Hardware Components
+This section provides a list of the hardware components used in the DIY ALEXA - IOT-Based Personal Assistant project.
+
+1. **ESP32 Huzzah Microcontroller**
+    - The primary microcontroller used to control various components and manage data processing.
+    - [Adafruit ESP32 Huzzah](https://www.adafruit.com/product/3405)
+
+2. **ICS 43434 - Microphone**
+    - A high-performance, low power, digital microphone used for capturing audio input.
+    - [Adafruit ICS 43434](https://www.adafruit.com/product/3421)
+
+3. **MAX98357A - Amplifier**
+    - A digital audio amplifier module used to amplify the sound signals for the speaker.
+    - [Adafruit MAX98357A](https://www.adafruit.com/product/3006)
+
+4. **Speaker Output**
+    - A speaker connected to the amplifier to output audio.
+
+5. **ESP32S3 - Second Microcontroller**
+    - A secondary microcontroller used to manage LED.
+    - [Adafruit ESP32-S3](https://www.adafruit.com/product/3405)
+
+6. **LED**
+    - Standard LEDs used for visual indicators and feedback.
+
+7. **Hard Wires, Resistors, and Miscellaneous Components**
+    - Various wires, resistors, and other components necessary for connecting and interfacing the different modules and ensuring proper functionality.
+
+Each component plays a crucial role in the overall functioning of the DIY ALEXA system, contributing to both the hardware and software integration of the project.
+
+### 2.2 Schematic Diagram
+Figure 2 provides the schematic diagram for the DIY Alexa. It shows how ESP32 Huzzah is connected to an amplifier and a speaker, and the microphone.
+<center>
+<img src="./diagrams/circuit-1.png" alt="Circuit Diagram" width="400">
+<p><em>Figure 2: Schematic Diagram of the DIY ALEXA</em></p>
+</center>
+
+### 2.3 Software Component
+This section provides an overview of the software components used in the DIY Alexa project. It is assumed all the components are on the same network. 
+
+#### 2.3.1 ESP32 Huzzah (main)
+
+The main ESP32 microcontroller manages the core functionalities of the DIY Alexa. This setup builds upon atomic14's foundational [`diy-alexa` GitHub repository](https://github.com/atomic14/diy-alexa) and is programmed using Platform IO. The ESP32 is equipped to handle key operations including:
+
+- **Speech Recognition**: Listens for wake words and processes voice commands.
+- **Wi-Fi Connectivity**: Enables internet connectivity to send and receive data.
+- **Control Commands**: Dispatches commands to peripheral devices such as LEDs and speakers.
+
+
+#### 2.3.2 Libraries and Dependencies used in ESP32 Huzzah
+
+To enhance the functionality of the ESP32, several libraries and dependencies are utilized. This enhanced the system’s capabilities in handling various tasks efficiently:
+
+- **Libraries Used:**
+  - **WiFi, WiFiClientSecure, HTTPClient:**
+    - Facilitate network connections and data transmission.
+  - **ArduinoJson:**
+    - Manages JSON data manipulation.
+  - **I2S (driver/i2s.h), esp_task_wdt, Wire, SPIFFS:**
+    - Support audio processing, task management, wire communication, and file systems.
+  - **ChatGPT, dotstar_wing:**
+    - Integrate AI-driven interactions and manage LED outputs.
+
+- **Dependencies:**
+  - **bblanchon/ArduinoJson @ ^6.16.1**
+  - **adafruit/Adafruit BusIO @ ^1.11.1**
+  - **adafruit/Adafruit DotStarMatrix @ ^1.0.6**
+  - **0015/ChatGPT_Client @ ^0.1.2**
+
+
+
+#### 2.3.3 LED_esp (ESP32S3)
+
+The second microcontroller - ESP32S3, is dedicated to controlling the LED strip and providing visual feedback. The functionalities include:
+
+- **LED Control**: Manages the Adafruit Dotstar LED Strip to display various lighting patterns based on user commands.
+- **Backup LED Control**: Uses basic LED as a fallback for visual indications.
+
+The code for the LED controller is located in the `ProjectThing/LED_esp/LED_esp.ino` file. This implementation utilizes the **AsyncTCP** and **ESPAsyncWebServer** libraries to facilitate its functionality and provide an efficient web-based control.
+
+
+
+#### 2.3.4 Laptop Web Server (Python - Flask)
+A Flask-based web server running on a laptop provides additional functionalities and acts as a bridge between the diy-alexa and external APIs (except for wit.ai). Key features include:
+- **User Interface**: A web interface for accessing personal details, contact lists, and todo lists.
+- **Voice Processing**: Utilizes APIs such as OpenAI for search and complete the song features.
+- **Weather Information**: Fetches and announces current weather conditions using the Visual Crossing Weather API.
+- **Text Messaging**: Integrates with Twilio to send text messages.
+- **Text to Speech**: Converts text and provides a .wav file output using IBM Watson TTS API.
+- **Database Management**: Uses SQLite3 to manage and store user data and tasks.
+
+The main server script is `app.py`, located in the `my_flask_app` directory. This script relies on several libraries to facilitate its operations. The specific versions of these libraries ensure compatibility and robustness in the server's performance. Here are the libraries used:
+
+- **Flask==3.0.3**
+- **flask_sqlalchemy==3.1.1**
+- **openai==1.30.1**
+- **python-dotenv==1.0.1**
+- **pyttsx3==2.90**
+- **Requests==2.31.0**
+- **SQLAlchemy==2.0.29**
+- **twilio==9.0.5**
+
+
+### 2.4 Intents and Entities using wit.ai
+The intents and entities for processing voice commands are managed using wit.ai. This involves defining various actions (intents) the assistant can perform and the relevant data (entities) required to perform these actions. The setup includes:
+- **Intents**: Specific tasks such as turning on lights, checking the weather, completing a song, etc.
+- **Entities**: Key pieces of information like names, message, todo, etc that help in performing the tasks.
+
+The `wit_ai_data` folder contains data exported from [wit.ai](https://www.wit.ai). This provides all the utterances, entities, intents and traits it was trained on. For more information, refer to the `wit_ai_data` folder within the project.
+
+### 2.5 System Design Flowchart
+<center>
+<img src="./diagrams/flowchart-2.jpg" alt="Flowchart-2" width="700">
+<p><em>Figure 3: FlowChart 2</em></p>
+</center>
+
+The flowchart in Figure 3 demonstrates how DIY-Alexa processes commands:
+
+1. **Start by detecting Wake Word "Marvin":** The system starts by entering an active listening mode and then waits for the wake word "Marvin". If detected, it plays a ping sound.
+
+2. **Recognizing Command:** The command once recognized is then sent to Wit.ai for processing.
+
+3. **Wit.ai Response:** Wit.ai processes the command and returns a JSON response with intents and entities. If Wit.ai successfully interprets the response, it then proceeds to the intent processors.
+
+4. **Intent Processors:** Various intents like tellTodo, addTodo, lights_on, lights_off, good_morning, good_night, check_weather, search, song, and text are processed.
+
+5. **Possible Outputs:** The system produces different outputs based on the processed intents. These can be **OK**, **dynamic speech with SILENT_SUCCESS**, or **CANT_DO**. These outputs are then sent to the speaker for audio feedback.
+
+
+<center>
+<img src="./diagrams/flowchart-1.jpg" alt="Flowchart-1" width="700">
+<p><em>Figure 4: FlowChart 1</em></p>
+</center>
+
+Figure 4 illustrates the overall architecture of the DIY-Alexa system. It includes three main components:
+
+1. **DIY-Alexa:** This component processes user intents, such as `tellTodo`, `addTodo`, `text`, `song`, `search`, `check_weather`, `good_morning`, `good_night`, `lights_off`, and `lights_on`. These intents are processed and sent to the Laptop Server and/or to the LED_esp.
+
+2. **Laptop Server:** This server handles various server paths, including `/song`, `/chatgpt`, `/weather`, `/text`, `/addTodo`, `/tellTodo`, `/get-audio`, and the index path `/`. The server interacts with external APIs like OpenAI Platform API, Visual Crossing API, Twilio API, and IBM Watson TTS API, as well as the SQLite3 database and a website.
+
+3. **LED_esp:** This component receives commands from the Laptop Server to turn lights on and off using the `/lightson` and `/lightsoff` paths.
+
+
+## Section 3. Implementation
+This section provides an overview implementation of the entire project. It also includes instructions for configuring specific parts of the code during file execution.
+
+## 3.1 Hardware
+Hardware setup for ESP32 Huzzah was done exactly as per the steps provided by Prof. Hamish Cunningham in his book [Mi Casa su Botnet?](https://iot.unphone.net/), Chapter [8.4.1 DIY Alexa](https://iot.unphone.net/#sec:marvin).
+
+The setup for LED_esp or ESP32S3's hardware was relatively simple. A LED was connected using GPIO13 and GND. 
+ 
+## 3.2 Software
+### 3.2.1 Training Wit.ai
+
+To train the Wit.ai model, a systematic process was followed to ensure the model accurately recognizes various intents and entities. This section details the steps involved in training the model and provides examples of the utterances used.
+
+#### Training Process
+
+1. **Define Intents and Entities:**
+   - **Intents:** These are the primary actions or goals represented by the user's input. Examples include checking the weather, sending a message, and adding tasks to a to-do list.
+   - **Entities:** These are specific pieces of information within the user's input that are relevant to fulfilling the intent. Examples include the name of a person or the content of a message.
+
+2. **Collect Utterances:**
+   - A diverse set of utterances was collected to represent the various ways users might express each intent. This enabled the model to learn and identify various patterns and variations in user input.
+
+3. **Annotate Utterances:**
+   - Each utterance was annotated with the corresponding intent and entities. This involved marking the parts of the text that correspond to specific entities and assigning an intent to the entire utterance. This annotation is crucial for training the model to understand and extract the necessary information.
+  
+  <center>
+    <img src="./images/wit.ai_training.png" alt="wit.ai-1" width="700">
+    <p><em>Figure 5: Training utterances</em></p>
+</center>
+
+#### Examples of Training Utterances
+
+Below are examples of some of the utterances used to train the Wit.ai model, along with their annotated intents and entities:
+
+| Utterance                                    | Intent       | Entities                                                       | 
+|----------------------------------------------|--------------|----------------------------------------------------------------|
+| What's the weather like today?               | weather      | None                                                           | 
+| How is the weather today?                    | weather      | `weather:weather` (11-18, "weather"), `weather:weather` (19-24, "today") |
+| What's the weather?                          | weather      | `weather:weather` (11-18, "weather")                           | 
+| Text Siya How are you?                       | text         | `name:name` (5-9, "Siya"), `message:message` (10-22, "How are you?") | 
+| Send a text to Vivek where have you reached? | text         | `name:name` (15-20, "Vivek"), `message:message` (21-44, "where have you reached?") | 
+| Send a message to Vivek where are you?       | text         | `name:name` (18-23, "Vivek"), `message:message` (24-38, "where are you?") |
+| Add to my todo list buy the book             | todo         | `todo:todo` (20-32, "buy the book")                             | 
+| Remind me to check emails                    | todo         | `todo:todo` (13-25, "check emails")                             | 
+| Remind me to buy groceries                   | todo         | `todo:todo` (13-26, "buy groceries")                            | 
+| Good Morning                                 | good_morning | `morning:morning` (0-12, "Good Morning")                        | 
+| Bonjour                                      | good_morning | `morning:morning` (0-7, "Bonjour")                              | 
+| Good night                                   | good_night   | `night:night` (0-10, "good night")                              | 
+
+These examples illustrate how the utterances were annotated to help the model understand and extract the necessary information. By providing a diverse set of examples, the model was able to learn to recognize the different ways users might express their intentions and accurately extract relevant entities. This training process is crucial for developing a robust and reliable natural language understanding model.
+
+### 3.2.1 ESP32 Huzzah (main)
+
+The software implementation for the ESP32 Huzzah was based on the foundational work of Atomic14 and Prof. Hamish Cunningham. To add functionalities, significant modifications were made to the following files: **IntentProcessor**, **WitAIChunkUploader**, and **tts**.
+
+
+- **IntentProcessor:** Modifications to the IntentProcessor involved updating it to manage all the new intents introduced. For each new intent added, a corresponding function was created. This function outlined the specific actions and responses required to handle user commands effectively.
+
+- **WitAiChunkedUploader:** This component was updated to handle additional entities, enabling it to support all the new features introduced in the project.
+
+- **tts:** The text-to-speech (TTS) functionality was designed to dynamically interact with the TTS API. This involved fetching the audio output from the API and saving it for playback. The implementation ensures that spoken responses are generated and handled efficiently, enhancing the overall user experience.
+
+### 3.2.2 LED_esp
+
+The `LED_esp.ino` file hosts an asynchronous web server to control the LED. On receiving a request, it executes the corresponding action (turning the LEDs on or off) and returns a JSON response indicating the status of the action. When this file is run using Arduino IDE, the serial monitor will print out the IP address of the ESP32. This IP address is then used in the diy-alexa files to send requests to the server.
+
+### 3.3.3 Laptop Web Server
+
+To run the software, first execute the following commands inside the  `./ProjectThing/La2_laptop_server/my_flask_app` directory:
+
+```
+pip install -r requirements.txt
+python app.py
+```
+
+When you run the above commands, an IP address will be displayed. Use this IP address in your diy-alexa files to facilitate communication with the web server.
+
+This web server connects with various external APIs to perform multiple functions:
+
+- **OpenAI**: Utilized for two main features - "search" and "complete the song". OpenAI was also used to test its tts server, but due it . 
+- **Twilio**: Used to send text messages to friends. It queries the SQLite3 database for the name, and if found, it sends the message to the corresponding phone number.
+- **Visualcrossing**: Free weather API used to get the latest weather updates.
+- **IBM Watson**: For Text to Speech conversion.
+
+The **SQLite3 Database** stores user information, contacts, and the to-do list. Addionally, the web server also hosts a website that enables users to view and update their personal details, friends' information, and to-do items.
+
+
+## Section 4. Testing 
+
+This section outlines the testing methodologies employed to ensure the reliability and functionality of the system. 
+
+### 4.1 Manual Testing 
+Manual testing was conducted to evaluate the system's performance in real-world scenarios. This involved executing predefined test cases and verifying the outcomes against expected results to ensure accurate and reliable operation.
+
+
+**Manual Intent Testing**
+
+| Intent        | Expected Output                                                                                      | Observed Output                                                                                       | Pass/Fail                           |
+|---------------|------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|-------------------------------------|
+| lights_on     | “Okay” Lights On (LED)                                                                               | “Okay” Lights On (LED)                                                                                | <span style="color:green">Pass</span> |
+| lights_off    | “Okay” Lights Off (LED)                                                                              | “Okay” Lights Off (LED)                                                                               | <span style="color:green">Pass</span> |
+| good_morning  | Good Morning {name} and lights on                                                                    | Good Morning {name} and lights on                                                                     | <span style="color:green">Pass</span> |
+| good_night    | Good Night {name} and lights off                                                                     | Good Night {name} and lights off                                                                      | <span style="color:green">Pass</span> |
+| check_weather | “The current weather in {city} is {weather_data['currentConditions']['conditions']}, with a temperature of {weather_data['currentConditions']['temp']} degrees Celsius.” | “The current weather in {city} is {weather_data['currentConditions']['conditions']}, with a temperature of {weather_data['currentConditions']['temp']} degrees Celsius.” | <span style="color:green">Pass</span> |
+| search        | Searches the question on GPT 3.5 and gives the answer                                                | Searches the question on GPT 3.5 and gives the answer                                                 | <span style="color:green">Pass</span> |
+| song          | Completes the next lyrics                                                                            | Completes the 1-2 lines of the lyrics                                                                  | <span style="color:green">Pass</span> |
+| text          | “Okay” and then sends a text {message} to {friend}                                                   | “Okay” and then sends a text {message} to {friend}                                                    | <span style="color:green">Pass</span> |
+| tellTodo      | No ToDos in DB: “You currently have no incomplete todo items.” With ToDos in DB: "Here are your incomplete todo items: {lists all the ToDo items}"                    | No ToDos in DB: “You currently have no incomplete todo items.” With ToDos in DB: "Here are your incomplete todo items: {lists all the ToDo items}"                    | <span style="color:green">Pass</span> |
+| addTodo       | “Okay” and then adds to the ToDo list                                                                | “Okay” and then adds to the ToDo list                                                                 | <span style="color:green">Pass</span> |
+
+## Manual Testing (Others)
+
+| Test Cases                      | Expected Output                                                                                             | Observed Output                                                                                           | Pass/Fail                           |
+|---------------------------------|-------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------|
+| Speaker                         | Speaker should output clear and audible sound.                                                              | Speaker outputs clear and audible sound                                                                   | <span style="color:green">Pass</span> |
+| Microphone                      | Microphone should accurately capture voice commands.                                                        | Microphone accurately captures voice commands.                                                            | <span style="color:green">Pass</span> |
+| LED                             | LED should light up in response to voice commands and system statuses                                       | LED lights up as expected                                                                                 | <span style="color:green">Pass</span> |
+| Wake Word “Marvin”              | Should activate the diy-alexa.                                                                              | Successfully activates diy-alexa.                                                                         | <span style="color:green">Pass</span> |
+| Wifi Connectivity               | diy-alexa should connect to WiFi network and maintain stable connection                                     | diy-alexa successfully connects to WiFi network and maintains stable connection                           | <span style="color:green">Pass</span> |
+| SPIFFS (Serial Peripheral Interface Flash File System) | 1. System should be able to build files and upload to ESP32 Huzzah. 2. It should be able to do the same thing dynamically. | Successfully reads from and writes to SPIFFS. NOTE: rewriting the dynamic files sometimes results in random errors. For example - “VFSFileImpl(): fopen(/spiffs/tts_audio.wav) failed” | <span style="color:green">Pass</span> |
+| Database Functionality          | Should correctly store and retrieve data                                                                    | Successfully storing and retrieving data                                                                  | <span style="color:green">Pass</span> |
+| IBM Watson TTS API              | Should successfully convert text to speech                                                                 | Successfully converting text to speech. NOTE: The response from the API takes a minimum of 10 seconds.     | <span style="color:green">Pass</span> |
+| OpenAI TTS-1 API                | Should successfully convert text to speech                                                                 | The audio output file was distorted and unclear                                                           | <span style="color:red">Fail</span>  |
+| pyttsx3                         | Should successfully convert text to speech                                                                 | The size of the output files was too large for ESP32 Huzzah.                                              | <span style="color:red">Fail</span>  |
+
+### 4.2 API Testing
+
+API testing was done using `Invoke-WebRequest` and `Invoke-WebRequest` in PowerShell. Below following are some examples on how we did API testing.
+
+Example 1: wit.ai response using speech file.
+![alt text](./images/api_speech.png)
+
+Following below test's response files are saved in `test/test_response` directory.
+
+Example 2: Laptop Server's response on "complete the song" feature.
+![alt text](./images/api_song.png)
+
+Example 3: Laptop Server's response on todo features.
+![alt text](./images/api_todos.png)
+
+
+
+## Section 5. Results
+### 5.1 Video Demonstration
+
+[COM3505 LAB ASSESSMENT 2 - DIY Alexa - IoT Based Personal Assistant](https://youtu.be/AZRjILR1Ut4).
+
+It has been fast forwarded.
+
+This video can only be accessed using sheffield email address.
+
+
+### 5.2 Limitations and Issues Encountered
+
+During the development, the project encountered several limitations and issues:
+
+- **Limited RAM in ESP32**: The ESP32 microcontroller has limited RAM. This prevents it from processing HTTPS requests efficiently along with other tasks it needs to perform. This limitation affects the overall performance of the system. 
+
+- **Cloud-Based TTS Service**: Using a cloud-based Text-to-Speech (TTS) service introduces a lag in the system. The latency caused by sending requests to the cloud and waiting for responses affects the user experience. OpenAI's tts-1 was tested as well, which had comparatively less lag time but the sound output was poor. The Python library pyttsx3, which can convert text to speech locally on the Python web server, was also tested. While it provided the output file rather quickly, the sound files received by the ESP32 were quite large, resulting in insufficient memory on the ESP32 to store such large files, leading to memory pointer errors. Ultimately, it was decided to stick with IBM Watson.
+
+- **Guru Meditation Error**:  Occasionally, the ESP32 encounters a Guru Meditation Error due to insufficient memory to store data. This error, which is similar to a critical system crash, disrupts the normal operation of the system and necessitates a reset or restart of the ESP32 to resume functionality.
+
+- **Dynamic Speech File Rewriting Error**: Rewriting dynamic speech files sometimes results in errors, preventing proper functioning. Specific errors encountered include:
+
+  ```plaintext
+  http://143.167.39.112:5000/get-audio
+  [808043][E][vfs_api.cpp:281] VFSFileImpl(): fopen(/spiffs/tts_audio.wav) failed
+
+  http://143.167.39.112:5000/weather?city=sheffield
+  [812134][E][vfs_api.cpp:281] VFSFileImpl(): fopen(/spiffs/tts_audio.wav) failed
+  ```
+
+  These errors indicate that the ESP32 is unable to open the file `/spiffs/tts_audio.wav` on the SPIFFS (SPI Flash File System). This failure is often due to either a lack of available memory or issues with file system handling. When the ESP32 tries to fetch and store the audio file provided by the server, it sometimes cannot allocate the necessary memory or manage the file system correctly, leading to the operation failing and disrupting the intended functionality.
+
+### 5.3 Achievements
+
+- *Successful Integration and Functionality:* Seamlessly integrated multiple hardware components and software services, achieving robust voice command functionalities across various tasks including lighting control, weather updates, and text messaging.
+- *Voice Command Recognition:* Efficiently recognized and processed a wide variety of voice commands using Wit.ai for intent and entity extraction.
+- *ESP32 Memory Limitations:* The memory limitations of the ESP32 were successfully addressed by integrating a Python web server based on a laptop into the system. This Flask-based server manages external (HTTPS) APIs and directly delivers data and speech files to the ESP32 via an HTTP connection, significantly enhancing system security. Previously, the need to set the client in insecure mode to bypass SSL certificate provision compromised security when sending HTTPS requests directly from the ESP32. The addition of the Python web server eliminated SSL certification concerns, thereby bolstering the system's security.
+- *API Integration:* Utilized multiple APIs, including OpenAI for searches and song completion, Visual Crossing for weather updates, Twilio for text messaging, and IBM Watson for text-to-speech conversion.
+- *Stable Performance:* Achieved reliable performance with minimal hardware resources, demonstrating the efficiency and versatility of the ESP32 microcontroller.
+- *Testing:* Conducted comprehensive manual testing to ensure all features work as expected, achieving consistent and accurate results.
+- *Dynamic Speech Files:* Improved on atomic14’s static file implementation by introducing dynamic speech files for more versatile functionalities.
+- *Error Handling:* Implemented effective error handling for common issues such as memory limitations and file system errors, enhancing system robustness.
+- *Learned and Implemented Prompt Engineering for OpenAI:* Successfully learned and applied prompt engineering techniques for optimizing interactions with OpenAI's language model, enhancing the system's ability to handle complex queries and tasks.
+
+
+
+### 5.4 Self Assessment
+This DIY Alexa project has accomplished its goal of integrating diverse hardware and software components to create a robust IoT-based personal assistant. As mentioned earlier, traditional systems like Amazon Alexa typically require extensive computational power and complex software. However, through this project, we have demonstrated that it is possible to achieve comparably robust functionality using simpler and less resource-intensive solutions. The successful integration of multiple APIs for tasks such as weather updates, text messaging, and dynamic speech file handling has proven the DIY Alexa's capability to handle complex tasks with minimal hardware resources. In addition to this, the implementation of prompt engineering for OpenAI's language model significantly improved the assistant's functionality and enabled context-aware interactions.
+
+Despite these achievements, the project encountered several limitations that impacted its overall performance and user experience. The ESP32 microcontroller has limited RAM, which restricted its ability to process HTTPS requests efficiently. This was partly mitigated by integrating a Flask-based web server that handles heavier tasks, thus improving security and system responsiveness. However, issues with cloud-based TTS services and local storage for dynamically generated speech files occasionally led to system errors and crashes. 
+
+Moving forward, addressing these challenges will be crucial. The next section of the report will outline further work that would aim to refine system performance, expand functionalities, and ensure a more reliable and user-friendly experience for future iterations of the DIY Alexa project.
+
+### 5.5 Further Work
+
+1.  **Connect to Spotify API**
+   
+    An addition to Marvin's capabilities involves integrating the Spotify API. This integration, combined with Bluetooth connectivity, would enable Marvin to function as a speaker connected to a mobile phone. Users could stream music playlists and podcasts directly from Spotify. This addition would significantly expand Marvin's utility as a multifunctional assistant.
+
+2. **Interactive Song Session**
+   
+    Marvin can be enhanced further to support interactive song sessions. The proposed interaction flow is as follows:
+
+    - **User:** "Interactive Song Session Please"
+    - **Marvin:** "Okay, let’s hear what you got."
+    - **User:** "What is Love?"
+    - **Marvin:** "Baby don’t hurt me."
+    - **User:** "Baby don’t hurt me."
+    - **Marvin:** "No More."
+    - **User:** "Stop."
+
+    Currently, Marvin operates in four states: waiting for the wake word, recognizing commands, processing intents, and providing speaker output. Implementing an interactive song session requires introducing an additional state to manage the continuous input and output sequence without reverting to the wake word detection state. This modification will allow Marvin to handle dynamic, back-and-forth interactions smoothly.
+
+3. **Local Text-to-Speech Processing**
+
+    Currently, Marvin utilizes cloud-based services for text-to-speech (TTS) conversion. This approach introduces latency and dependency on stable internet connectivity. To enhance performance and reliability, we propose moving TTS processing to the local ESP32 hardware. By processing TTS locally, Marvin will achieve faster response times and reduce reliance on external services, thereby improving overall efficiency and user experience.
+
+These future implementations are aimed at making Marvin more versatile, responsive, and reliable. Each proposed improvement will contribute to elevating Marvin’s functionality and user engagement.
+
+## Section 6. References
+
+- ATOMIC 14 - diy alexa repo - [atomic14/diy-alexa: DIY Alexa (github.com)](https://github.com/atomic14/diy-alexa)
+- ATOMIC 14 - microphone test - [atomic14/esp32-i2s-mic-test: The Simplest Test Code for an I2S Microphone on the ESP32 I can Imagine (github.com)](https://github.com/atomic14/esp32-i2s-mic-test)
+- Prof. Hamish Cunnigham - diy alexa - [hamishcunningham/diy-alexa: DIY Alexa (github.com)](https://github.com/hamishcunningham/diy-alexa)
+- Wit AI - [Wit.ai](https://wit.ai/docs)
+- VisualCrossing - [Free Weather API | Visual Crossing](https://www.visualcrossing.com/weather-api)
+- IBM Watson TTS API - [IBM Watson Text to Speech](https://www.ibm.com/products/text-to-speech)
+- [pyttsx3](https://pypi.org/project/pyttsx3/)
+- OpenAI Platform (ChatGPT 3.5 Turbo, TTS-1) - [OpenAI Platform](https://platform.openai.com/docs/overview)
+- Adafruit LED Strip (test files + basic setup) -[Power and Connections | Adafruit DotStar LEDs | Adafruit Learning System](https://learn.adafruit.com/adafruit-dotstar-leds/power-and-connections)
+- [Mi Casa su Botnet? (unphone.net) | VSCode and PlatformIO](https://iot.unphone.net/#sec:vscode)
+- [Mi Casa su Botnet? (unphone.net) | DIY-Alexa (Marvin) Guide](https://iot.unphone.net/#sec:marvin)

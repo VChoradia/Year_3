@@ -1,0 +1,64 @@
+# some env for IoT support tooling
+
+# echo "sourcing IoT support environment"
+export TIOT_SUPPORT=${HOME}/the-internet-of-things/support
+[ -d ${TIOT_SUPPORT} ] || {
+  echo "${TIOT_SUPPORT} doesn't exist, ignoring IoT"; exit 0;
+}
+PATH="${PATH}:${TIOT_SUPPORT}"
+
+m()	{ ${TIOT_SUPPORT}/magic.sh $*; }; export -f m
+isgit() { git rev-parse --is-inside-work-tree >/dev/null 2>&1; }
+issvn() { svn info >/dev/null 2>&1; }
+up() {
+  VCR=svn
+  UP="up"
+  issvn || { VCR=git; UP=pull; }
+  ${VCR} ${UP} $*;
+}
+export -f up
+ci() {
+  if `issvn`
+  then
+    CI="svn ci"
+  else
+    CI="git commit -va"
+  fi
+  M="$1"; shift; [ -z "${M}" ] && M=more; ${CI} -m "${M}" $*;
+}
+add() {
+  VCR=svn
+  VERB=""
+  issvn || { VCR=git; VERB=-v; }
+  ${VCR} add ${VERB} $*;
+}
+st() {
+  isgit && {
+    git status
+  } || {
+    FILTER=""
+    [ x$1 = x-s ] && FILTER="|egrep -v 'classes\/|lib\/|.swp$|.class$|zxc|doc\/api|target\/'"
+    if `issvn`
+    then
+      bash -c "svn st |grep -v '^$' ${FILTER}"
+    else
+      bash -c "git status -v"
+    fi
+  }
+}
+log() {
+  git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit $*
+}
+pull() { git pull; }
+push() { git push; }
+
+7() {
+  rm -rf .pio/build/unphone7/src
+  ln -s ~/unphone/unzipped-libs/lib7 lib
+  magic.sh -b unphone7 -p /dev/ttyUSB0 quick
+  rm lib
+}
+9() {
+  rm -rf .pio/build/unphone9/src lib
+  magic.sh -b unphone9 -p /dev/ttyACM0 quick
+}

@@ -1,0 +1,97 @@
+{
+    "name": "search",
+    "roles": [
+        "search"
+    ],
+    "lookups": [
+        "free-text",
+        "keywords"
+    ],
+    "keywords": [
+        {
+            "keyword": "Search",
+            "synonyms": [
+                "search"
+            ]
+        },
+        {
+            "keyword": "Search for capital of India",
+            "synonyms": [
+                "search for capital of india"
+            ]
+        },
+        {
+            "keyword": "search Los Angeles",
+            "synonyms": [
+                "search los angeles"
+            ]
+        },
+        {
+            "keyword": "search bottle bottle",
+            "synonyms": [
+                "search bottle bottle"
+            ]
+        },
+        {
+            "keyword": "search for cute",
+            "synonyms": [
+                "search for cute"
+            ]
+        },
+        {
+            "keyword": "search for honey",
+            "synonyms": [
+                "search for honey"
+            ]
+        },
+        {
+            "keyword": "search for internet of things",
+            "synonyms": [
+                "search for internet of things"
+            ]
+        },
+        {
+            "keyword": "search for iot",
+            "synonyms": [
+                "search for iot"
+            ]
+        },
+        {
+            "keyword": "search for love",
+            "synonyms": [
+                "search for love"
+            ]
+        },
+        {
+            "keyword": "search what is life",
+            "synonyms": [
+                "search what is life"
+            ]
+        },
+        {
+            "keyword": "search what is love?",
+            "synonyms": [
+                "search what is love",
+                "search what is love?"
+            ]
+        },
+        {
+            "keyword": "search who is the father of India",
+            "synonyms": [
+                "search who is the father of india"
+            ]
+        },
+        {
+            "keyword": "search who is the ruler of",
+            "synonyms": [
+                "search who is the ruler of"
+            ]
+        },
+        {
+            "keyword": "search who is the ruler of the UK",
+            "synonyms": [
+                "search who is the ruler of the uk"
+            ]
+        }
+    ]
+}

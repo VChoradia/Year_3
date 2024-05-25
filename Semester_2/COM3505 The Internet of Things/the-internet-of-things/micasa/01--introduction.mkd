@@ -1,0 +1,927 @@
+# Hope, Technology and Heath Robinson #######################################
+
+[ ![](images/iot-wilgengebroed-300x288.jpg "Wilgengebroed's
+The IoT")](images/iot-wilgengebroed.jpg)[^Wilgen]
+
+<!-- "W" not "w": see https://gitlab.com/gitlab-org/gitlab/-/issues/24423 -->
+[^Wilgen]:
+    [Wilgengebroed,
+    via Wikimedia.](https://commons.wikimedia.org/wiki/File:Internet_of_Things.jpg)
+
+<!--
+IMAGES
+
+[ ![](images/XXXSMALL "Caption")](images/XXXLARGE)[^footnote]
+
+[^footnote]:
+
+
+SUBSEC REFERENCES
+
+## subtitle       {#sec:key}
+
+[-@sec:key]
+
+
+CITATIONS
+
+[@Schneier2017-xr]
+[@Cunningham2015-mh; @Rakcozy2011-bo]
+
+
+LINKS
+
+[link text](https://link-url/)
+-->
+
+<!--
+|   | **This is a work in progress!**                           |   |
+|---| --------------------------------------------------------- |---|
+|   | I'm still revising this for 2024... Watch this space!     |   |
+-->
+
+This book covers [Sheffield University](https://sheffield.ac.uk/)'s _The
+Internet of Things_ course iteration 7, running in Spring 2024. It is intended
+for students of that course, but is also intended to be useful to anyone
+studying the IoT and its expression in electronic devices based on
+microcontrollers in general and the ESP32 family in particular.
+
+Each chapter begins with general discussion, history or theory,
+then finishes with instructions for a week's worth of practical work. Although
+later material depends to varying degrees on preceding chapters, we have tried
+to make the order of the practical work as flexible as possible so that you
+can learn in whatever sequence is convenient for you.[^lowstress]
+
+[^lowstress]:
+     We know this is a difficult point in your degree so we try to make this a
+     _low stress_ course :)
+
+(The practical work in this chapter and next, though, covers enrolling on the
+course and setting up your development environment, so please prioritise its
+early completion!)
+
+So, what is the IoT and where does this course fit in? Read on...[^thepdf]
+
+[^thepdf]:
+     Reading this on `GitLab.com`? There's also [a PDF
+     version](https://iot.unphone.net/micasa-su-botnet.pdf), or HTML at
+     [iot.unphone.net](https://iot.unphone.net/).
+
+
+## Welcome to the Toy Shop! #################################################
+
+You made it! You've worked hard for years to get this far, and now you get to
+play :)
+
+As computer scientists and software engineers we spend much of our time with
+machines whose secrets are hidden beneath multiple layers of abstraction:
+BIOS, bootloader, operating system, programming language, library API,
+protocol definition, SDK[^sdk], etc. etc. These layers allow us to build
+systems of incredible power and sophistication, but they also (intentionally)
+obscure the operation of the underlying hardware engine. This course is a
+chance to rip the top off the box of tricks, hotwire the starter motor and
+delve deep into the grungey secrets of the electronic wizardry that makes our
+discpline possible.
+
+[^sdk]:
+     SDK: Software Development Kit.
+
+The course is also a way to understand how the latest great wave of
+technological transformation is streaming into our lives, enabled by the
+combination of tiny connected microcontrollers, cyber-physical systems and
+ubiquitous networking. This transformation is driven by the same logic as the
+explosive consequences of TCP/IP and HTML, but if the last 20 years were about
+the web, then the next 20 will be about _making_. Just as always-on
+connectivity and decentralised production in the virtual world enabled
+revolutions in creating, sharing and consuming on-line, now the same changes
+are starting in the world of manufacturing, and the consequences are likely to
+be massive. (There's perhaps an 80-20 ratio between economic activity devoted
+to atoms, or _physical processes_, in comparison to bits, or _informational
+processes_.) In the IoT there's still a space to get in on the ground floor,
+and learn how to make with the foundational hardware of the next wave.
+
+Hang on to your hat; the future is a whirlwind!
+
+
+### What's the Catch? #######################################################
+
+Actually there are two :(
+
+**First**, you're going to be programming a tiny little device that has, in
+comparison to that shiney laptop on your desk or that smartphone in your
+pocket, close to zero computational resource. There's no paging, for example,
+so in the sense of time sharing (first developed in the 1960s) our devices
+don't even run an operating system! This can be a challenge. Be prepared.
+
+**Second**, ideally you're going to need to install an SDK of one sort or
+another on your own machine, because you need to be able to spend concentrated
+hours playing with the beasts, and there's nowhere better than your own
+computer for experimenting.
+
+To help you with these challenges we will:
+
+- provide example code up front
+- provide the large majority of the content as part of these notes
+- support the code and notes in an on-line forum
+- provide example scripts and documentation to help install and run the SDKs
+  on Ubuntu (22.04) or RaspiOS (Buster) or Docker
+
+If you don't have a machine that you can use for this and need something
+cheap, you might try a Raspberry Pi 4 or better (preferably an 8GB models),
+which are very capable of running the basic IoT SDK that we work with.
+
+If you've already got a machine running MacOS or Windoze don't panic:
+
+- you can just follow the native SDK install instructions for your platform,
+  which we link to in Chapter 2
+- alternatively you can run an Ubuntu VM on MacOS or Windoze quite easily
+  (e.g. using Qemu), or use the bash shell on MacOS, or try Windows Subsystem
+  for Linux (WSL), or Cygwin, or Docker
+
+And: look on the bright side, the more you do, the more you learn :) (And:
+[DevOps is a
+thing](https://www.oreilly.com/library/view/the-phoenix-project/9781457191350/).)
+
+
+### Catch #3: 'Click Here to Kill Everybody'? ###############################
+
+Actually I lied: there are three catches:
+
+As the _perpetual beta_ style of service-oriented computing moves into
+physical spaces, we're all at the mercy of suppliers' willingness to use us as
+guinnea pigs -- only this time our homes and our clothes and our handbags are
+the venue of choice.[^amazonbellcrash] Will the future of the IoT be dominated
+by botnets and fraud? Or will we use the new machines to help face up to the
+massive survival challenges that a finite world poses to an expansionist
+system? I think you're part of the answer.
+
+[^amazonbellcrash]:
+     In February 2021, for example, [The Register
+     reported](https://www.theregister.com/2021/02/03/amazon_ring_outage/)
+     that Amazon-owned "smart" doorbell maker Ring "is suffering a major
+     outage with many of its video doorbells effectively dead, turning smart
+     homes into very dumb ones".
+
+
+### IoT: From the General to the Specific ####################################
+
+As humanity's latest pandemic swirled across the world, wreaking havoc on the
+poor, the old and the unlucky (and giving the powerful their latest excuse for
+moulding us all into yet more profitable shapes), some small comfort could be
+found in the contemplation of _the intricate_. The history of machines is part
+of what distinguishes our species: cooperating to create the preconditions of
+our existence using ever more sophisticated engines.
+
+_Computational_ engines have brought a new level of generality to the picture:
+Turing machines exemplified by von Neumann architectures and running on some
+millions or billions of transistors have become a universal mechanism for
+information processing and automatic control, and collectively we are
+deploying more and more compute power, memory and storage at a truly
+astonishing rate. The extreme expression of this tendency is _cloud
+computing_, to the degree that it is now hard to imagine a compute problem
+which would exceed the combined power of the modern cloud. (ChatGPT is a
+striking example of the revolutionary consequences of coupling this power with
+the accumulated data of several decades of web and social media data
+collection. Not a general AI, but something that sometimes does a very
+convincing imitation of one!)
+
+At the opposite extreme from the general purpose computer are those engines
+that are tailored (ever more precisely) to a specific purpose. These machines,
+in the limit, form _minimal solutions_ to complex problems. There are few
+fields that exhibit this minimalism as purely as what is now called the
+_Internet of Things_[^terms]. As computation has permeated almost all corners
+of technology a particular class of problems has become prominent, where we
+seek not generality but to consume the _smallest viable quantity of resource_.
+The use cases for a general purpose machine are always expanding and we can
+always, potentially at least, justify the devotion of more resource to their
+construction. In contrast, **the uses case for the Internet of Things are
+inextricably tied to objects whose sizes, costs and operational environments
+present a constant resource challenge, and a constant downwards pressure on
+compute cycles and power consumption.**
+
+Computing, then, has two souls: the _general_ and the _specific_. This book
+argues that the IoT is firmly part of the latter. Serendipitously, this soul
+uses as little planetary resource (and our precious attention) as is possible.
+[Reduce, reuse, recycle](https://en.wikipedia.org/wiki/Waste_hierarchy) (and
+repair, and reclaim, and recover, and... well, the [time for action is
+now!](https://hamish.gate.ac.uk/posts/2017/01/01/the-future/)).
+
+[^terms]:
+     There are many other terms we can correctly apply to this field, and
+     we'll look at these later on as part of putting our work into its
+     historical, social and economic contexts. (You don't know where you're
+     going if you don't know where you've been!)
+
+The solutions that we build in the IoT are beautiful in their intricate
+simplicity, minimal expressions of the vast power of our universal machines,
+and their "...perfection is attained not when there is nothing more to add,
+but when there is nothing more to remove"[^exupery].
+
+[^exupery]:
+     _Airman's Odyssey_, Antione de St. Exupery.
+
+Of course we don't always achieve minimalist elegance on our first tries.
+Heath Robinson captured the feeling I have when I look at some of my previous
+attempts at IoT devices:
+
+[ ![](images/heath-robinson-pipe-lighter-300x417.jpg "A machine for lighting
+pipes")](images/heath-robinson-pipe-lighter.jpg)[^heathrob]
+
+[^heathrob]:
+     From [Socks
+     Studio](http://socks-studio.com/2016/11/07/william-heath-robinsons-wacky-inventions/).
+
+**This course** is about transforming our computational selves from high
+priests of the general purpose to paragons of minimalism (probably via the
+joyfully messy intermediary of Heath Robinson).
+
+Enjoy the ride!
+
+
+### The ESP32 Microcontroller ################################################
+
+We will come to the question of how to think about the various types of
+hardware used in the IoT many times during the course. To begin with, suffice
+it to say that IoT devices use network-connected microcontrollers. (They may
+be interfaced to IoT hubs and gateways, which generally use ARM
+microprocessors, but for our purposes the key innovation and core hardware is
+the networked microcontroller.)
+
+For this course, we will use a microcontroller called ESP32, which although a
+relative newcomer has become very popular over the last half decade or so. It
+is relatively cheap and it's firmware ecosystem is very open by industry
+standards. Every student on the course gets an ESP32 development
+board[^externals], and programming it is a core practical skill that we aim to
+teach here.
+
+Feel free to read more about the chip now, or wait and see :)
+
+[^externals]:
+     Comments like this are directed at to the original audience for this
+     book: students of the COM3505 IoT course at the University of Sheffield.
+     If you're using the book to learn from outside the University, then you
+     probably need to get at least an ESP32 development board to work with.
+     (Ideally this would be an Adafruit ESP32S3 Feather with PSRAM.) Some of
+     the course discussion happens within closed systems, but you'll be
+     welcome to participate at [forum.unphone.net](https://forum.unphone.net/)
+     wherever you're coming from :)
+
+
+### Hope #####################################################################
+
+What if we wish not simply for the comfort offered by contemplating (and,
+later, _controlling_) the miraculous intricacies of task-specific
+computational engines, but also for _**hope**_?
+
+Take a minute. Switch off your phone. Look at the objects around you, remember
+the food on your plate at your last meal, feel the warmth of your clothing,
+the security of the building you are sitting in. The economic system that
+creates all of these things, all of these preconditions for your existence, is
+driven by a single imperative that equates _profit_ with _value_. When that
+equation is combined with the vast and impersonal forces of [transnational
+corporate
+competition](https://hamish.gate.ac.uk/posts/2014/11/18/147-companies-run-the-world/)
+the results are well known. We use our atmosphere as a sink for the carbon
+remains of an aeon of decayed flora and fauna. We use each other as expendable
+"human resources". We crowd sick animals together in zoonotic melting pots and
+express surprise at the apocalyptic consequences.
+
+In this somewhat gloomy context there are nevertheless several glimmers of
+hope connected to the IoT... but allow me, dear reader, a little suspense in
+my narrative: we'll come back to how to save the world after we've done some
+of the spade work. Watch this space :)
+
+
+## How the Course Works ######################################################
+
+The course (like life) has two sides, practical and theoretical[^life]. The
+practical work is split in two halves:
+
+1. up to week 7 we program the basic functions of an IoT device, step by step
+1. from week 8 we choose a project from a range of options and work on it
+   intensively until week 12
+
+[^life]:
+     And, just like life, the practical work is frequently more fun :)  To
+     understand why the fumbling works and how to fix it if it doesn't
+     requires the theory, however :(
+
+(The project, and hardware kit, is yours to keep at the end of the course.)
+
+We provide information via three main channels:
+
+- a gitlab repository,
+  [the-internet-of-things](https://gitlab.com/hamishcunningham/the-internet-of-things),
+  containing the latest version of these notes, example code and helper
+  scripts[^errors]
+- two discussion forums (a University [Blackboard discussion
+  board](https://www.sheffield.ac.uk/apse/digital/blackboard/discussionboards)),
+  and the [unPhone community support forum](https://forum.unphone.net/)
+- weekly lectures, and hands-on sessions in the [Diamond Electronics
+  Lab](https://www.sheffield.ac.uk/engineering/diamond/laboratories) (DIA
+  2.02)
+
+<!--
+- an on-line QA session, weekly from 11am on Mondays (on [Blackboard
+  Collaborate](https://www.sheffield.ac.uk/apse/digital/collaborate/home))
+-->
+
+[^errors]:
+     See an error, omission or something that could be improved? Please [raise
+     an
+     issue](https://gitlab.com/hamishcunningham/the-internet-of-things/-/issues)
+     or make a pull request.
+
+(There is also a small amount of administrative information on the University
+Blackboard page for the course; make sure to check it out.)
+
+There is a notes section for each week of the course[^guess]. Each chapter
+ends with a "**week N course notes**" section describing our objectives for
+this part, and specifiying practical work that we want you to complete. By and
+large you can read the first parts of the chapters in lean-back mode: they are
+discursive, and intend to give a flavour of the field and its historical and
+technical contexts. The latter parts of the chapters are more directive, and
+you'll need to sit at a keyboard and follow instructions; the intent is to
+lead you to practical outcomes and running code.
+
+[^guess]:
+     Guess which chapter this is. Did you say "one"? Pat yourself on the back,
+     you're getting the hang of this IoT stuff already! (If you said "zero"
+     you may have spent large parts of your life writing C code.)
+
+There is example code in the [exercises
+tree](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises)
+of the course materials repository. This code covers many of the tasks that we
+ask you to complete week by week. You can, of course, copy the answers without
+trying to come up with your own solution, but you will learn little by doing
+so. The recommended method is to implement your own answer to the exercises,
+then go to the relevant example code and compare it with yours.[^better]
+
+[^better]:
+     Your answer better than ours? Well done! Send me a pull request if you
+     have time.
+
+This is a 10 credit (level 3) module; this means about 100 hours work. It is
+taught over one semester, so it averages out at about 7-8 hours per week.
+(Depending on your existing skills and previous experience you may need more
+or less time.)
+
+
+### Main Changes since Iteration 6 (2023) ####################################
+
+This is iteration 7 running in 2024.
+
+The hardware platform has stabilised this year, and the chronic parts shortage
+that dogged us since the start of the pandemic has finally eased off
+sufficiently that we can probably release an end user version of the unPhone
+(only around 3 years late, but hey ho). The ESP32S3 is still the
+microprocessor of choice for a large segment of the IoT ecosystem, so a great
+platform to be learning on in 2024 :)
+
+We also now have a stable docker + platformio + web serial build method, that
+works well on Windows and (hopefully) Mac as well as (of course) Linux. This
+should make life a lot easier :) Again this is state of the art, with
+containers and CI/CD definitely an industry standard in 2024.
+
+You lucky things.
+
+IDF and Arduino core versions: we're still using 4.4.x and 2.0.x releases
+while waiting for 5.1.x / 3.0.0 (the latter is in alpha at present and will
+likely need a [fair bit of migration
+work](https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html)).
+
+
+### Main Changes since Iteration 5 (2022) ####################################
+
+This was iteration 6 running in 2023.
+
+Changes:
+
+- this year we're moving from the ESP32 to the ESP32S3
+- on the S3 (and unPhone 9) you can try CircuitPython if you wish, but the
+  assessed work is still in C++
+- the unPhone board definitions (from version 7) are now part of the Arduino
+  ESP32 core, and of PlatformIO
+- as usual ESP software has leapt ahead; ESP-IDF is now counting version 5 as
+  the latest stable release, but the Arduino core is not quite there yet;
+  we've standardised on version 4.4.3 of IDF and 2.0.6 of the core for the
+  example code and these notes
+- the climate crisis is finally over and we're no longer rushing headlong to
+  emulate the lemmings (only joking, unfortunately)
+
+
+### Main Changes since Iteration 4 (2021) ####################################
+
+This was iteration 5 running in 2022.
+
+The previous run, iteration 4, with almost no lab sessions, went better than
+expected :) (The student feedback we collected is available from Blackboard.)
+
+There were a couple of things that glitched a little:
+
+- For most students this is the final stretch of their degree, so there are
+  lots of tough deadlines and it is challenging to have an open-ended
+  assignment at this point. (We previously ran the course in the autumn
+  semester, which was a bit less pressured, but covid prompted us to bump it
+  backwards in the hope of offering lab sessions.)
+- The freedom to experiment has been cited as one of the best features of the
+  course, but people also said that more guidance on the parameters would
+  help.
+
+In 2022 we're making these changes in order to address those two issues:
+
+- roll the clock back in time to October 2021 and run it then instead (umm,
+  actually we didn’t manage that one)
+- fully publish assessment 2 before Easter (so you can almost finish the
+  course over the holiday if that fits your schedule best!)
+- make it clearer that assessment 1 is a dry-run for assessment 2, so feedback
+  from assessment 1 can guide you in assessment 2
+
+In addition, I've significantly simplified the support tooling (specifically
+the `magic.sh` shell script), and added the ability to use the tooling via
+Docker to make cross-platform working easier.
+
+I hope you like it! (If you do, tell others, if you don't, tell me ASAP and
+I'll try to fix it!)
+
+
+### Main Changes since Iteration 3 (2018) ####################################
+
+We needed to change quite a lot from last time the course ran! The 2021
+version relies on _3 Ts_: Toys@home, lots of Text, and Tech support :)
+
+- we'll give you parts kits set up to use at home
+- more material is available on-line (**we're an open source
+  course**[^osscourse])
+- there is less dependence on lab-based working
+- there is no team working
+- we'll answer questions ASAP in our online forum -- this is the first port of
+  call for help during the course
+- assessment is now done by _threshold and grading_ (see next section): you
+  have to exceed a minimum threshold to pass; if successful you are separately
+  graded
+- we assume that you will be working on your own computer, at least part of
+  the time
+- soldering (in the Diamond electronics lab) is now optional
+- wearing a silly hat during all programming sessions is now officially
+  encouraged by our Head of Department, Professor Guy Brown, who will be
+  pleased to advise you on all matters of millinery sartorials[^all]
+
+[^all]:
+     All statements in this document are true to the best of our knowledge,
+     except those that aren't.
+[^osscourse]:
+     For this iteration pretty much everything is now open and freely
+     accessible in its up-to-the minute form (apart from the exam questions!).
+
+
+### Assessment ##############################################################
+
+_Threshold and grading_ works by separating the process of passing the course
+from the process of attaining a good grade. The threshold assessments check
+that you have a basic understanding of all the material; the grading
+assessment evaluates the quality of that understanding in depth.
+
+The course is assessed by two practicals (_lab1_, _lab2_) and a (multiple
+choice) _exam_. _Lab1_ happens at **week 7** and _lab2_ at **week 12** (and
+the _exam_ during the standard exam period at the end of the semester). (A
+mock exam during term will allow you to practice the material.)
+
+<!--
+[^exams2021]:
+     In 2021 all of these are on-line and asynchronous.
+-->
+
+You must pass _lab1_ and the _exam_ in order to pass the course. This will
+give you a score of 40%. In order to score more than 40% you must also
+complete _lab2_, the project.
+
+_Lab1_ and the _exam_ are assessed as **pass/fail** only (and no score is
+given for _lab1_). A pass in both contributes 40 marks to your final result.
+
+_Lab2_ is a **project** which students spend several weeks completing at the
+end of the course. The assessment is open-ended and qualitative in nature. It
+is marked out of 100 and contributes a maximum of 60 marks to your final
+score. _Lab2_ is assessed in similar manner to _Lab1_, so feedback from the
+_Lab1_ can guide you in performing _Lab2_ (with the exception that the latter
+has around four times more time available for your work, and therefore should
+be commensurately bigger).
+
+This is an advanced course and the project assessment in particular is
+intentionally open-ended. There is no single right answer! If you're unsure
+about how much effort to expend the rule of thumb is to put in as many hours
+as is reasonable for a 10 credit module (see above; perhaps 8 or 10 hours per
+week).
+
+We'll give more detailed guidance in relation to each of the assessments as
+they occur; the things to remember to begin with are that:
+
+- the first lab assessment and the exam are both pass/fail; you **must** pass
+  these
+- the second lab assessment (the project) will determine your final
+  classification for the course (pass, 3rd, 2nd, 1st)
+
+
+## COM3505 Week 00: Preliminaries ############################################
+
+This section describes **stuff to do _before_** you start the course:
+
+**1.** We will communicate with you using [Git](https://git-scm.com/) and
+GitLab, both to deliver course materials and assignments to you, and for you
+to submit coursework to us. Therefore **you are not fully enrolled for the
+course** until you [set up an appropriate git
+repository](#setting-up-your-git-repository) and [give us the
+details](#tell-us-your-account-user-name-on-gitlab). Do this **ASAP**!
+
+**2.** Spend some time getting to know [git and the other
+tools](#good-tools-to-learn) we'll be using. (The [Linux command
+line](http://shop.oreilly.com/product/0636920042174.do) is powerful, elegant
+and, to newcomers, challenging. Using [git from the command
+line](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup)
+adds another set of challenges. A bit of preparation will help!)
+
+**3.** Refresh your memory of the Diamond Electronics lab safety protocols.
+You **cannot participate** in lab sessions without having completed [the
+safety work](#staying-safe-in-the-electronics-lab).
+
+Details follow.
+
+
+### Setting up your Git Repository ###########################################
+
+**NOTE**: the images below say "2021" in them, whereas you need to use "2024",
+and there are a few minor changes in the current version of GitLab.
+
+**First** register an account on [GitLab.com](https://gitlab.com) if you don't
+have one already. Use your **Sheffield email address** (ending in
+`@sheffield.ac.uk`) to register. (**NOTE**: be sure to use
+**https://gitlab.com/** and **NOT** the Sheffield-based GitLab server, which
+is being phased out.)
+
+**Second**, create a **private** repository (project) there (from the "blank
+project" option) called `com3505-student-2024`:
+
+[ ![](images/gitlab-create-project-350x.png "Create a project.")](images/gitlab-create-project.png)
+
+(Make sure to select the _Initialize repository with a README_ option.)
+
+**Third**, go to the Project Information `members` settings...
+
+[ ![](images/gitlab-add-hamish-1-350x.png "add Hamish as a project maintainer")](images/gitlab-add-hamish-1.png)
+
+...and add `hamishcunningham`... 
+
+[ ![](images/gitlab-add-hamish-2-350x.png "add Hamish as a project maintainer (2)")](images/gitlab-add-hamish-2.png)
+
+...as a project `maintainer`: 
+
+[ ![](images/gitlab-add-hamish-3-350x.png "add Hamish as a project maintainer (3)")](images/gitlab-add-hamish-3.png)
+
+**Lastly** submit your GitLab user name to our server (see next section).
+
+
+### Tell us your Account User Name on GitLab #################################
+
+Your user name (or "ID" for our purposes) is the name you log in with, and
+appears in the URL of the site when you're logged in. For example, Hamish's
+user name / ID is `hamishcunningham` and his public GitLab projects appear at
+[gitlab.com/hamishcunningham](https://gitlab.com/hamishcunningham/) (and
+[GitHub ones here](https://github.com/hamishcunningham), and [SourceForge
+here](https://sourceforge.net/u/hcunningham/profile/), and [Docker images
+here](https://hub.docker.com/u/hamishcunningham)...).
+
+We need to know your username and match it up with your student record so that
+we can pull the coursework that you commit there. Tell us your username by
+filling in the form linked from the Blackboard page.
+<!--
+making an HTTP GET request to the server that lives at
+`https://HOSTNAME.shef.ac.uk:9194/` (where HOSTNAME is given on the Blackboard
+page for the course). This server expects GET requests at the path
+`com3505-2024` with parameters that include `email` and `gitid`. (Email
+addresses should end in `@sheffield.ac.uk`.)
+
+**Note** that the server is only visible inside the University firewall so
+you'll need to use the VPN if you're working on a different network. Also, it
+uses a **self-signed TLS certificate**, so you'll need to turn off certificate
+checking for this host if accessing from a browser. (The server is secure, but
+doesn't embed a certificate from a known authority, so browsers give a
+warning.)
+
+To send us your username, make a GET request something like the following
+(substituting MyGitUname for your gitlab account username and MyName for your
+email):
+
+```bash
+https://HOSTNAME.shef.ac.uk:9194/com3505-2024?gitid=MyGitUname&
+  email=MyName@sheffield.ac.uk
+```
+
+You can do this via a web browser, or using `wget` or `curl` or any
+programming language or other tool that talks HTTP. If you feel like a
+challenge and you manage to figure out how do it with an ESP32 then:
+
+1. be careful not to flood the server with multiple requests!
+1. pat yourself on the back: you're ahead of the game :)
+
+For example, to use curl:
+
+```bash
+curl -k 'https://HOSTNAME.shef.ac.uk:9194/com3505-2024?gitid=MyGitUname&
+  email=MyName@sheffield.ac.uk'
+```
+
+The response should look like this:
+```bash
+Received:  gitid=MyGitUname;  email=MyName@sheffield.ac.uk; 
+```
+-->
+
+**Note**: don't send your numeric ID from GitLab, but the alphanumeric user
+name / path that appears in your project URLs. (Mine is `hamishcunningham`.)
+
+<!--
+(Later in the course we'll use the same technique to gather data from the IoT
+devices you'll be building, but that's another story!)
+-->
+
+
+### Good Tools to Learn ######################################################
+
+To create and deliver the course we use most or all of the following tools.
+You can follow the course without using the command line, but we recommend
+learning it if you can; it is debatable that you're ever really in control of
+a machine for which your only interface is a GUI (especially when that GUI is
+closed source).
+
+It is a good idea to get to know at least Git and if possible the ESP and
+Arduino tools before starting (though you should be able to pick them up as we
+go along if needed).
+
+- [Git](https://git-scm.com/) and (see above) [GitLab](https://gitlab.com);
+  other useful [material
+  here](https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository)
+- [Ubuntu](https://ubuntu.com/) [GNU](https://www.gnu.org/)
+  [Linux](https://www.linux.org/) and/or
+  [RaspiOS](https://www.raspberrypi.org/software/)[^emulation]
+- [command-line
+  interfaces](https://www.linuxjournal.com/content/end-command-line) (accessed
+  [on Linux](https://ryanstutorials.net/linuxtutorial/) via [the Bourne
+  shell](https://ryanstutorials.net/bash-scripting-tutorial/))
+- the [Espressif IoT Development
+  Framework](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/),
+  along with the ESP32 [Arduino compatibility layer (or
+  "core")](https://github.com/espressif/arduino-esp32)
+- the [markdown text
+  formatting](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+  language
+- [Docker containers](https://www.docker.com/) (for development environment
+  portability)
+
+In addition we will need a code editor or Integrated Development Environment
+(IDE) for writing IoT device firmware in C and C++, e.g.:
+
+- [Arduino IDE](https://en.wikipedia.org/wiki/Arduino_IDE)
+- [VSCode](https://code.visualstudio.com/)
+- [PlatformIO](https://platformio.org/)
+- [Eclipse](https://www.eclipse.org/ide/)
+- [Vim](https://www.vim.org/)[^emacs]
+- etc.
+
+[^emacs]:
+     Emacs? What's that?
+[^emulation]:
+     Or an equivalent emulation environment like
+     [Cygwin](https://www.cygwin.com/), WSL or a VM or a container.
+
+We'll cover how to set up these tools next week.
+
+
+### STAYING SAFE in the Electronics Lab ######################################
+
+Parts of the practical work for the course are best done in the Diamond
+Electronics Laboratory (DIA 2.02), and we have sessions available each week of
+the course in 2024. You are also entitled to use the facilities in the iForge
+(the Diamond 1.01 project space, see next section) if you need more time,
+though do make sure to register with them **before** trying to gain access.
+
+The electronics lab is a fantastic learning environment, and we give you as
+much time in there as we can during the course. It is also a **potentially
+dangerous** environment. Before coming to any lab session you **must do the
+following**:
+
+- [watch this safety induction
+  video](https://drive.google.com/file/d/1ferKqsI9TpFRWd2Tg9Hn7-Kgcl0jgmPz/view?usp=sharing)
+- [read this risk
+  assessment](https://drive.google.com/file/d/1t3yR19Rm325Irb2Q4uT5LxunS-4X8al4/view)
+
+<!-- old https://digitalmedia.sheffield.ac.uk/media/1_ree9brzk
+- [read this standard operating
+  procedure](https://docs.google.com/document/d/1grxrm0p2e_IsmQj4XLsAvp7m_sMCIeFQ5BvQzThfi-Q/view)
+-->
+
+Soldering is optional this year (but definitely a useful skill for IoT
+prototyping); if you want to do soldering in the lab, please also [watch this
+tutorial video](https://digitalmedia.sheffield.ac.uk/media/1_q13s0j3j).
+
+Please follow University guidelines relating to covid-19 at all times!
+
+### Using the iForge   #######################################################
+
+The [iForge](https://iforgesheffield.org) is the University's student-led
+makerspace that provides workshop and making facilities outside the scope of
+your degree. If you would like to use the iForge there are a couple
+**prerequisites**:
+
+- [register online (UoS VPN / Eduroam access required) or in person](https://iforge.sheffield.ac.uk/usersignup)
+- [sign the user agreement (UoS VPN / Eduroam access required)](https://iforge.sheffield.ac.uk/viewagreement)
+- [completed the two compulsory training courses](https://training.iforge.shef.ac.uk/subject-areas/general-workshop-safety/online)
+- [completed the hot tools training (if you want to solder)](https://training.iforge.shef.ac.uk/subject-areas/hot-tools/online)
+
+
+If you would like to find out more about the iForge feel free to check out
+their [linktree](https://linktr.ee/iforgeuos) or head to DIA 1.01 to find out
+more in person.
+
+
+## COM3505 Week 01 Course Notes ##############################################
+
+Have you done [the preliminaries?](#com3505-week-00-preliminaries)? If not,
+now would be a good time :)
+
+
+### Learning Objectives ######################################################
+
+Our objectives this week are to:
+
+- read up about how the course works, and start reading about the IoT
+- create your own gitlab repository, and formally enrol on the course
+- pick up your parts kit, and start understanding how to prototype basic
+  circuits on a breadboard
+- start getting to know the electronics lab
+
+
+### Assignments ##############################################################
+
+- You should have already created a Git repository for the course and sent us
+  your GitLab user name (see
+  [above](#tell-us-your-account-user-name-on-gitlab)). If not **do it now!!!**
+- Revise (or learn) how to use Git and practice working with your repository;
+  see below.
+- Make sure you've read all of chapter 1 of these notes, and ideally read
+  chapter 2 before the start of week 2.
+- Have a look at the references listed in [Further Reading](#further-reading).
+- Work through the lab introduction sheet ([see below](#first-lab-checklist)).
+
+
+### Working with your Git Repository ########################################
+
+The assessment of your practical work on the course is delivered by checking
+in to your git repository and pushing to the "origin remote" (on
+[gitlab.com](https://gitlab.com)). If you don't push anything, we won't be
+able to give you feedback or to mark your work, so it is important to get used
+to this system early on.
+
+Check out your repository from gitlab into your own file space (**the first
+time you start work on a new machine**):
+
+- `git clone ...url...`, for example:
+  `git clone https://gitlab.com/YourGitLabUname/com3505-student-2024.git`
+- (**don't "download"** from gitlab, you need to "clone")
+- (**don't "change your path" on gitlab** or our scripts won't find your
+  repository)
+
+**Other common commands**:
+
+- use `git status` to tell you what the current state of your file tree is,
+  and `git diff` to show detailed changes
+- to add new files to the repository: `git add file-path`
+- to commit all changes locally: `git commit -vam 'a commit log message'`
+- to push committed changes back to GitLab: `git push`
+- to pull down new changes from GitLab: `git pull`
+- to stop the annoying messages about configuration, do the commands suggested
+  (e.g. to set your email address)
+- to stop having to type username/password all the time, [create an ssh key
+  and register it with GitLab](https://docs.gitlab.com/ee/ssh/))
+- to lower your blood pressure when subjected to ridiculous git error
+  conditions: go for a walk, hum a cheery tune, or try thinking about a career
+  as a florist
+
+**Note**: git (and GitLab / GitHub) have become industry standards in recent
+years, so it is important for you to get to know at least the basics. However,
+an independent survey of experts recently estimated that of 2,153 git command
+options, fully 213% were either contradictory, confusing or error-inducing (or
+all three). [I may have made that bit up.] It is depressingly easy to get git
+into a mess! [I didn't make that bit up.] What to do? Here's one way to escape
+from **git hell**...
+
+Let's say you have conflicts in your `com3505-student-2024` repository and the
+process of resolving them is proving difficult. To re-create a clean version
+of the repository (in your home directory):
+
+```bash
+cd
+mv com3505-student-2024 saved-repo
+git clone https://gitlab.com/YourGitLabUname/com3505-student-2024.git
+```
+
+You've now got a fresh copy to work with; if you have changes in the saved
+version you can copy them over to the new, then commit and push from there.
+
+Yes, it was called 'git' for a reason...[^gitnamequote]
+
+[^gitnamequote]:
+    Linus Torvalds quipped "I'm an egotistical bastard, and I name all my
+    projects after myself. First 'Linux', now 'git'."
+
+
+### First Lab Checklist ######################################################
+
+This section describes what to do in your first lab session:
+
+<!-- (If you're working remotely
+  we'll post it to you, but **A.** we're really hoping that you're in
+  Sheffield this time around!, and **B.** you need to contact COM tech support
+  in plenty of time[^fourweeksago] if we really need to post it to you! In
+  2024 **we're not posting kits** except in the most exceptional of cases,
+  sorry!)
+-->
+
+- Make sure you have been given a hardware kit.
+- **Hardware 1**:
+  - Check the [Standard Operating Procedure](https://docs.google.com/document/d/1_VGI6EtR8pLvWGsDMlA5Ip3cP2dmz17nsfIGJMxqyho/edit?usp=sharing)
+    for the kit, and make sure you have identified any safety issues relating
+    to the work. If in doubt, stop work and contact a member of staff.
+  - Work through [COM3505 DIA 2.02 Introduction](https://goo.gl/GkGvJT) to
+    practice breadboarding, soldering (this is optional for the 2024 course)
+    and using a multimeter: (**please pay particular attention to the safety
+    protocols for the electronics lab described there**).
+- Finished? Learn a little C!
+- Couldn't get through it all? Don't worry too much; you can catch up in the
+  iForge, or next week, or just by reading up on the theory. We're not
+  assessing you until week 7/8, so at this point the important thing is to
+  start getting a flavour of the work.
+
+[^fourweeksago]:
+     "Plenty of time" means four weeks ago last Wednesday, from a postbox in
+     Dundee while wearing a false nose. Only kidding, but posting stuff across
+     the world two years was massively unreliable and disruptive, so please
+     get in touch ASAP if this is going to apply to you, and/or consider
+     ordering your own kit from local suppliers, at least for the first half
+     of term. (Details of the kit are given below.)
+
+If you finish early you might also want to learn about measuring simple values
+(using the multimeters and/or oscilloscope), but this is optional.
+
+The hardware kits give you an ESP32 net-connected microcontroller, sensors and
+actuators, and the means to prototype experimental circuits: the foundations
+of IoT hardware.
+
+For reference each kit should contain:
+
+- plastic box
+- the "Workstation 1" LED kit (a small PCB with two LEDs, resistors and
+  solder)
+- ESP32 feather board, with stacking headers pre-soldered
+- breadboard
+- 5 x 3mm red LED
+- 5 x 3mm green LED
+- 5 x 3mm yellow LED
+- USB C cable
+- matrix board (25 x 15)
+- 12 x 120Ω resistors
+- 180Ω resistor
+- 4.7kΩ resistor
+- 220kΩ resistor
+- 1MΩ resistor
+- push button switch (through hole, i.e. ok for breadboarding)
+- 10 way ribbon cable (or equivalent solid core wire pieces; spare pre-cut
+  wire is available in the lab)
+
+(In the second half of term we'll give you additional hardware for your
+project as necessary. Enjoy!)
+
+
+## Further Reading ##########################################################
+
+- [@Schneier2017-xr][^gitlabcitations] “Click Here to Kill Everyone.” [NY Mag,
+  January
+  2017](http://nymag.com/selectall/2017/01/the-internet-of-things-dangerous-future-bruce-schneier.html).
+- [@Ashton2011-mc] “That ‘Internet of Things’ Thing.” [RFiD Journal 22 (7)
+  2011](http://www.itrco.jp/libraries/RFIDjournal-That%20Internet%20of%20Things%20Thing.pdf).
+- Like many embedded electronics and IoT developers, we use the Linux
+  command-line (otherwise known as `shell` or `bash`, often running in a
+  `terminal`) to do many of our tasks. On MacOS an old version is available by
+  default; [update like
+  this](https://itnext.io/upgrading-bash-on-macos-7138bd1066ba). Ports of
+  these tools are also available for Windows (try Cygwin, Git Bash, Windows
+  Subsystem for Linux, or perhaps an Ubuntu VM or a container via Qemu, LXC or
+  Docker). If you find these tools difficult then please read up on them and
+  practice. [See also the links about tools above](#good-tools-to-learn).
+- [@Doctorow2019-tl] "Unauthorized Bread", Cory Doctorow (in _Radicalized_,
+  2019).
+
+[^gitlabcitations]:
+     If you're reading this as a GitLab '.mkd' file (e.g. on `gitlab.com` or a
+     checked-out repository), citations don't link anywhere. Try [the
+     PDF](https://iot.unphone.net/micasa-su-botnet.pdf) or the [GitLab
+     Pages](https://iot.unphone.net/) version to find the references.

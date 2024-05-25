@@ -1,0 +1,977 @@
+
+# unPhone Yourself! #########################################################
+
+Phones. They’re miraculous! Maps, cameras, streaming this that and the
+other... and they even make phone calls. But: they use up scarce minerals
+(that are often mined in peril). The server clouds they connect to use
+thousands of times more energy than bitcoin. And they steal our attention,
+leak our data, compromise our privacy. Perhaps we don’t need a miracle in our
+pockets every minute of the day? Sheffield's [unPhone IoT
+platform](https://unphone.net/) isn’t a phone alternative but it has the
+potential to replace some of the sledgehammers we currently crack nuts with
+(and it can be a way to keep more of your data under your own control).
+
+[ ![](images/unphone-platform-2-600x338.png "unphone platform 2") ](images/unphone-platform-2.png)
+
+For students of the IoT, for makers and developers of novel devices, the
+unPhone provides a rapid prototyping environment, made easier by the
+pre-integrated UI, PMU[^PMU], accelerometer, LoRa radio and etc., with an
+expansion capability conforming to [Adafruit’s FeatherWing
+standard](https://learn.adafruit.com/adafruit-feather/feather-specification).
+Having prototyped a device on the unPhone, the resultant circuit constitutes a
+stand-alone unit appropriate for productisation by competent fabricators. The
+board is manufactured by [Pimoroni](https://pimoroni.com/) in Sheffield UK, in
+partnership with the University of Sheffield.
+
+[^PMU]:
+    PMU: Power Management Unit. Also BMU, Battery Management Unit, or BM,
+    Battery Manager.
+
+(If the target hardware doesn't include a screen etc., the unPhone-based
+prototype can be trivially transferred to the relevant Feather microcontroller
+board (e.g. [the ESP32S3
+feather](https://learn.adafruit.com/adafruit-esp32-s3-feather) using the
+expander board's Feather-compatible sockets. The screen is typically very
+useful during the development process to reduce reliance on the serial lines
+for debug output and the like.)
+
+Extensive documentation and integration with the
+[Arduino](https://arduino.cc/), [Espressif](https://espressif.com/) and
+[PlatformIO](https://community.platformio.org/) open source communities make
+getting up and running fast and lightweight. The device can be programmed in C
+/ C++ or CircuitPython.
+
+The systems have also been the foundation of IoT courses for around 500 people
+so far at the University of Sheffield, and at a more general level the work
+helps:
+
+- reduce waste and energy consumption (we use microcontrollers not
+  microprocessors and we minimise cloud time)
+- enable privacy (e.g. by building voice control systems which don’t send
+  audio outside the building, and don’t have binary blobs like your phone’s
+  baseband firmware)
+
+Several research programmes are supported by the work, including tracks in IoT
+devices for monitoring and control of aquaponics systems [@Coleman2014-xw;
+@Cunningham2015-mh] (supported by a cloud-based data aggregation and analytics
+infrastructure [@Tablan2013-jx] orginally developed as part of the GATE
+architecture [@Cunningham1995-dn; @Cunningham2002-dc]). The hardware has
+contributed to projects including the Urban Flows Observatory [@Munir2019-uv],
+the Pitch-In Connecting IoT Capabilities project [@Czekster2021-jo], the
+unPrism and Vigil Auntie projects [@Al-Mhabis2017-ut; @Rudd2021-ze;
+@Rudd2021-wk; @Rudd2022-am] and the MYHarvest urban agriculture database
+[@Edmondson2019-fd; @Edmondson2020-tv]. The COM3505 Internet of Things level 3
+undergraduate course enters its 7th iteration in Spring 2024.
+
+This chapter tours the hardware and firmware programming environment of the
+unPhone. (See [Chapter 7](#scheduling-tasks-gestating-new-devices) for the
+story of how we developed the device.) We focus here on the device hardware
+(next section), the [programming model](#programming-the-unphone), its [power
+consumption](#power-consumption-states) characteristics and the details of
+[the circuitry](#a-tour-of-the-hardware-schematics) it is built on. We finish
+with a [note on versions](#a-note-on-versions).
+
+
+## The Hardware ##############################################################
+
+Lets begin with an overview of the various things that are part of the unPhone
+and how they are connected to the microcontroller at the centre of it.
+
+The unPhone has a USB C socket, that provides both power and a serial line
+connection. When you connect power the on-board battery will automatically
+begin charging. When the USB is unplugged the battery will switch over and
+power the unPhone. And if you plug your unPhone into a computer, you can
+program it and interact with it.
+
+The RGB LED can display 7 different colours, made by switching on or off each
+of the red, green or blue parts. If you switch all three on at once, you get
+white; if you mix red and blue you get purple, and mixing red and green gives
+yellow. There's also a red charging LED underneath the USB socket, which is on
+when the battery is being charged.
+
+The reset button is connected to the microcontroller's reset circuit - this
+will always reboot the device. It's set into the end so you'll need a pencil
+or paperclip or etc. to press it.
+
+The micro SD card slot can be read by the microcontroller. It has a push-push
+type socket where the card goes into the slot, and out again by pushing it in
+gently.
+
+The IR (infra-red) LED isn't visible, but sends remote control codes to TV's,
+hi-fi's etc. You can use this to turn off annoying TV's nearby, for example!
+
+The on/off slide switch turns the unPhone off and on. Even when turned off,
+the battery will still charge if USB is plugged in. And you can control this
+yourself in your programs, to make the unPhone wake up even when it's turned
+off. This is useful if you want to save battery power and wake up every few
+minutes to check something, for example.
+
+The three push buttons above the screen have a tactile feeling, so they can be
+operated in your pocket.
+
+As well as the usual Wi-Fi and Bluetooth radios, the unPhone has an ultra-low
+power long range radio that uses the LoRa European frequency (868 MHz). It's
+compatible with The Things Network LoRaWAN system, with gateways all round the
+world (including Sheffield!). This radio has many hundreds of meters of range,
+probably more, but a very low bandwidth. So you can't stream music, let alone
+video. But you can send and recieve messages, alerts, sensor readings etc.
+
+The gyroscope sensor gives accurate measurements of the movements of the
+unPhone. It can be used for various things such as a step counter, a spirit
+level or gesture control (e.g. change screens on an interface when the unPhone
+is tilted).
+
+The vibration motor gives a gentle buzz that is barely audible but can be
+felt, suitable for notifications or alarms.
+
+Touchscreen gives a bright clear display with 640x480 pixels; and the touch
+pressure can be felt, so a drawing program can draw a thin line with light
+pressure and a thicker line with more pressure for example.
+
+The built-in battery has a capacity of 1400 mAh - so will power the unPhone
+for around 6 hours or so, with the screen on and using WiFi or LoRaWAN
+heavily. The screen backlight is the most power hungry item, so if you can
+program a sleep mode that turns it off, you can easily double the battery
+life. Using the radio's less will also reduce power consumption.
+
+And if you want to connect two Adafruit Featherwing expansion boards, and / or
+add some more components to the unPhone, you can use the expansion shield. It
+exposes all the normal Feather pins so you can just plug in your chosen
+Featherwing and go!
+
+
+## Programming the unPhone ###################################################
+
+This section describes the C++ programming model of the unPhone using several
+example applications. For the latest code, build environment recommendations
+and troubleshooting tips see the [library's GitLab
+repository](https://gitlab.com/hamishcunningham/unphonelibrary). (To [program
+in CircuitPython see Appendix
+B](https://iot.unphone.net/#appendix-b-circuitpython-on-feather-s3-and-unphone).)
+
+Before we begin it is worth remembering the number one truism about the IoT
+and about devices based on microcontrollers: they're _small_! The game is to
+make them _as small as they can be_ while still performing their intended
+task. (This is quite different from general purpose computing, where we try to
+build devices that are appropriate for _any computational task_, or at least
+any task which doesn't require distributed computing to succeed.) The pressure
+to be as small as possible in the IoT means programming machines that are very
+like computers were several decades ago, and we often end up using programming
+idioms and tools that are similarly venerable. So: the terrain is rough,
+there's not much space for acrobatics and we've only our wits to sustain us :)
+
+Which is a long-winded way of saying:
+
+- timing is critical -- don't be surprised if changing the way a task is
+  performed suddenly breaks another task!
+- memory is scarce -- don't waste it!
+- there are 10,000 ways to break things -- don't sweat, just start from a
+  known good and move slowly and carefully :)
+
+
+### Class unPhone, and minimal example #######################################
+
+In common with the ESP32 family and many other microcontrollers, sensors and
+actuators the unPhone is supported by an Arduino library that provides a
+hardware abstraction packaged as a C++ class that follows certain conventions.
+Its declaration starts like this:
+
+```cpp
+class unPhone {
+public:
+  unPhone();                              // construction
+  unPhone(const char *);                  // construction with app name
+  static unPhone *me; // access singleton in static context after constr
+  void begin();                           // initialise hardware
+...
+```
+
+These first methods deal with creating an unPhone object (with an optional
+application name), accessing that object from static contexts (_after_
+construction, via the `me` member variable), and initialising the hardware
+(with the `begin` method).
+
+The unPhone class is intended to be singleton, i.e. we should only ever
+construct one object of the type. (There's only one piece of hardware running
+the firmware instance, after all!)
+
+The most common way to create an application for the unPhone is to write an
+Arduino sketch that instantiates the unPhone class. Several examples of this
+are available in the library's [examples/
+directory](https://gitlab.com/hamishcunningham/unphonelibrary/-/tree/main/examples).
+The simplest is called `minimal`:
+
+```cpp
+#include "unPhone.h"                      // pull in class definition
+unPhone u = unPhone("minimal");           // construct an unPhone object
+void cycleLeds();                         // helpers to cycle RGB LED...
+void printLEDPins();                      // ...and debug print the pins
+
+void setup() { // the Arduino code calls this once /////////////////////
+  Serial.begin(115200);                   // enable serial printing
+  D("\nin setup(), doing unPhone begin()...\n\n") // say hello in serial
+  printLEDPins();                         // print out LED pindefs
+  u.begin();                              // initialise unPhone hardware
+  u.backlight(false);                     // no UI: turn backlight off
+  D("\ndone with setup()\n\n")
+}
+
+void loop() { // the Arduino code calls this in an infinite loop ///////
+  u.ir(false); cycleLeds();               // cycle through RGB, no IR
+  u.ir(true);  cycleLeds();               // cycle through RGB, IR on
+  u.ir(false);
+  D("\nrepeat\n")                         // once more from the top...
+}
+...
+```
+
+We construct an unPhone object called `u`, initialise the serial line (for
+debug statements) and print out some diagnostic information. (The `D` macro
+behaves like C's `printf` function, and can be excluded from the build by
+defining `UNPHONE_PRODUCTION_BUILD` as a compile flag.)
+
+The call to `u.begin()` sets up everything that we need to operate the device,
+from the I²C bus to the SD card. It also creates FreeRTOS tasks that take care
+of power management, LoRa radio, factory test mode and UI event servicing.
+
+(The library includes _UI zero_ which is a simple GUI built on [Adafruit's
+excellent GFX](https://learn.adafruit.com/adafruit-gfx-graphics-library). It
+can be turned off by setting an `UNPHONE_UI0=0` compile flag, and this is done
+in `minimal`. The `setup()` method finishes by turning off the LCD backlight
+as is isn't needed when there is no UI running.)
+
+The `loop()` method cycles through the various colour options of the RGB LEDs,
+while also toggling the IR LEDs.
+
+This is pretty much the simplest illustration of how to program the unPhone.
+Below we'll look at more interesting examples, but first let's explore the
+unPhone class a little more.
+
+
+#### Pindefs  ################################################################
+
+After a couple of utility methods, the class declaration continues like this:
+
+```cpp
+uint8_t version();                          // hardware revision
+const char *getMAC();                       // the ESP MAC address
+
+// pindefs for version 7 omitted; version 9+ pindefs:
+static const uint8_t LCD_RESET        = 46;
+static const uint8_t BACKLIGHT        =  2 | 0x40; // 0x40 = on TCA9555
+static const uint8_t LCD_CS           = 48; // CS = SPI chip select
+static const uint8_t LCD_DC           = 47; // DC = data or command
+static const uint8_t LORA_CS          = 44;
+static const uint8_t LORA_RESET       = 42;
+static const uint8_t TOUCH_CS         = 38;
+static const uint8_t LED_RED          = 13;
+static const uint8_t POWER_SWITCH     = 18;
+static const uint8_t SD_CS            = 43;
+static const uint8_t BUTTON1          = 45; // left button
+static const uint8_t BUTTON2          =  0; // middle button
+static const uint8_t BUTTON3          = 21; // right button
+static const uint8_t IR_LEDS          = 12; // the IR LED pins
+static const uint8_t EXPANDER_POWER   =  0 | 0x40; // enables exp brd
+
+static const uint8_t VIBE             =  7 | 0x40;
+static const uint8_t LED_GREEN        =  9 | 0x40;
+static const uint8_t LED_BLUE         = 13 | 0x40;
+static const uint8_t USB_VSENSE       = 14 | 0x40;
+```
+
+This long list of constants gives pin definitions that map from the ESP32's
+connections to the various peripherals that are wired up to it. For example,
+the power switch is connected (in version 9) to GPIO 18 on the ESP32S3
+microcontroller. (Pins that are OR'd with 0x40 set bit 7 high, and are used
+when talking to peripherals that are connected to the unPhone's TCA9555 chip
+-- see below.) To accomplish simple tasks like turning the GREEN LED on, we
+can use `digitalWrite(unPhone::LED_GREEN, HIGH)`, for example, though note
+that the class provides shortcut methods for this type of task. They're mostly
+self-explanatory:
+
+```cpp
+bool button1();              // register...
+bool button2();              // ...button...
+bool button3();              // ...presses
+
+void vibe(bool);             // vibe motor on or off
+void ir(bool);               // IR LEDs on or off
+void rgb(uint8_t red, uint8_t green, uint8_t blue); // RGB LED
+```
+
+The RGB LED is controlled via the `rgb(int, int, int)` method. For example
+`rgb(1, 0, 0)` will light the red LED, `rgb(0, 1, 0)` the green, and so on.
+
+
+#### Power management task helpers ###########################################
+
+The methods related to power are used to implement `powerSwitchTask()`, which
+is scheduled by FreeRTOS to manage [power states](#power-consumption-states)
+(next section).
+
+```cpp
+bool powerSwitchIsOn();      // is power switch turned on?
+bool usbPowerConnected();    // is USB power connected?
+void checkPowerSwitch();     // if pwr switch off, shut down
+void turnPeripheralsOff();   // shut down periphs
+void wakeOnPowerSwitch();    // wake interrupt on pwr switch
+void printWakeupReason();    // what woke us up?
+```
+
+
+#### UI0 helpers  ############################################################
+
+If the compile flag `UNPHONE_UI0 == 1` then the UI controller class can be
+accessed via the `uiCont` member, and redrawing and event servicing performed
+with the `redraw()` and `uiLoop()` methods:
+
+```cpp
+void *uiCont;                // the UI controller
+void redraw();               // redraw the UI
+void provisioned();          // call when provisioning done
+void uiLoop();               // allow the UI to run
+void recoverI2C();           // deal with I2C hangs
+```
+
+
+#### Touch, display, acceleration ############################################
+
+The display and touchscreen hardware are accessed via the `tftp` and `tsp`
+pointer members (TFT stands for thin-film transistor, which in this case is
+the type of LCD display the unPhone contains). The accelerometer is available
+at `accelp` and should be queried with the `getAccelEvent` method.
+
+```cpp
+// the touch screen, display and accelerometer /////////////
+Adafruit_HX8357 *tftp;       // UI0 uses Adafruit LCD lib
+XPT2046_Touchscreen *tsp;
+Adafruit_LSM6DS3TRC *accelp;
+void getAccelEvent(sensors_event_t *);     // accelerometer
+void backlight(bool);        // backlight on or off
+void expanderPower(bool);    // expander board power on/off
+```
+
+An example of using the accelerometer is provided in
+[unPhoneLibrary/examples/everything](https://gitlab.com/hamishcunningham/unphonelibrary/-/tree/main/examples/everything),
+a sketch that exercises almost all of the device's capabilities. The
+accelerometer allows us to determine the unPhone's physical orientation;
+Gareth used it to program an
+[Etch-a-Sketch](https://en.wikipedia.org/wiki/Etch_A_Sketch) game:
+
+[ ![](images/etch-a-sketch-150x200.jpg "etch a sketch") ](images/etch-a-sketch.jpg)
+
+The method for querying the accelerometer works by passing through a pointer
+to a `sensor_event_t` type, which is defined by the [Adafruit Unified
+Sensor](https://learn.adafruit.com/using-the-adafruit-unified-sensor-driver?view=all)
+library. This is a common idiom in memory-constrained C and C++ programming,
+where the caller of a method that returns non-trivial data first allocates the
+memory to store that data and then passes its address through to be written
+into. For example, from the [UI0
+implementation](https://gitlab.com/hamishcunningham/unphonelibrary/-/blob/main/unPhoneUI0.cpp)
+as used in the `everything` sketch:
+
+```cpp
+  sensors_event_t event;     // allocate memory for accel reading
+  up->getAccelEvent(&event); // get the reading (up: unphone ptr)
+  // now we can get x, y, z etc. from the reading:
+  if(event.acceleration.x    ...
+``` 
+
+Details of the `sensor_event_t` data type [are available
+here](https://learn.adafruit.com/using-the-adafruit-unified-sensor-driver/how-does-it-work#sensors-event-t-sensor-data-161311).
+(Aren't Adafruit wonderful?!)
+
+
+#### SD cards, LoRa ##########################################################
+
+The SD card is acesssible via the `sdp` member
+
+```cpp
+SdFat *sdp;                              // SD card filesystem
+```
+
+The unPhone's [LoRa radio](#lower-power-wans-and-ttn) module can be used to
+send short messages over long distances. A FreeRTOS task (`unLoopTask`) that
+services LoRa transactions is fired up by `unPhone::begin()`, which uses the
+`loraSetup()` and `loraLoop()` methods, after which messaging is available via
+`loraSend`, which behaves like `printf`. For example, from the `everything`
+sketch:
+
+```cpp
+u.loraSend("UNPHONE_SPIN=%d MAC=%s", UNPHONE_SPIN, u.getMAC());
+```
+
+This will send a message to [The Things
+Network](https://www.thethingsnetwork.org/) something like this
+`UNPHONE_SPIN=9 MAC=7CDFA1FDFCE4`. The maximum length of the interpolated
+string payload is defined by `unPhone::LORA_PAYLOAD_LEN` and should not be
+exceeded.
+
+```cpp
+// LoRa radio
+void loraSetup();                           // init the LoRa board
+void loraLoop();                            // service lora transactions
+void loraSend(const char *, ...);           // send TTN LoRaWAN message
+static const uint8_t LORA_PAYLOAD_LEN = 101;// max payload bytes (+ '\0')
+```
+
+
+#### PMU API #################################################################
+
+Power management is a complex task! The work is taken care of in
+`powerSwitchTask`; see [next section](#power-consumption-states) for the gorey
+details. The pindefs for the power management chip (known variously as PMU,
+BMU or just BM[^PMU]) and associated API are as follows:
+
+```cpp
+// power management chip API
+static const byte BM_I2CADD   = 0x6b; // the chip lives here on I²C
+static const byte BM_WATCHDOG = 0x05; // charge end/timer cntrl register
+static const byte BM_OPCON    = 0x07; // misc operation control reg
+static const byte BM_STATUS   = 0x08; // system status reg
+static const byte BM_VERSION  = 0x0a; // vendor/part/revision status reg
+float batteryVoltage();               // get the battery voltage
+void setShipping(bool value);         // tells BM chip to shut down
+void setRegister(byte address, byte reg, byte value); //
+byte getRegister(byte address, byte reg);             // I²C...
+void write8(byte address, byte reg, byte value);      // ...helpers
+byte read8(byte address, byte reg);                   //
+```
+
+Of these only `batteryVoltage()` is likely to be useful for most unPhone
+programmers.
+
+
+#### Small data store and other utils ########################################
+
+We quite often want to store small amounts of data to persist between
+invocations of our firmware, and the `unPhone` class finishes with a little
+API to facilitate this, built on top of the `Preferences` API:
+
+```cpp
+// a small, rotating, persistent store  (using Preferences API)
+void beginStore();                    // set up store area
+void store(const char *);             // save a value
+void printStore();                    // play back list of strings
+void clearStore();                    // clear (doesn't empty nvs!)
+static const uint8_t STORE_SIZE = 10; // max strings; must be <=255/2
+
+// misc utilities
+const char *appName;                  // name for the firmware
+const char *buildTime;                // build date
+...
+```
+
+In the `everything` example we use it like this:
+
+```cpp
+u.store(u.buildTime); // remember firmware build date
+...
+u.printStore();       // print out stored messages
+```
+
+(The unPhone library also stores details of power states and wakeup reasons,
+which will also be printed by `printStore` here.)
+
+
+#### The TCA9555 #############################################################
+
+As well as `class unPhone` we have `class unPhoneTCA`, which models the
+device's [TCA9555](https://www.ti.com/product/TCA9555) IO expansion chip that
+is controlled over I2C and to which the SPI chip select (CS), reset and etc.
+lines of many of the modules were connected in versions before spin 9. From 9+
+only the LEDs, expander board power and the vibration motor are on the TCA. To
+use these connections the IO expander has to be told to trigger those lines.
+This meant that the available libraries for the modules also needed to be
+adapted to talk to the TCA, e.g. when doing `digitalWrite` or `pinMode`. We
+did this by injecting code to call our own versions of these functions
+(defined below) and setting the second highest bit of the pin number high to
+signal those pins that are controlled via the TCA9555. In later versions we
+don't need to patch the libraries any more, as only our own code is talking to
+the TCA. In any case, the `unPhoneTCA` class manages the chip. (It used to be
+called `IOExpander` but was renamed to prevent confusing it with the unPhone
+expansion board, an additional PCB that connects to the main board by ribbon
+cable.)
+
+```cpp
+class unPhoneTCA {
+  public:
+    static const uint8_t i2c_address = 0x26; // the TCA9555's I²C addr
+    static uint16_t directions;    // cache current state of ports...
+    static uint16_t output_states; // ...after read during init
+    static void begin();
+    static void pinMode(uint8_t pin, uint8_t mode);
+    static void digitalWrite(uint8_t pin, uint8_t value);
+    static uint8_t digitalRead(uint8_t pin);
+...
+};
+```
+
+
+#### Debug and timing macros #################################################
+
+Lastly, there are a couple of convenience macros for printing to serial and
+for calling `delay` for particular periods:
+
+```cpp
+// macros for debug (and error) log/printf, and delay/yield/timing
+#ifdef UNPHONE_PRODUCTION_BUILD
+# define D(args...) (void)0;
+#else
+# define D(args...) printf(args);
+#endif
+#define  E(args...) printf("ERROR: " args);
+static const char *TAG = "MAIN";        // ESP logger debug tag
+#define WAIT_A_SEC   vTaskDelay(    1000/portTICK_PERIOD_MS); // 1 sec
+#define WAIT_SECS(n) vTaskDelay((n*1000)/portTICK_PERIOD_MS); // n secs
+#define WAIT_MS(n)   vTaskDelay(       n/portTICK_PERIOD_MS); // n milli
+```
+
+
+### The UI0 and LVGL interfaces ##############################################
+
+The unPhone library includes _UI zero_ a simple example user interface built
+on Adafruit's [GFX
+(graphics)](https://learn.adafruit.com/adafruit-gfx-graphics-library) and
+implemented in
+[unPhoneUI0.h](https://gitlab.com/hamishcunningham/unphonelibrary/-/blob/main/unPhoneUI0.h)
+and
+[unPhoneUI0.cpp](https://gitlab.com/hamishcunningham/unphonelibrary/-/blob/main/unPhoneUI0.cpp).
+To enable it, set a `UNPHONE_UI0=1` compile flag. The [everything
+example](https://gitlab.com/hamishcunningham/unphonelibrary/-/tree/main/examples/everything),
+referred to above uses UI0 and is a good source of usage examples.
+
+
+#### LVGL ####################################################################
+
+An alternative to GFX, with a much richer (and more complex) set of UI
+elements, is [LVGL](https://lvgl.io/), a _Light and Versatile Graphics
+Library_. The
+[examples/lvgl](https://gitlab.com/hamishcunningham/unphonelibrary/-/tree/main/examples/lvgl-demo)
+sketch runs an very impressive LVGL demo that looks like this (without the
+pointer and a bit slower!):
+
+![](images/lvgl-demo.gif "LVGL demo")
+
+On the unPhone:
+
+<!--
+[ ![](images/lvgl-demo-2-350x215.jpg "lvgl demo 2") ](images/lvgl-demo-2.jpg)
+-->
+[ ![](images/lvgl-demo-2-500x307.jpg "lvgl demo 2") ](images/lvgl-demo-2.jpg)
+
+(Note that this doesn't run on unPhone 7 unfortunately, too big to fit!)
+
+
+#### UI0; adding a screen ####################################################
+
+In UI zero we display an arrow on each screen that can be used to navigate
+between different elements of the interface. The menu of different screens
+looks like this:
+
+[ ![](images/ui0-menu-350x362.jpg "ui0 menu") ](images/ui0-menu.jpg)
+
+To add a new screen to the UI and the menu, take these steps:
+
+- in `unPhoneUI0.h`:
+  - add a new member of the UI modes enumeration: `enum ui_modes_t { ...,
+    ui_mynewelement, ... }`
+  - declare a subclass of `UIElement`, e.g. `class MyNewUIElement: public
+    UIElement { ...`
+- in `unPhoneUI0.cpp`:
+  - increase `NUM_UI_ELEMENTS` by one
+  - add a name for the element to `ui_mode_names`, e.g. "My new UI screen" and
+    add this to `modeName()`, e.g. `case ui_mynewelement: return
+    "ui_mynewelement"; break;`
+  - allocate storage for your element in `allocateUIElement()`, e.g. `case
+    ui_testrig: m_element = new MyNewUIElement(up->tftp, up->tsp, up->sdp);
+    break;`
+  - implement the  methods of the new `UIElement` subclass, e.g. `void
+    MyNewUIElement::draw() { ...;`
+
+This should now appear on the UI zero menu screen. (For a detailed example,
+see [this commit](
+TODO mary's lora screen push
+).
+
+
+## Power Consumption States ##################################################
+
+One of the design goals for almost all IoT devices is to minimise power
+consumption. The unPhone's consumption ranges from around 50 microwatts (µW)
+when hibernating up to a typical runtime of around 500 milliwatts (mW). For
+comparison, [Pete
+Warden](https://petewarden.com/2015/10/08/smartphone-energy-consumption/)
+summarises typical smartphone runtimes (following [@Tarkoma2014-ni]) as in the
+thousands of milliwatts (mW)[^PhonePwr].
+
+[^PhonePwr]:
+  - "An ARM A9 CPU can use between 500 and 2,000 mW.
+  - A display might use 400 mW.
+  - Active cell radio might use 800 mW.
+  - Bluetooth might use 100 mW.
+  - Accelerometer is 21 mW.
+  - Gyroscope is 130 mW.
+  - Microphone is 101 mW.
+  - GPS is 176 mW.
+  - Using the camera in ‘viewfinder’ mode, focusing and looking at a picture
+    preview, might use 1,000 mW.
+  - Actually recording video might take another 200 to 1,000 mW on top of
+    that."
+  ([Warden,
+  2015](https://petewarden.com/2015/10/08/smartphone-energy-consumption/))
+
+The unPhone includes a battery and power management unit (PMU) with integral
+LiPo charging and several different power states that controlled using the
+on/off slider switch at the end (which is "on" when slid closest to the
+nearest edge of the case and "off" when nearest to the center).
+
+When the device is **ON** all internal functions are available, and the device
+will draw power from USB if available or battery if not.
+
+When the device is turned off, there are three states:
+
+- **OFF** (no USB power): the PMU goes into shipping mode and all hardware is
+  powered down (and there is notionally no power; version 7 leaks around 0.8mA
+  in this state)
+- **SLEEP** (USB power connected): the PMU will charge the internal LiPo, but
+  the ESP32 is put into deep sleep, the backlight turned off and expansion
+  board power turned off
+- **HIBERNATE** (USB power disconnected): the PMU goes into shipping mode, and
+  no power will be supplied until USB power is reconnected or the device is
+  turned on
+
+Power draw in these different states is approximately as follows (measured at
+Uni Sheffield using an [INA219
+Featherwing](https://www.adafruit.com/product/3650), an [EEVBlog mCurrent
+Gold](https://www.eevblog.com/product/ucurrentgold/), and again using an N27GG
+bench PSU; we further verified the figures using an [IDS1054B
+scope](https://uk.rs-online.com/web/p/oscilloscopes/1233540) at Pimoroni):
+
+- ON: up to 500mA @ 3.3V, or 200mA typical load (of which 100mA is the LCD
+  back light)
+- OFF: 15 microamps @ VBAT (which equates to something approaching a decade of
+  standby time!)
+- SLEEP: < 10 milliamps (or around 400mA when charging a low battery,
+  @ VUSB[^Spin7Pwr]; every few seconds external power is checked, and if
+  dinsconnected then we transition to OFF)
+
+<!-- Pimo measurements, Oct 2022
+
+- ~330mA when switched on and running on USB (and probably charging)
+- switched on and on battery, e.g. 180mA, 120mA
+- deep sleep (switched off but USB power connected): < 10mA, doing charge
+  checking (LED flashes)
+- checking for USB power disconnect when in deep sleep (so can shift to
+  shipping mode): periodic 35mA peaks, for 270mS
+- shipping mode (switched off and USB not connected): 15 micro amps... (about
+  9 yrs battery!)
+
+-->
+
+(When working with the expansion board, note that its power supply must be
+enabled in software: `unPhone::expanderPower(true)`.)
+
+[^Spin7Pwr]:
+     Note: in spin 7 a bug with the VBAT connection means that shipping mode
+     power draw was 0.8 milliamps! This was fixed in later versions.
+
+![Diagram of unPhone power states](https://gitlab.com/hamishcunningham/unphone/-/raw/master/doc/power_states.svg)
+
+The diagram above shows six states that the unPhone can be in, depending on
+the position of the power switch, whether USB power is connected or not, and
+also whether the user code has chosen for the unPhone to sleep or not.
+
+Although the top four states are different in that the battery is either being
+charged or drained during them, they are also similar in that your code runs
+in exactly the same way in both the **sleep** states and **running** states.
+The battery charging is managed entirely by the PMU (Power Management Unit -
+the BQ24295 chip in the unPhone) and doesn't require any programming to
+support it's operation.
+
+The arrows on the diagram show what actions can be taken, and which power
+state the unPhone will be in if that action is taken. If you want to change
+two things at once, sorry, you can't! You have to do one change and then
+another - the unPhone's clock ticks at 240 million times a second - so even if
+you think you have unplugged the USB at *exactly* the same time as switching
+the power switch - in reality you won't be able to get them that close!
+
+Let's say we start with the power switch in the **ON** position, and USB power
+connected. We will press the reset button so that we know things are starting
+at the beginning of our code.
+
+The unPhone is now in the **Running** state at the left of the diagram. The
+battery is charging - or if it is already fully charged, then it's kept fully
+charged.
+
+Suppose we now disconnect the USB cable, and the power that comes along it. We
+follow the **Unplug USB** arrow and see that we are still in the **Running**
+state - only now the battery is draining to power the unPhone. We don't have
+to pay attention to this, because the PMU handles the switchover from USB
+power to battery power for us. If you want to find out which of the
+**Running** states we are in, you can do that by using the function
+`usbPowerConnected()` like this:
+
+```
+if (unPhone::usbPowerConnected() == true) {
+  Serial.print("We are connected to USB and charging the battery");
+} else {
+  Serial.print("We are not connected to USB and draining the battery");
+}
+```
+
+Now we are running on battery power, we might want to save some power and
+sleep for a while. That way instead of running at full power for a few hours,
+we can sleep for a bit, wake up, do something, then sleep again. We can run
+for weeks or months that way -- because sleeping uses only a tiny amount of
+power. We can go to sleep using the built in function
+`esp_sleep_enable_ext0_wakeup()`. When we use this function, we must tell it
+how we want to be woken up -- otherwise we will sleep forever! We can use it
+like this:
+
+```
+esp_sleep_enable_ext0_wakeup(unPhone::BUTTON1, 1);
+esp_deep_sleep_start();
+```
+
+In the first line, we are calling the sleep_enable function, and setting the
+wake-up to be when we press button 1(the left button). The 1 at the end says
+that we want to be woken up when the switch is pressed.
+
+The second command, `esp_deep_sleep_start();` will immediately make the
+unPhone will enter a sleeping state. Because we are still disconnected from
+USB, the battery is powering the unPhone - but whilst sleeping it will last
+for weeks. The chip is powered down and isn't running code, connecting to wifi
+or anything else (but see below for subtleties!).
+
+You can see that from this state, there are three possible arrows that show
+which states we can go to next. We can wake up from sleep by pressing button 1
+- in which case our code will start running from the next line after we went
+to sleep.
+
+At an implementation level, the key method is `unPhone::checkPowerSwitch`
+method, which does this:
+
+```
+if power switch off
+    turnOffPeripherals
+
+    if USB power off
+        go to shipping mode
+    else
+        enable wakeup on power switch
+        enable wakeup on 60 second timer
+        go to deep sleep
+```
+
+The method is called like this:
+
+- when setup runs (on boot or wakeup from deep sleep), we call
+  `checkPowerSwitch` (so that if the power switch is off, and e.g. we've woken
+  up because of a timer call or because USB power has been connected, we can
+  go straight back to either sleep or shipping)
+- a FreeRTOS task runs to regularly call `checkPowerSwitch`
+- in addition a wakeup timer periodically brings us out of deep sleep so that
+  `checkPowerSwitch` will then choose deep sleep or shipping appropriately
+  based on whether USB power is connected
+
+This means that when the device boots with the switch off, due to the
+transition out of shipping when USB is (newly) connected, our call to
+`checkPowerSwitch` will put it into deep sleep.
+
+In addition we wake from deep sleep periodically in order to check that USB is
+still connected, and if not, then move to shipping mode (so that we minimise
+battery draw when charging isn't available).
+
+This means that with the switch off we are always in either deep sleep or
+shipping mode, except for momentary transitions caused by USB connect /
+disconnect.
+
+The charge LED indicates status like this:
+
+| battery connected | USB connected | charge LED     |
+| ----------------- | ------------- | -------------- |
+| yes               | yes           | on if charging |
+| yes               | no            | off            |
+| no                | yes           | flickers       |
+
+
+
+## A Tour of the Hardware Schematics #########################################
+
+This section describes the various elements of the unPhone, with reference to
+the [unPhone9 hardware
+schematics](https://gitlab.com/hamishcunningham/unphone/-/raw/master/doc/spin9/unphone_spin9b.pdf)
+(PDF; individual page images appear below).
+
+**NOTE:** the next section describes unphone 6v2, but the general principles
+and many of the specifics also apply to later versions. (More [details on
+versions are below](#a-note-on-versions).)
+
+### The ESP32 and Core Modules ###############################################
+
+The unPhone device has an [ESP32
+microcontroller](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
+at the centre, so let's start our look at the schematic there. The ESP32 is
+the large block on the left side:
+
+[ ![](https://gitlab.com/hamishcunningham/unphone/-/raw/master/doc/unphone-spin6v2-schematic-1-500x353.png "schematic page 1") ](https://gitlab.com/hamishcunningham/unphone/-/raw/master/doc/unphone-spin6v2-schematic-1.png)
+
+In addition to all the GPIO pins connected to various other chips, there are
+some 'housekeeping' type connections as well. Rather than drawing long lines
+all around the schematic connections are labled and you have to remember that
+pins with the same label are connected together. Naturally the ESP32 has power
+pins to give it 3.3V `3V3` and ground `GND`. It also has a set of six pins that
+connect to the flash memory, and another pair that connect to the USB serial.
+There is a reset pin `RESET` that has a small capacitor linked to it to
+give a small delay to ensure the chip starts up cleanly. There are a pair of
+transistors also connected to the reset and `GPIO0` lines, linked to the
+programming pins used when burning firmware onto the ESP32. This ensures that
+the chip can be put into programming mode and reset afterwards to boot
+normally.
+
+The USB to serial chip used is a
+[CP2104](https://www.silabs.com/documents/public/data-sheets/cp2104.pdf),
+shown on the lower right hand side, which provides a USB interface on one side
+for your computer, and a UART connection together with control of the reset
+and programming pins of the ESP32 on the other. It allows for serial
+communications in both directions during normal operation, and the uploading
+of new firmware in programming mode. The CP2104 needs a couple of capacitors
+near the chip to help provide a steady power supply. (As many chips switch
+very quickly, they can create electrical noise on the power supply wires. As a
+result, most if not all chips have a capacitor or two very close to them, to
+decouple this noise from other parts of the circuit.)
+
+The LoraWAN radio module on the lower left hand side is the
+[RFM95W](https://www.hoperf.com/data/upload/portal/20190801/RFM95W-V2.0.pdf)
+-- and this connects to the ESP32 using the SPI bus together with a couple of
+additional GPIO lines. These extra lines allow the radio to signal when it has
+data to be received. Again, the radio module has a decoupling capacitor, and
+because it's a radio module, a connection for an antenna. Cunning board design
+from [the Pimoroni people](https://shop.pimoroni.com/pages/about-us) means
+this antenna fits beautifully into a little cut-out at the top of the board.
+
+The accelerometer and gyroscope chip is an interesting device and the way
+we've used it is also unusual. Two similar chips are shown on the schematic at
+the top and centre, the
+[LSM9DS1](https://www.st.com/resource/en/datasheet/DM00103319.pdf) or the
+[LSM303DLHC](https://www.st.com/resource/en/datasheet/DM00027543.pdf). Only
+one of these chips is actually fitted during manufacture, and they both
+connect using I2C and have the usual decoupling capacitors.
+
+(Whilst building the device, we discovered that the LSM303DLHC sensor we had
+been using was becoming obsolete. The rate of development in these MEMS
+sensors in particular has been very rapid over the last few years, so a part
+that was brand new and exciting in 2013 is  replaced by cheaper and better
+alternatives five years later. Pimoroni were able to source some of the
+remaining parts of the older model, but as insurance they also designed a
+place on the PCB to take the alternative part. That way, the same circuit
+board could be used with either sensor.)
+
+The I2C expander at the top right of the schematic is an I2C device that
+provides additional GPIO pins -- in our case we are using the
+[TCA9555](http://www.ti.com/lit/gpn/tca9555) which gives us 16 additional GPIO
+pins. An interupt pin is also provided, and connected to the ESP32 to allow us
+to respond (even waking up from deep sleep) when a device connected to the
+expander changes state. The expander is connected in turn to:
+
+- the screen reset `TFT_RST` and backlight `BACKLIGHT_EN`
+- the RGB led `LEDR`, `LEDG`, `LEDB`
+- the lora module reset `LORA_RST`
+- chip select pins (to arbitrate the shared use of the SPI bus)
+  - screen `LCD_CS`
+  - lora module `LORA_CS`
+  - the touch sensor `TOUCH_CS`
+  - the SD card `SD_CS`
+
+also connected to the expander are:
+- one of the three buttons `SWITCH1`
+- the power switch `POWER_SWITCH_BUFFERED`
+- a connection to the usb power `USB_VSEN_BUFFERED`
+
+The final three expander GPIO's are used to set the version -- in this way the
+same codebase can be used on the ESP32 and by interrogating the value of the
+three version bits we can programmatically tell which version of the unPhone we
+are running on.
+
+Like many I2C devices, it has some address pins which can be connected to
+ground or 3.3V to set the I2C address of the device. In this case we are
+setting pin `A0` to ground and pins `A1` and `A2` to 3.3V -- which sets the device
+address to be 0x24 (24 in hexadecimal -- 36 in decimal).
+
+A couple of additional devices are shown on the first page of the schematic -
+the vibration motor and the [Infra-red
+LED's](http://www.everlight.com/file/ProductFile/IR26-51C-L110-TR8.pdf). They
+are both high-current devices and so they are connected to the ESP32 via a
+[MOSFET](https://www.onsemi.com/pub/Collateral/BSS138-D.PDF) switch. This is a
+transistor that takes a tiny signal voltage and switches a much larger current
+-- the ESP32 can't supply much current directly. There is also a [snubber
+diode](https://www.onsemi.com/pub/Collateral/NSR0530H-D.PDF) across the
+vibration motor as it is a coil and generates high voltages when suddenly
+disconnected. The snubber diode provides a discharge path if high voltages
+build up in the motor coil and protect the MOSFET.
+
+
+### The LCD and Touch Screen #################################################
+
+[ ![](https://gitlab.com/hamishcunningham/unphone/-/raw/master/doc/unphone-spin6v2-schematic-2-500x353.png "schematic page 2") ](https://gitlab.com/hamishcunningham/unphone/-/raw/master/doc/unphone-spin6v2-schematic-2.png)
+
+On page 2 of the schematic we have the screen and associated driver circuitry
+(the [HX8357](https://cdn-shop.adafruit.com/datasheets/HX8357-D_DS_April2012.pdf)) -- the screen is connected with SPI as it needs relatively high
+data rates. The touch sensor that's integrated at the front of the LCD uses the
+[STMPE610](https://cdn-shop.adafruit.com/datasheets/STMPE610.pdf) driver with
+it's own SPI connection to the ESP32 -- and so needs it's own Chip Select
+connection. In addition the SD card socket is connected to SPI -- you can see
+that no additional components are required -- an SD or micro-SD card connects
+directly to the SPI bus.
+
+The backlight chip generates the higher voltage needed for the white leds
+behind the touchscreen -- and is triggered by the `BACKLIGHT_EN` signal. The
+backlight chip handles generating the 20 or so volts from the 3.3V provided to
+it -- and also provides a constant current to the backlight to make sure the
+LED's are well lit but don't burn out.
+
+
+### Power Management #########################################################
+
+[ ![](https://gitlab.com/hamishcunningham/unphone/-/raw/master/doc/unphone-spin6v2-schematic-3-500x353.png "schematic page 3") ](https://gitlab.com/hamishcunningham/unphone/-/raw/master/doc/unphone-spin6v2-schematic-3.png)
+
+The final page 3 of the schematic shows some power management chips, a buck
+voltage converter which takes the 5V and generates 3.3V and a buffer chip to
+ensure that voltages higher than 3.3V don't go to the ESP32. We are using a
+[BQ24295](http://www.ti.com/lit/gpn/bq24295) battery management chip to manage
+the LIPO battery as this is a critical function and also has safety
+implications. (Pimoroni have extensive experience with this chip and it has
+been proven in practice in diverse applications.) The BQ24295 connects to the
+ESP32 using I2C and can report on the state of the battery, any error
+conditions and how much power can be drawn using USB. It can also be
+instructed to enter 'shipping mode' which completely disconnects the battery
+from the circuit to prevent the battery discharging during shipping. We are
+using it to minimise power draw -- an ultra deep sleep.
+
+
+## A Note on Versions ########################################################
+
+There have been nine prototypes so far (of which only 7 and 9 are
+current as of late 2022):
+
+- 0: one of the breadboard variants
+- 1: the bare feather/featherwing TS/TFT (3.5")
+- 2: first Pimoroni prototype (board spins 1 and 2)
+- 3: second Pimoroni prototype (board spins 3 and 4)
+- 4: FCS: used for COM3505 2018 (spin 4)
+- 5: prototype for second production version (no audio now) (spin 5)
+- 6: second production (of which rev 2 is the only extant version) (spin 6v2)
+- 7: Q1/Q2 2022 / iteration 5 of the IoT course, with an original ESP32 MCU
+- 8: the same as 7, but with an ESP32-S3; small volumes only
+- 9: a major rework to take advantage of the ESP32-S3, released Q1 2023
+
+This document describes spin 9, the first retail version.
+
+
+## COM3505 Week 11 Notes ####################################################
+
+### Learning Objectives #####################################################
+
+Our objective this week and next is to finish, commit and push the project
+work. Good luck!

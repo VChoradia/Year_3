@@ -1,0 +1,46 @@
+
+## COM3505 Week 08 Notes ####################################################
+
+### WARNINGS!!! #############################################################
+
+If you're now using **LiPo** batteries -- please **review the safety
+instructions** [above](#lipo-safety) and be sure to follow them. If in doubt
+ask a member of staff.
+
+
+### Learning Objectives #####################################################
+
+Our objective this week is to:
+
+- start putting it all into practice by building a complete IoT device
+
+
+### Assignments and Assessment ##############################################
+
+- start work on the project!
+
+
+## Further Reading ##########################################################
+
+Following on from the work we did in the last couple of weeks (on provisioning
+and over-the-air updates), have a look at these:
+
+- [Challenges with Wi-Fi Provisioning for Embedded
+  Systems](http://www.argenox.com/library/challenges-with-wi-fi-provisioning-for-embedded-systems/).
+- [A Crash Course In Provisioning Wireless
+  Networks](https://www.link-labs.com/blog/provisioning-wireless-networks).
+- [ESP32 vs. other industrial IoT
+  microcontrollers](http://uhurumkate.blogspot.com/2017/09/esp32-as-professional-gradeindustry-40.html).
+- Check your knowledge of LiPo batteries (and see below): [@Nerc2016-ob] “NERC
+  Guidance on the Safe Use of Lithium Batteries.”
+- Students on the course have access to [the unPhone](https://unphone.net/)
+  IoT development platform, made in Sheffield in collaboration with
+  [Pimoroni](https://pimoroni.com/). The [unPhone hardware schematics are
+  described
+  here](https://gitlab.com/hamishcunningham/unphone/blob/master/doc/README.mkd),
+  and illustrate the internals of a complex and multifunctional IoT device
+  (though are quite hard to understand from a standing start!).
+- The [Better IoT project](https://betteriot.wordpress.com/) has a nice tool
+  to checklist your "early stages of development: privacy, openness,
+  interoperability, lifecycle, permissions, transparence, data governance and
+  security".

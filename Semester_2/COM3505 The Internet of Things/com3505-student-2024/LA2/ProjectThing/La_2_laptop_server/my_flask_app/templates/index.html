@@ -1,0 +1,166 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User and Friends Info</title>
+</head>
+<body>
+    <h1>Enter User Details</h1>
+    <form method="post">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+        <label for="phone">Phone No:</label>
+        <input type="text" id="phone" name="phone" required><br><br>
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" required><br><br>
+        
+        <h2>Friends</h2>
+        <label for="friend1_name">Friend 1 - Name:</label>
+        <input type="text" id="friend1_name" name="friend1_name" required><br><br>
+        <label for="friend1_phone">Friend 1 - Phone:</label>
+        <input type="text" id="friend1_phone" name="friend1_phone" required><br><br>
+        <label for="friend2_name">Friend 2 - Name:</label>
+        <input type="text" id="friend2_name" name="friend2_name" required><br><br>
+        <label for="friend2_phone">Friend 2 - Phone:</label>
+        <input type="text" id="friend2_phone" name="friend2_phone" required><br><br>
+        
+        <button type="submit">Save Details</button>
+    </form>
+</body>
+</html> -->
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User and Friends Info</title>
+</head>
+<body>
+    <h1>Enter User Details</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+        <label for="phone">Phone No:</label>
+        <input type="text" id="phone" name="phone" required><br><br>
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" required><br><br>
+        
+        <h2>Friends</h2>
+        <label for="friend1_name">Friend 1 - Name:</label>
+        <input type="text" id="friend1_name" name="friend1_name" required><br><br>
+        <label for="friend1_phone">Friend 1 - Phone:</label>
+        <input type="text" id="friend1_phone" name="friend1_phone" required><br><br>
+        <label for="friend2_name">Friend 2 - Name:</label>
+        <input type="text" id="friend2_name" name="friend2_name" required><br><br>
+        <label for="friend2_phone">Friend 2 - Phone:</label>
+        <input type="text" id="friend2_phone" name="friend2_phone" required><br><br>
+        
+        <button type="submit">Save Details</button>
+    </form>
+</body>
+</html> --> 
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User and Friends Info</title>
+    <script>
+        function addFriend() {
+            let friendsDiv = document.getElementById('friends');
+            let newFriend = `
+                <div>
+                    <input type="text" name="friends" placeholder="Friend Name" required>
+                    <input type="text" name="friends" placeholder="Friend Phone" required>
+                    <button type="button" onclick="removeFriend(this)">Remove</button>
+                </div>`;
+            friendsDiv.innerHTML += newFriend;
+        }
+        function removeFriend(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</head>
+<body>
+    <h1>User Details</h1>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+        <input type="hidden" name="user_id" value="{{ user.id if user }}">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" value="{{ user.name if user }}" required><br><br>
+        <label for="phone">Phone No:</label>
+        <input type="text" id="phone" name="phone" value="{{ user.phone if user }}" required><br><br>
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" value="{{ user.city if user }}" required><br><br>
+
+        <h2>Friends</h2>
+        <div id="friends">
+          {% for friend in friends %}
+          <div>
+              <input type="hidden" name="friend_id[]" value="{{ friend.id }}">
+              <input type="text" name="friend_name[]" value="{{ friend.name }}" required>
+              <input type="text" name="friend_phone[]" value="{{ friend.phone }}" required>
+              <button type="button" onclick="removeFriend(this)">Remove</button>
+          </div>
+          {% endfor %}
+      </div>
+        <button type="button" onclick="addFriend()">Add New Friend</button><br><br>
+        <button type="submit">Save Details</button>
+    </form>
+
+    <h2>Todo List</h2>
+<form method="post" action="{{ url_for('update_todos') }}">
+    <table>
+        <thead>
+            <tr>
+                <th>Task</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for todo in todos %}
+            <tr>
+                <td>{{ todo.content }}</td>
+                <td><input type="checkbox" name="completed[]" value="{{ todo.id }}" {% if todo.completed %}checked{% endif %}></td>
+                <td><button type="submit" formaction="{{ url_for('delete_todo', todo_id=todo.id) }}">Delete</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit">Update Todos</button>
+</form>
+
+<form method="post" action="{{ url_for('addTodoFromWebsite') }}">
+    <input type="text" name="todo" placeholder="Add new todo">
+    <button type="submit">Add Todo</button>
+</form>
+
+
+</body>
+</html>

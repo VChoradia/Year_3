@@ -1,0 +1,19 @@
+{
+    "name": "joke",
+    "roles": [
+        "joke"
+    ],
+    "lookups": [
+        "free-text",
+        "keywords"
+    ],
+    "keywords": [
+        {
+            "keyword": "joke",
+            "synonyms": [
+                "joke",
+                "laugh"
+            ]
+        }
+    ]
+}

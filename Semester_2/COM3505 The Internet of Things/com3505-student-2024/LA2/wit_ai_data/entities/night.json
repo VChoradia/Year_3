@@ -1,0 +1,48 @@
+{
+    "name": "night",
+    "roles": [
+        "night"
+    ],
+    "lookups": [
+        "free-text",
+        "keywords"
+    ],
+    "keywords": [
+        {
+            "keyword": "Good Night",
+            "synonyms": [
+                "good night"
+            ]
+        },
+        {
+            "keyword": "goood night",
+            "synonyms": [
+                "goood night"
+            ]
+        },
+        {
+            "keyword": "night",
+            "synonyms": [
+                "night"
+            ]
+        },
+        {
+            "keyword": "noches",
+            "synonyms": [
+                "noches"
+            ]
+        },
+        {
+            "keyword": "nuit",
+            "synonyms": [
+                "nuit"
+            ]
+        },
+        {
+            "keyword": "\u0930\u093e\u0924\u094d\u0930\u093f",
+            "synonyms": [
+                "\u0930\u093e\u0924\u094d\u0930\u093f"
+            ]
+        }
+    ]
+}

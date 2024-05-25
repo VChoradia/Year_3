@@ -1,0 +1,672 @@
+
+# Scheduling Tasks, Gestating New Devices ###################################
+
+This chapter begins by introducing techniques for time sharing on
+microcontrollers, and for minimising power consumption. We then look at what
+the process of IoT device development entails, using the example of
+Sheffield's [unPhone IoT platform](https://unphone.net/). (For details of how
+to program and unPhone, see [Chapter 11](#unphone-yourself).)
+
+The practical work this week is to begin the first lab assessment -- for
+details see Blackboard.
+
+
+## Timers, Interrupts, Tasks, Events ########################################
+
+Multiprocessing [@Tanenbaum2015-jr] has become such a ubiquitous feature of
+modern computing that we take it for granted. A quick sneak peak at my
+desktop's promiscuous innards ("ps ax |wc - l" for the curious) reveals no
+less than three hundred separate processes all "running" at the same time:
+what profligacy! My desktop doesn't contain 300 CPUs, of course, or even that
+number of cores, but the miracles of multi-GHz multicore processors, super
+fast RAM, paging, context switching and scheduling make it seem as if it does,
+and that makes the job of anyone trying to program the beast enormously easier
+than it would otherwise be. The ESP32, by way of contrast, has two diddy
+little cores running at a couple of hundred MHz, and most of one core is
+needed to cope with protocols like WiFi or Bluetooth. This chapter looks at
+four strategies that we can adopt to cope with this somewhat constrained
+environment:
+
+1. time slicing
+1. interrupts
+1. timers
+1. FreeRTOS tasks 
+
+Let's take these in turn.
+
+
+### Time Slicing ############################################################
+
+We'll take the simplest approach first. This works, but doesn't extend well as
+complexity increases.
+
+When our microcontroller has only a few simple tasks to perform, which happen
+in a linear sequence and don't have any strict timing requirements, we can
+simply program these as a series of imperative statements, e.g.
+
+```cpp
+void loop() {
+  readSensors(&sensorData);
+  postReadings(sensorData);
+  Serial.println(ESP.getFreeHeap());
+}
+```
+
+Job done. Hmmm, but maybe the memory print-outs are happening so quickly
+they're difficult to read, or maybe the expensive operation of talking to WiFi
+and cloud HTTP server is draining the battery too quickly, and we only need
+readings every few seconds. What to do? In code we've seen in previous
+examples, we might add a delay, e.g.:
+
+```cpp
+...
+  postReadings(sensorData);
+  delay(2000); // wait a couple of seconds
+  Serial.println(ESP.getFreeHeap());
+...
+```
+
+That works. Hmmm, but maybe we also need to show a warning signal if something
+in the sensor readings looks problematic.[^wetfactory] Shall we split that
+delay and do it in the middle? What if we only want to do one of the actions
+every fourth time through? Or what if we need to do some housekeeping if we
+get a control signal of some sort, but otherwise speed on through?
+
+[^wetfactory]:
+     One of the systems we built was an aquaponic green wall (the
+     _Aquamosaic_) at Gripple's Riverside Works factory in Carbrook. The
+     factory floor was covered in expensive machines for making various types
+     of complicated metal objects, and our wall was covered in around a
+     hundred water flow control solenoids (repurposed from washing machine
+     spare parts). To drive water flow to the top of the wall, some 7 meters
+     above floor level, a large high pressure pump was fitted to the pipework.
+     When it worked, it was poetry; but if any of the hundreds of pipes and
+     fittings sprang a leak, the factory got wet, and it quickly became
+     obvious that our hosts, though gracious in the extreme, were smiling a
+     little more fixedly than was their norm. We needed to trap leak events
+     very rapidly, and turn off the pump, so we added a pressure sensor to the
+     plumbing, and a current monitor and 433MHz relay to the mains supply, and
+     wrote some remedial code. Factory dry :)
+
+Flow of control can quickly become complex and error-prone as we add more and
+more cases, and the interaction with `delay` (during which the core we're
+running on does nothing) is often tricky to manage (not to mention an
+inefficient use of hardware resource). A simple way to improve things is to
+add a loop counter, and to trigger events in slices based on this counter. For
+example:
+
+```cpp
+int loopCounter = 0;
+const int LOOP_ROLLOVER = 100000;   // how many loops per action slice
+const int TICK_MONITOR = 0;         // when to take sensor readings
+const int TICK_POST_READINGS = 200; // when to POST data to the cloud
+const int TICK_HEAP_DEBUG = 100000; // do a memory diagnostic
+
+void loop() {
+  if(loopCounter == TICK_MONITOR) { // monitor levels
+    readSensors(&sensorData);
+  } else if(loopCounter == TICK_POST_READINGS) {
+    ...
+  } else if(loopCounter++ == LOOP_ROLLOVER) {
+    loopCounter = 0;
+  }
+}
+```
+
+Various arrangements using additional counters can be used to organise
+different frequencies for different tasks, and the size of the action slices
+can be adjusted to change the overall duration of each sequence.
+
+This approach works reasonably well, until we start to need to respond
+urgently to particular events, or perform certain tasks at particular times.
+The next section looks at solutions to that type of requirement.
+
+
+### Interrupts and Timers ###################################################
+
+So far we have relied on our firmware code to deal with all aspects of
+scheduling, monitoring and responding. The hardware we're running on, however,
+provides two facilities that can lead us to much more powerful solutions to
+these types of problem:
+
+- **Timers** are, as their name suggests, a means to schedule some code to run
+  after a certain amount of time has elapsed. (On the ESP32 this time is
+  measured using the 80MHz internal clock.)
+- **Interrupts** trigger short routines whenever some particular condition is
+  met, e.g. a GPIO pin changing state (in which case we see an **external
+  interrupt**) or a timer triggering (or a **timer interrupt**).
+
+The programming model for interrupts is to define very short and fast
+procedures called Interrupt Service Routines (ISRs), and to register these
+routines as callbacks from the timer or external state change that we wish to
+respond to. ISRs impose some additional constraints on your code, being
+normally written to avoid being interrupted themselves and to avoid running
+for more than some tiny number of cycles. Therefore they use mutual exclusion
+resource locking (or mutex locking), volatile variables (which the compiler
+will not attempt to optimise) and forced residence in fast RAM (using the
+`IRAM_ATTR` flag). Due to these constraints an ISR will rarely do any complex
+processing itself, but just push an event description into a queue which is
+then drained from some other process (or task -- see also next section).
+
+The [exercises
+tree](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises)
+contains an example called `TimingThing` that responds to external interrupts
+from a push-button switch connected between GPIO 14 and ground. It contains
+two methods of note for this discussion:
+
+- `gpio_isr_handler`, which is an ISR that toggles the state of a boolean used
+  to control flashing of an LED
+- `eventsSetup`, which configures the GPIO pin, loads the interrupt service
+  and registers `gpio_isr_handler` to be triggered when the pin goes LOW (or
+  when we see a "falling edge" or "negative edge" change on the pin)
+
+(Note that these methods use [the IDF
+API](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/gpio.html)
+to configure the relevant GPIO pins and attach the ISR handler.)
+
+```cpp
+uint8_t SWITCH_PIN = 14, LED_PIN = 32; // which GPIO we're using
+volatile bool flashTheLED = false;     // control flag for LED flasher
+...
+// gpio interrupt events
+static void IRAM_ATTR gpio_isr_handler(void *arg) { // switch press handler
+  uint32_t gpio_num = (uint32_t) arg; // data from ISR service; not used
+  flashTheLED = ! flashTheLED;                  // toggle the state
+}
+static void eventsSetup() {                     // call this from setup()
+  // configure the switch pin (INPUT, falling edge interrupts)
+  gpio_config_t io_conf;                        // params for switches
+  io_conf.mode = GPIO_MODE_INPUT;               // set as input mode
+  io_conf.pin_bit_mask = 1ULL << SWITCH_PIN;    // bit mask of pin(s) to set
+  io_conf.pull_up_en = GPIO_PULLUP_DISABLE;     // disable pull-up mode
+  io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE; // disable pull-down mode
+  io_conf.intr_type = GPIO_INTR_NEGEDGE;        // interrupt on falling edge
+  (void) gpio_config(&io_conf);                 // do the configuration
+
+  // install gpio isr service & hook up isr handlers
+  gpio_install_isr_service(0); // prints an error if already there; ignore!
+  gpio_isr_handler_add(        // attach the handler
+    (gpio_num_t) SWITCH_PIN, gpio_isr_handler, (void *) SWITCH_PIN
+  );
+}
+...
+  if(flashTheLED) ...write HIGH on the LED pin, wait a little, write LOW...
+```
+
+The board that the example runs with looks like this:
+
+[ ![](images/bias-resistor-350x263.jpg "bias resistor") ](images/bias-resistor.jpg)
+
+Here:
+
+- Red is 3V, white is GND, blue is GPIO 14 and the yellow connected to the
+  ESP32 is to GPIO 32.
+- The LED cathode (shorter, -ve side lead) is in the GND rail, with a 180R
+  resistor in series from its anode to GPIO 32.
+- The switch is between the GND rail and GPIO 14, with the 10k resistor also
+  connected from between the switch and GPIO14 to V+ (the 3V rail).
+
+(Note the  10k pull-up from the sensing side of the switch to V+; this is to
+prevent phantom reads when using the interrupt-driven code.)
+
+Previous examples we've looked at have polled the switch (or other sensor)
+regularly during execution, looking for a state change. Often it is possible
+to miss a change if it happens during some other part of the execution path.
+The approach described here, although a little more complex at first sight,
+has the significant advantage of using the hardware to monitor and trigger a
+response to changes, and is the preferred method for any non-trivial system.
+
+Note: the [TimingThing
+example](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/TimingThing/)
+still uses `delay` to regulate the flashing LED. The ideal would be to use a
+timer instead, perhaps like [this
+one](https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/Timer/RepeatTimer/RepeatTimer.ino).
+
+
+### FreeRTOS Tasks ##########################################################
+
+In section [-@sec:freertos] I wrote that
+
+> Another important facility that we can access via the Espressif SDK is
+> **FreeRTOS**, an [open source real time 'operating
+> system'](https://www.freertos.org/). FreeRTOS provides an abstraction for
+> task initialisation, spawning and management, including timer interrupts and
+> the ability to achieve a form of multiprocessing using priority-based
+> scheduling. The ESP32 is a dual core chip (although the memory space is
+> shared across both cores, i.e. it provides _symmetric multiprocessing_, or
+> SMP). FreeRTOS allows us to exploit situations where several tasks can run
+> simultaneously, or where several tasks can be interleaved on a single core
+> to emulate multithreading.
+
+In order to do this [FreeRTOS tasks](https://www.freertos.org/taskandcr.html)
+are allocated their own processing context (including execution stack) and a
+scheduler is responsible for swapping them in and out according to priority.
+(Note that the usual case for FreeRTOS ports is single core MCU, and that
+therefore the ESP32 port has [made a number of
+changes](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/freertos-smp.html)
+to support dual core operation.)
+
+For example, `sketch.ino` in [the MicML
+example](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises)[^cmgtnx]
+in the exercises tree forwards data from the I2S bus to a server (over WiFi)
+whenever it is available from a microphone board. The code uses a FreeRTOS
+task containing an infinite loop that continually waits for a notification
+from a parallel I2S reader task (in `I2SSampler::addSample` in
+`I2SSampler.cpp`, via `xTaskNotify`):
+
+[^cmgtnx]:
+     Code from Chris Greening and others: thanks folks!
+
+```cpp
+// write samples to our server
+void i2sWriterTask(void *param) {
+  I2SSampler *sampler = (I2SSampler *) param;
+
+  while (true) { // wait for some samples to save
+    uint32_t ulNotificationValue =
+      ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
+    if (ulNotificationValue > 0) {
+      // read the i2s buffer, post to server ...
+    }
+  }
+}
+...
+void setup() {
+  ...
+  // set up i2s to read from our microphone
+  i2s_sampler = new I2SSampler();
+
+  // set up the i2s sample writer task
+  TaskHandle_t writer_task_handle;
+  xTaskCreate(
+    i2sWriterTask, "I2S Writer Task", 4096,
+    i2s_sampler, 1, &writer_task_handle
+  );
+
+  // start sampling from i2s device
+  i2s_sampler->start(
+    I2S_NUM_1, i2s_pins, i2s_config,
+    32768, writer_task_handle
+  );
+  ...
+}
+```
+
+Having set up these two tasks, there is nothing else to do, as FreeRTOS
+schedules all the processing without further intervention!
+
+```cpp
+void loop() {
+  // nothing to do here!
+  // all driven by the i2s peripheral reading samples
+}
+```
+
+This has been a whistle-stop tour of a number of complex and powerful tools in
+the MCU programmers' armoury. It is well worth reading up on background
+sources and experimenting with the IDF, Arduino and FreeRTOS examples to get a
+better sense of how this all hangs together. Best of luck!
+
+
+## IoT Device Gestation: Creating the unPhone           {#sec:creatingunphone}
+
+Over the last half a dozen years or so, myself and colleagues have worked on
+control and monitoring systems for a sustainable urban food growing technology
+called _aquaponics_ [@Cunningham2015-mh; @Rakcozy2011-bo]. This is pretty
+close to the lowest environmental impact footprint that intensive agriculture
+can manage, pairing a closed-loop recirculating aquaculture system with
+hydroponic vegetables fed via naturally occuring nitrifying bacteria. No
+pesticides, no growth hormones, motherhood, apple pie, yada yada yada.
+
+The catch? Complexity. We have three quite different types of organism (fish,
+plants, bacteria) all sharing an ecosystem; to maintain conditions favourable
+to all three whilst simultaneously harvesting food is quite the balancing act.
+
+What to do?
+
+In contrast to _hydroponics_, the growing of vegetables in dissolved
+fertilisers, _aquaponics_ lacks mature control, monitoring, data sharing and
+analytics systems to support it. Our research programme has been to try and
+contribute IoT-based systems in this space, to chip away at the complexity
+problem by partial automation, knowledge sharing, the wisdom of crowds and the
+frequent wearing of silly hats in bright colours. To test out the approach, we
+first built a little aquaponics system in an unused alcove on campus:
+
+[ ![](images/concourse-ponics-350x262.jpg "concourse ponics") ](images/concourse-ponics.jpg)
+
+(System design followed that from the FAO given in [@Somerville2014-hd].)
+
+Soon afterward Richard Nicolle of [Garden Up](https://gardenup.org/) cornered
+me in the pub and beat me repeatedly with a packet of cheese and onion crisps
+until I just couldn't bear the pain any longer and agreed to pitch an
+aquaponic green wall idea to [Gripple's](https://gripple.com) _special
+projects manager_ [Gordon Macrae](https://twitter.com/gdmacrae) (who's a bit
+like an SAS Colonel only based in a secret headquarters underneath Sheffield's
+River Don). [Gareth Coleman](https://bitfixit.co.uk/) couldn't resist an
+opportunity to muck about with insanely complicated bleeding-edge technology,
+and we managed to convince [Dave Hartley of
+ShowKoi](https://www.showkoi.co.uk/) that we needed at least one real engineer
+on the team to stop people laughing (too loudly) at us. The die was cast, and
+a year later we had transformed this:
+
+[ ![](images/wall-one-dimensions-350x262.png "wall one dimension") ](images/wall-one-dimensions.png)
+
+into this:
+
+[ ![](images/aquamosaic-01-350x263.jpg "aquamosaic") ](images/aquamosaic-01.jpg)
+
+[ ![](images/aquamosaic-02-350x257.jpg "aquamosaic 2") ](images/aquamosaic-02.jpg)
+
+[ ![](images/aquamosaic-03-350x350.png "aquamosaic 03") ](images/aquamosaic-03.png)
+
+(We had a lot of help from Gripple's Ninja Plumber contractors too. They're a
+bit like Robert de Niro's character in the film Brazil, only better with pipes
+and fittings.)
+
+Eureka!
+
+Except: when we did the figures, it turned out that only the Queen of England
+would actually be able to afford one. Drawing board, back to, etc. :(
+
+More recently Gareth installed our concourse system at [Heeley City
+Farm](https://www.heeleyfarm.org.uk/), colleagues including [Jill
+Edmondson](https://www.sheffield.ac.uk/biosciences/people/academic-staff/jill-edmondson)
+and [Tony
+Ryan](https://www.sheffield.ac.uk/chemistry/people/academic/anthony-j-ryan-obe)
+helped us develop a next iteration of the system in the [AWEC controlled
+environment center](https://www.sheffield.ac.uk/awec), and in 2020-21 as part
+of the [Institute of Sustainable
+Food](https://www.sheffield.ac.uk/sustainable-food) we built a new minifarm
+at [Regather](https://regather.net/).
+
+Anyhow, I'm getting ahead of myself. Scroll back half a decade, and as is
+normal for the first prototypes of a new device, we initially relied on
+breadboards and jumper cables to hook together the various different sensors,
+actuators and microcontrollers that made up the control and monitoring
+systems. As time went on and we added more and more functions to our rigs, we
+started to develop an attractive line in spaghetti wiring looms!
+
+<!--
+[ ![](images/before-unphone-200x150.png "spaghetti") ](images/before-unphone.png)
+-->
+[ ![](images/before-unphone-350x263.png "spaghetti") ](images/before-unphone.png)
+
+Reliability? Hmmm. Breathing on it was usually ok, but anything more violent
+would run the risk of dislodging a connection, and even when everything was
+plugged together just right, the presence of several high frequency bus
+signals on unshielded wires waving in the breeze was just asking for trouble.
+That meant lots of work for Gareth and Gee, slaving over a hot oscilloscope at
+all hours:
+
+[ ![](images/oscilloscope-01-350x210.png "scope") ](images/oscilloscope-01.png)
+
+At the time, we were building a lot of different devices for various projects,
+and we could see the advantages in combining as many functions as possible
+under one roof. [Martin
+Mayfield](https://www.sheffield.ac.uk/civil/people/academic/martin-mayfield)
+and [Steve
+Jubb](https://www.sheffield.ac.uk/civil/people/technical/steve-jubb) were
+running a project called [Urban Flows](https://urbanflows.ac.uk/) which,
+amongst other things, was interested in measuring the life cycle impacts of
+the Sheffield food system, and agreed to fund version one of a new IoT device.
+
+Soon after, with lots of help from [Pimoroni](https://pimoroni.com/), the
+[unphone](https://unphone.net) went from a thought experiment on my office
+whiteboard...
+
+[ ![](images/unphone-whiteboard-350x467.jpg "whiteboard design") ](images/unphone-whiteboard.jpg)
+
+...to a prototype in a neat grey case:
+
+[ ![](images/early-unphone-350x263.png "an early unphone") ](images/early-unphone.png)
+
+It soon became clear that there was a wider need for something along the lines
+of [the unphone](https://unphone.net/) as an _IoT development platform_. By
+the time the Pandemonium arrived, we were at hardware iteration 6-and-a-bit
+(or, as Pimoroni's [Jon
+Williamson](https://shop.pimoroni.com/blogs/help/7283658-who-is-pimoroni)
+insists on calling it, "7"), and all was set fair for world domination,
+ushering in the socialist paradise and finally putting to bed all those nasty
+rumours about computer scientists being a bunch of useless no-marks, nerds and
+geeks who should on no account ever be invited to parties.
+
+As with many things, C19 wreaked it's havoc on our schedules, and it was
+another two years before we reached a version -- unPhone9 -- that we are happy
+to release upon an unsuspecting world; see [Chapter 11](#unphone-yourself) for
+more details of the current state of the device.
+
+Quoting from [unphone.net](https://unphone.net/):
+
+> Developing for the Internet of Things is a bit like trying to change a light
+> bulb in the dark while standing on a three-legged chair with your shoelaces
+> tied together. By the time you’ve configured your development environment,
+> assembled the libraries your hardware demands, fixed the compatibility issues
+> and figured out how to burn new firmware without bricking your circuit board
+> you’re all ready to discover that the shiney new networking function that you
+> bought the board for in the first place doesn’t actually work with your local
+> wifi access point and that the device has less memory space than Babbage and
+> Lovelace’s difference engine.
+> 
+> Hey ho.
+> 
+> The unPhone is an IoT development platform from the University of Sheffield,
+> Pimoroni and BitFIXit that builds on one of the easiest and most popular
+> networked microcontrollers available (the ESP32), and adds:
+> 
+> - an LCD touchscreen for easy debugging and UI creation
+> - LoRaWAN free radio communication (supplementing the ESP’s excellent wifi and
+>   bluetooth support)
+> - LiPo battery management and USB charging
+> - a vibration motor for notifications
+> - IR LEDs for surreptitiously switching the cafe TV off
+> - an accelerometer and compass
+> - an SD card reader
+> - power and reset buttons
+> - a robust case
+> - an expander board that supports three featherwing sockets and a prototyping
+>   area
+> - open source firmware compatible with the Arduino IDE and Espressif’s IDF
+>   development framework
+> - all the features of Adafruit’s Feather Huzzah ESP32
+> 
+> Untie your shoelaces and let’s get cracking :-)
+
+The externally accessible components are arranged like this:
+
+[ ![](images/unphone-top-350x200.png "unphone top") ](images/unphone-top.png)
+
+[ ![](images/unphone-underside-200x118.png "unphone underside") ](images/unphone-underside.png)
+
+And other components are attached via an expander cable and daughter board:
+
+[ ![](images/unphone-in-case-with-ffc-350x318.jpg "unphone in case with ffc") ](images/unphone-in-case-with-ffc.jpg)
+
+Later versions also have three pushbutton switches across the lower front of
+the case. Here's one running an infra-red control test from the IR LEDs to a
+sensor mounted on another unit:
+
+[ ![](images/unphone-buttons-ir-350x263.jpg "unphone buttons ir") ](images/unphone-buttons-ir.jpg)
+
+The daughter board accepts three feather sockets and has a small
+matrixboard-style prototyping area:
+
+[ ![](images/unphone-expander-350x219.jpg "unphone expander") ](images/unphone-expander.jpg)
+
+[ ![](images/unphone-expander-with-ariel-350x232.jpg "unphone expander with ariel") ](images/unphone-expander-with-ariel.jpg)
+
+The expander can be housed in a 3D-printed case extender of varying thickness
+(designed by Peter Hemmins; thanks Pete!):
+
+[ ![](images/unphone-expander-case-350x194.png "unphone expander case") ](images/unphone-expander-case.png)
+
+[ ![](images/unphone-expander-case-02-350x258.jpg "unphone expander case 02") ](images/unphone-expander-case-02.jpg)
+
+<!--
+[ ![](images/unphone-top-200x115.png "IMAGE_CAPTION") ](images/unphone-top.png)
+[ ![](images/unphone-underside-350x206.png "IMAGE_CAPTION") ](images/unphone-underside.png)
+-->
+
+Robots, TV remotes, battleship games, air quality monitors, dawn simulator
+alarms: the beast has proven quite versatile!
+
+[ ![](images/unphone-tv-remote-200x270.png "unphone tv remote") ](images/unphone-tv-remote.png)
+
+[ ![](images/unphone-robot-moving-350x197.gif "unphone robot") ](images/unphone-robot-moving.gif)
+
+[ ![](images/unphone-alarm-200x356.png "unphone alarm") ](images/unphone-alarm.png)
+
+[ ![](images/unphone-alarm-02-200x194.png "unphone alarm 02") ](images/unphone-alarm-02.png)
+
+
+### Steps in Device Creation ################################################
+
+The rest of this section returns, belatedly, to the point, and looks at the
+various stages that the prototype unphone device made its way through on the
+way to (almost!) maturity, and attempts to draw out a few lessons for IoT
+device gestation in general.
+
+A typical IoT device creation process goes through these steps:
+
+- breadboarding
+- stripboarding
+- testing testing testing!
+- proof of concept? demand?
+- creating a circuit board
+- bringing up the board: if chip X doesn’t work, reach for the scope...
+- writing a firmware test harness
+- applications time!
+
+From circuit to board:
+
+- developing schematics (in Eagle, or KiCAD)
+- building on Adafruit’s open hardware designs & Gareth & Pimoroni’s expertise
+
+Logical level circuit diagrams
+
+[ ![](images/schematic-350x197.png "schematic") ](images/schematic.png)
+
+PCB (printed circuit board) routing diagrams
+
+[ ![](images/pcb-design-200x340.png "pcb design") ](images/pcb-design.png)
+
+Then send away for PCBs and a stencil, and... bung it in the pick’n’place
+machine:
+
+[ ![](images/pie-factory-01-350x197.jpg "pie factory 01") ](images/pie-factory-01.jpg)
+
+[ ![](images/pick-n-place-350x227.png "pick n place") ](images/pick-n-place.png)
+
+Load in a bunch of rolls of components:
+
+[ ![](images/loading-pick-n-place-350x196.png "loading pick n place") ](images/loading-pick-n-place.png)
+
+Applying solder paste to the bare board:
+
+[ ![](images/solder-paste-350x198.png "solder paste") ](images/solder-paste.png)
+
+Getting it right: 6¼ hardware iterations:
+
+[ ![](images/unphone-versions-350x197.jpg "unphone versions") ](images/unphone-versions.jpg)
+
+From left to right:
+
+- first pcb version (buttons are for programming and reset),
+- second with auto-programming,
+- third with new expander to handle the SPI CS (chip selects) and etc. (e.g.
+  backlight),
+- and version 4 with more minor fixes; this was the first COM3505 version
+
+(Versions 5 and 6 removed the mic and added front-of-case buttons; we don't
+talk about why we needed version 6¼, at least not in public.)
+
+**It’s a thing!** (31st Jan to 8th Nov 2018: 9 months from proposal to
+delivery!)
+
+[ ![](images/an-unphone-thing-200x356.jpg "an unphone thing") ](images/an-unphone-thing.jpg)
+
+
+### Some Lessons ############################################################
+
+Bringing up a new board is, in a word, messy! When things don’t work as
+expected there’s no knowing whether it is the hardware or the code that’s at
+fault. This means lots of painful debugging with an oscilloscope! Allow plenty
+of time for this step!
+
+It is easy to hit unintended consequences. At some point we were getting low
+on IO pins to connect peripherals to, and one of us said “I know, let’s add an
+IO expander!” This little chip adds lots of connectivity by shunting the chip
+select lines of the various modules onto an expander chip (TCA9555, on I2C).
+Unfortunately, it also means that none of the libraries work any more, as then
+need an extra step when writing to the device. The libraries use use
+digitalWrite(PIN, HIGH) internally, but we need to activate the expander to do
+chip select toggling first. So now we have an IOExpander class that we inject into libs:
+
+```cpp
+#include "IOExpander.h"
+#define digitalWrite IOExpander::digitalWrite
+#define pinMode IOExpander::pinMode
+#define digitalRead IOExpander::digitalRead
+```
+
+The overridden methods use bit 2 of the PIN int to represent an unPhone
+expander pin (why not the top bit? casts from uint to int make it -ve!):
+
+```cpp
+void IOExpander::digitalWrite(uint8_t pin, uint8_t value) {
+  if(pin & 0x40) {
+    pin &= 0b10111111;  // mask out the high bit
+    IOExpander::writeRegisterWord(0x02, new_output_states); // trigger 9555
+...
+```
+
+Summarising the good bits and the not so good bits:
+
+- +ves
+  - from original idea to working system took less than a year
+  - budget was tiny in comparison to traditional product development
+  - we learned a lot! (hopefully we’re managing to share some of that with
+    you!)
+- -ves
+  - lots of unforeseen hiccups and unintended consequences
+  - the pace of change is challenging: “don’t look now, your synthesiser has
+    just gone out of date”
+  - “always start from a known good”... um, except when there isn’t one?!
+  - the more libraries you use, the more unstable your development environment
+
+Overall, the process of creating a new IoT device is still a pretty big job,
+but it is undeniably shrinking as time goes on. What do you want to create?!
+
+
+## COM3505 Week 07 Notes ####################################################
+
+This week we publish "Lab" Asssessment 1, which you will have until the start
+of the Easter break to complete. For details see your gitlab repo under "LA1".
+
+<!--
+- preview the second half of the course and choose a project (see chapter 8
+  for more information about the possibilities)
+- understand more about the protocols used to communicate between external
+  devices and the ESP32
+- start preparing for the mock exam
+-->
+
+
+## Futher Reading ###########################################################
+
+- [Adafruit/DigiKey's "All the
+  IoT"](https://www.digikey.com/en/resources/iot-resource-center/videos)
+  series has lots of useful background on IoT connectivity options. See also
+  the Adafruit copies:
+    - [episode 1, transports](https://learn.adafruit.com/alltheiot-transports?view=all)
+    - [episode 2, protocols](https://learn.adafruit.com/alltheiot-protocols?view=all)
+    - [episode 3, services](https://learn.adafruit.com/all-the-internet-of-things-episode-three-services?view=all)
+    - [episode 4, Adafruit.io](https://learn.adafruit.com/all-the-internet-of-things-episode-four-adafruit-io?view=all)
+    - [episode 5, security](https://learn.adafruit.com/all-the-internet-of-things-episode-five-the-s-in-iot-is-for-security?view=all)
+    - [episode 6 is not so interesting](https://learn.adafruit.com/digikey-iot-studio-smart-home),
+      as it was based on a now discontinued DiGiKey product
+- This article on IoT hubs/gateways is interesting on how the market has
+  changed in the last couple of years:
+  [staceyoniot.com](https://staceyoniot.com/heres-why-smart-home-hubs-seem-to-be-dying-a-slow-painful-death/).
+- If you're working on your own machine and like neither the IDE nor the IDF,
+  you might try the [Arduino
+  CLI](https://www.linuxjournal.com/content/arduino-command-line-break-free-gui-git-and-vim).

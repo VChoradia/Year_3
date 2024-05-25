@@ -1,0 +1,160 @@
+
+# Appendix B: CircuitPython on Feather S3 and unPhone           {#sec:python}
+
+Last but not least, The New Thing! Python on micrcocontrollers! Whahey!
+
+This chapter starts with brief introductions to CircuitPython (CP) and its use
+on the Feather ESP32S3, then details the process of porting CircuitPython to a
+new board in general and the unPhone in particular.
+
+(References to the `magic.sh` script below refer to
+[the-internet-of-things/support](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/support/magic.sh)
+version.)
+
+
+## What is CircuitPython? ###################################################
+
+Python is a mainstream programming language which has been around for some 30
+years -- so it still has the feel of a young imposter to this author, but that
+just proves how old and rusty he has become. (Hopefully only rusty and not
+actually mouldy, at least not yet.) Despite being one of few languages who
+have dared to make counting whitespace a programming task, Python has gone
+from an obscure script language to being very popular, especially in data
+science work (aka applied statistics, aka artificial intelligence :) -- see
+[Chapter 6](#machine-learning-and-analytics-in-the-cloud)). Over the years it
+has also picked up compilation abilities and, amongst other things, a place at
+the core of Espressif's build systems and PlatformIO and etc. etc.
+
+What is [CircuitPython](https://circuitpython.org) (CP)? For most of its life
+Python itself was considered inappropriate for microcontrollers due to the
+limited memory and other resources available, but this changed as devices
+became more powerfull, and around a decade ago Damien George started a project
+to port Python to smaller devices, called MicroPython. CP is a fork of
+Micropython that has been developed in the last half decade by Adafruit and
+collaborators, and is now available on a large range of boards and has a
+thriving community of open source contributors. It is explicitly "designed to
+simplify experimenting and learning to code on low-cost microcontroller
+boards", and, when properly configured, presents a very low overhead and
+smooth development process.
+
+One of the major benefits of an interpreted language is speeding up the
+edit/compile/test cycle that dominates programmers' working lives (usually at
+the expense of slower runtimes, though depending on the application this can
+be a worthwhile trade-off). CP is excellent in this respect, providing a file
+system mount on whatever device it is running on that will dynamically reload
+code when it changes. The experience of editing a file directly on a running
+microcontroller and seeing the results almost instantaneously is a significant
+advance over the longer compile, flash, test cycle typical of C and C++
+development.
+
+
+## CircuitPython on the Feather S3 ##########################################
+
+Adafruit Feather boards that have sufficient memory to run CP ship with it
+installed, often on top of a TinyUF2 bootloader that also exposes the host
+board as a USB mass storage device. When a `.uf2` file containing appropriate
+firmware is copied onto the device UF2 installs it, obviating the normal
+flashing process. When the firmware installed in this way (or via flashing)
+runs CP, a new device appears which is normally called `CIRCUITPY` and which
+contains a file `code.py`. When you edit this, the code runs on the board and,
+if you listen on the serial port, you will see the results (and/or Python's
+REPL loop).
+
+There are lots of detailed guides and example code available, e.g.:
+
+- [a general
+  introduction](https://learn.adafruit.com/welcome-to-circuitpython?view=all)
+- specifics of CP [on the ESP32
+  S3](https://learn.adafruit.com/adafruit-esp32-s3-feather?view=all) board
+- firmware for the ESP32S3 feather with [4MB flash and 2MB
+  PSRAM](https://circuitpython.org/board/adafruit_feather_esp32s3_4mbflash_2mbpsram/)
+  (used for COM3505 iteration 7, Spring 2024)
+- [Adafruit's fork of TinyUF2](https://github.com/adafruit/tinyuf2)
+- [API reference](https://docs.circuitpython.org/en/latest/docs/index.html)
+- [Essentials
+  guide](https://learn.adafruit.com/circuitpython-essentials?view=all) and
+  [example
+  code](https://github.com/adafruit/Adafruit_Learning_System_Guides/tree/main/CircuitPython_Essentials)
+
+
+
+## Porting CircuitPython to the unPhone #####################################
+
+Like any complex software ecosystem, CP is challenging to build and to adapt
+to new hardware. This section describes the process of porting CP to the
+unPhone.
+
+Adafruit are very supportive of developers contributing support for new boards
+to the CP ecosystem, and provide this guide [to porting CP to new
+boards](https://learn.adafruit.com/how-to-add-a-new-board-to-circuitpython?view=all).
+At the time of writing this guide is not 100% up-to-date with the existing
+codebase; see [this
+issue](https://github.com/adafruit/circuitpython/issues/7442) for some
+pointers to where the guide needs updating and for some of the early history
+of the unPhone port.
+
+To begin with, and as usual, we need to start from a known good, so the first
+task is to rebuild CP for a board that is known to work and test the process.
+I chose to build for the Feather ESP32S3 with 4MB flash / 2MB PSRAM. The build
+process has quite a lot of dependencies and configuration options, so I wrote
+a Dockerfile to create a portable image of the setup, which can be found at
+[the-internet-of-things/support/circuitpython](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/support/circuitpython/Dockerfile)
+on the course gitlab.
+
+The interface code to provide an unPhone board definition within CP was then
+added to an `unphone` branch in a [fork of the Adafruit
+repository](https://github.com/hamishcunningham/circuitpython) in the
+[ports/espressif/boards/unphone
+directory](https://github.com/hamishcunningham/circuitpython/tree/unphone/ports/espressif/boards/unphone).
+
+The [magic.sh helper
+script](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/support/magic.sh)
+provides these methods for creating and working with the Docker image:
+
+- `dckr-py-build`: build and tag a CP image
+- `dckr-py-flash`: rebuild and flash CP to a connected device (and leave the
+  container running); give a `-p port` flag to map the device into Docker (and
+  if you're on Windows or Mac use a VM)
+- `dckr-py-run`: run the CP container
+- `dckr-py-copy`: copy firmware from a running container; give the container
+  name as `$1`, e.g. `magic.sh dckr-py-copy jumping_maharaja`
+
+The image is available from Docker Hub as
+[hamishcunningham/iot:circuitpython](https://hub.docker.com/r/hamishcunningham/iot/tags).
+An example invocation via `magic.sh`, with a board connected as
+`/dev/ttyACM0`:
+
+```bash
+magic.sh -p /dev/ttyACM0 dckr-py-flash
+```
+
+Following a succesful build the script will leave the container running, and
+we can copy out the firmware if required by first finding the name of the
+container and then calling the `dckr-py-copy` method like this:
+
+```bash
+$ docker container ls
+CONTAINER ID   IMAGE                               ...  NAMES
+9e1c2d0b638b   hamishcunningham/iot:circuitpython  ...  distracted_jennings
+$ magic.sh dckr-py-copy distracted_jennings
+```
+
+This will copy `firmware.bin` to your current directory, from where you can
+flash it using an `esptool` script or [Adafruit WebSerial
+version](https://adafruit.github.io/Adafruit_WebSerial_ESPTool/).
+
+To get a better idea of what these commands are doing, check out the
+Dockerfile and the [magic
+commands](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/support/magic.sh#L985).
+
+To use the infrastructure for different boards, adjust the `TARGET_` build
+arguments to use your own fork of the [Adafruit CP
+github](https://github.com/adafruit/circuitpython).
+
+After tinkering with the configuration and adjusting the pin definitions
+relative to [our hardware
+schematics](https://gitlab.com/hamishcunningham/unphone/-/blob/master/doc/unphone-spin9-schematic.pdf),
+the final step in the process is to make a pull request to contribute the
+board back to the main repository.
+
+Happy porting!

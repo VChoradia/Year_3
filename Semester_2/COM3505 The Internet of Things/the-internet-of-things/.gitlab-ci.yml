@@ -1,0 +1,44 @@
+# .gitlab-ci.yml
+#
+# originally from template "HTML": https://gitlab.com/pages/plain-html
+# (note: stages are used to define the order of execution for jobs, and jobs
+# within the same stage run concurrently)
+
+# we first use Thomas Wiese's texlive image to do the latex and pandoc work,
+# and store the results in public_original/
+#
+# then we use a node image to add the navigation using Christan's .js, and
+# then publish the results in public/
+
+stages:
+  - build
+  - deploy
+
+build_original:
+  stage: build
+  image: thomasweise/texlive
+  script:
+    - cd micasa; make deploy; cd ..; mv public public_original
+  artifacts:
+    paths:
+      - public_original
+    expire_in: 1 hour
+  only:
+    - master
+
+pages:
+  stage: deploy
+  image: node:19-bullseye
+  dependencies:
+    - build_original
+  script:
+    - mv public_original/* public
+    - pwd; ls -l public/index.html
+    - cd micasa; npm install jsdom; node cache.mjs
+    - cp cached-navig.html ../public/index.html
+    - ls -l ../public/index.html
+  artifacts:
+    paths:
+      - public
+  only:
+    - master

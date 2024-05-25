@@ -1,0 +1,37 @@
+# Dockerfile for 2022 tiot magic.sh
+
+
+
+#  SUPERSEDED BY Dockerfile
+
+
+
+# create an image using something like
+#   docker build .
+# run the image using something like
+#   docker run --device=/dev/ttyUSB0 <image ID>
+# tag and push to hub.docker.com something like
+#   docker tag <image ID> hamishcunningham/iot:magic
+#   docker push hamishcunningham/iot:magic
+# run from docker hub with something like
+#   docker run --device=/dev/ttyUSB0 -it \
+#     -v $PWD:/home/ubuntu/project hamishcunningham/iot:magic
+
+FROM ubuntu:20.04
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/London
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update -y
+RUN apt-get install -y sudo git wget make python python3 python3-pip python3-setuptools vim
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+
+RUN pip install pyserial
+
+RUN useradd -m -d /home/ubuntu -s /bin/bash -u 1000 ubuntu -G dialout
+USER ubuntu
+WORKDIR /home/ubuntu
+
+RUN [ -d the-internet-of-things ] || git clone https://gitlab.com/hamishcunningham/the-internet-of-things.git
+RUN [ -d unphone ] || git clone https://gitlab.com/hamishcunningham/unphone.git
+RUN [ -d the-internet-of-things/support/tooling ] || cd the-internet-of-things/support && ./magic.sh setup

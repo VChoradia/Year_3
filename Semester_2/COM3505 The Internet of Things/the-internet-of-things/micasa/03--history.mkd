@@ -1,0 +1,685 @@
+
+# History; Blinking Things; WiFi ############################################
+
+Where have we got to? By now you should have:
+
+- started to get an idea about what the IoT is and where it comes from
+- set up an IDE and/or CLI build system containing the ESP-IDF SDK and the
+  Arduino Core for ESP32
+- used the build system to burn firmware to the ESP32
+- monitored the debug output of the firmware on a serial connection
+- played around with prototyping microcontroller-based sensor/actuator
+  circuits on a breadboard
+
+In this chapter we do two things:
+
+- put more flesh on the bones of our definition of the IoT by filling in more
+  history and context (sections [-@sec:arduinoproj] and
+  [-@sec:crossover])
+- start our journey from the IoT device into the outside world by coding
+  exercises that use the ESP32's WiFi stack ([@sec:week03])
+
+There's lots to do: crack on!
+
+
+## The Multiple Personalities of the Arduino Project       {#sec:arduinoproj}
+
+When we teach computing to beginners, we teach how to build something from the
+ground up. A new programming language: hello world. A machine learning method:
+the pseudo code for its algorithmic expression. This is necessary and
+valuable, but it hides a crucial fact about software development in the 2020s:
+we almost never build anything significant without starting from the work of
+tens of thousands of other people. These people form communities, and
+communities adopt and evolve tooling and workflows to create _ecosystems_.
+Choosing which ecosystems from the work of our predecessors we try to hitch a
+ride on is often one of the most influential decisions in any development
+project.
+
+I think it fairly safe to say that few people would have predicted, around the
+turn of the millenium, that one of the most significant advances in embedded
+electronics and physical computing would be driven by "the development of
+contemporary art and design as it relates to the contexts of electronic media"
+[@Barragan2004-aj]. Starting in the early naughties, the Arduino project
+[@Monk2013-ey; @Banzi2014-dh; @Arduino2017-ij] had by the mid tennies come to
+provide the standard toolkit for experimentation in low power circuits. Today
+the ecosystem that resulted is first port of call for code to drive the
+sensors and actuators that give the IoT its interface to the physical world.
+And as we saw in the previous chapter, the Arduino IDE also provides us with
+one of the easiest ways to get started programming the ESP32.
+
+We'll start this chapter by looking in a little more detail at the various
+contributions that the project has made, and have a bit of a sniff around its
+development environment and the type of (C++) code it supports.
+
+![The Arduino Project](images/arduino-logo.png "The Arduino Logo")
+
+_**Arduino**_ can refer to any or all of:
+
+- a hardware platform (originally based on AVR microcontrollers) 
+- an IDE (in both Java Swing and browser-based forms) from
+  [arduino.cc](https://arduino.cc)
+- a company making (primarily) microcontroller-based development boards (PCBs)
+
+Arduino C++ refers to preprocessing, macros and libraries that are available
+via the IDE. (C++ is a medium-level language layered on the C (low level)
+systems programming language.) Over the last decade or so there has been a
+quite massive community of open source developers contributing to an ecosystem
+of code and documentation and forum posts and github repos and etc. which has
+made Arduino C++ a very productive environment for IoT development.
+
+Remember that the ESP32 is **not** an Arduino (or even an AVR-based device),
+but there is a compatibility layer that interfaces it to the Arduino IDE. This
+makes lots of code for sensors and actuators and etc. magically available for
+the ESP.
+
+![An Arduino board](images/arduino-board.png "An Arduino board")
+
+Having started out as a service project for arts and design students in Ivrea,
+Italy, in the early 2000s (who were using microcontrollers to create
+interactive exhibits) it brought cheaper hardware than the alternatives (based
+on Atmel’s AVR chips), and added an IDE derived from work on Processing and
+Wiring [@Barragan2004-aj; @Reas2007-gn]. Some millions (or 10s or 100s of
+millions) of official and unofficial boards are now in existence, and it
+remains the most popular platform for embedded electronics experimentation.
+
+The Arduino IDE is a Java Swing desktop app that preprocesses your code (or
+“sketches”, suffix `.ino`). Arduino's programming language is C++ with lots of
+added libraries and a bit of code rewriting. It runs the GNU C++ toolchain
+(gcc) as a cross-compiler to convert the Arduino C++ dialect into executable
+binaries. The IDE includes a compilation handler that converts sketch firmware
+`.ino` files into a conventional `.cpp` file (poke around in `/tmp` or
+equivalent to see what the results look like).
+
+Binaries are then uploaded (“burned”, or "flashed") to the board using various
+other tools (in our case this is usually a Python tool from Espressif). The
+IDE then allows monitoring of serial comms from the board, and provides access
+to libraries and example code. If you ask it nicely it will plot graphs for
+you, e.g. of the output of a microphone:
+
+[ ![Plotting sound waves](images/arduino-ide-plotter-350x208.png "Plotting sound waves")](images/arduino-ide-plotter.png)
+
+As we noted in chapter 2 the IDE is pretty basic, and you may well want to
+move on to more sophisticated tools later on. It is well worth getting to know
+it to start with, however, as it is typically the fastest way to get started
+with new hardware, and the fastest way to find a working example from which to
+develop new functionality.
+
+
+## A Crossover Point                                         {#sec:crossover}
+
+In [@sec:defining] we saw two very different ways to define the IoT: as a
+nascent world robot, or as the simple consequence of increases in
+computational power and network connectivity in microcontroller hardware. This
+section gives a bit more context to the origins of the field on the one hand,
+and the hardware space of IoT devices on the other.
+
+When we look back at the antecedents of the IoT, it becomes clear that the
+field represents a crossover point between many earlier (and ongoing) areas of
+computer science and software engineering. Related and predecessor fields
+include:
+
+- **embedded systems**: computation built into devices with specific purposes
+  (i.e. not general purpose computers)
+- **ambient computing** or **ubiquitous computing**: the trend for computation
+  to move into more and more devices (Schneier: “We no longer have things with
+  computers embedded in them. We have computers with things attached to
+  them.”)
+- **physical computing** (or **cyber-physical systems**): computation
+  dependent on sensor input and/or producing actuator output
+- **distributed computing**: jobs performed by multiple machines operating in
+  concert
+- **utility computing**: the as-a-service (“XAAS”) model: software as a
+  service, data as a...
+- **the cloud**: utility distributed computing
+- new buzz words: **serverless** (um, servers+software); **fog** (shift work
+  back to the edges)
+
+If you understand roughly what each of these terms means then you have a good
+basis for understanding what the IoT means (and of being able to distinguish
+the marketing speak from the actuality of possible technology options).
+
+
+### The Early History of the IoT[^earlyhist]
+
+[^earlyhist]:
+     This section contributed by Gareth Coleman.
+
+The term Internet of Things was coined by Kevin Ashton in 1999 for a
+presentation at Procter and Gamble. Evolving from his promotion of RFID tags
+to manage corporate supply chains, Ashton's vision of the Internet of Things
+is refreshingly simple: “If we had computers that knew everything there was to
+know about things — using data they gathered without any help from us — we
+would be able to track and count everything, and greatly reduce waste, loss
+and cost. We would know when things needed replacing, repairing or recalling,
+and whether they were fresh or past their best.” [@Ashton2011-mc]
+
+Of course, devices had been 'on the internet' for several years before this,
+from at least 1982 in the case of a drink vending machine at Carnegie Mellon
+University in Pittsburg [@Machine_undated-nt]. Using a serial port converter,
+the status lights of the front panel of the machine were connected to the
+Computer Science departmental computer, a DEC PDP-10 (for which today’s
+equivalent cost would be around $2 million!). The Unix `finger` utility was
+modified to allow it to report the level of coke bottles and whether they were
+properly chilled. Internet users anywhere could type “`finger coke@cmua`” and
+read the status of the machine. (It is notable that the world's first IoT
+device was enabled by openly available Unix source code.)
+
+A camera pointed at a coffee-pot in Cambridge's computer science department
+was video-streamed on the internet from 1991, and when control from the web to
+the camera was established in 1993 the first webcam was born [@Fraser1995-je].
+Presaging very contemporary anxieties, a toaster had been connected to the
+internet in 1990 at the INTEROP exhibition [@Romkey2017-se], and nearly caused
+a strike as preparing food was an activity allocated to unionised labour.
+However it wasn't until 2001 that a toaster became an IoT device in a modern
+sense, able to dynamically query a webservice for the current weather
+forecast, and then burn the appropriate pictogram onto a piece of toast
+[@Ward2001-ov].
+
+So we can see that from the earliest days of IoT (when it was often called
+pervasive or ubiquitous computing) our current concerns around open source,
+security [@Denning1977-bo] and human obsolescence were already recognised.
+
+
+### The Current State of IoT Hardware[^hW]
+
+[^hW]:
+     This section contributed by Gareth Coleman.
+
+> “It was the best of times, it was the worst of times, it was the age of
+> wisdom, it was the age of foolishness, it was the epoch of belief, it was
+> the epoch of incredulity...” [@Dickens1877-us]
+
+We do indeed live in an epoch of belief and incredulity, with feverish hype of
+IoT widespread across the electronics and computing industries. Want a £400
+wifi connected juicer that locks you into proprietary ingredient pouches
+anyone? Meanwhile 'policy bloggers' burble excitedly about techno-utopias such
+as smart cities that eliminate traffic — “Imagine a city with no traffic at
+all” [@OMuircheartaigh2013-wk]. Security researchers are desperately trying to
+warn us of the dangers of letting our personal data leak out from our devices
+[@Grover2016-kp]. After FitBit users’ personal exercise data was exposed
+publicly [@Loftus2011-uq] the company solemnly announced "We have also updated
+our default settings for new users for activity sharing to 'private'.”
+
+Current hardware is very diverse, with major companies such as Intel, Texas
+Instruments, Broadcom etc. competing to have their chips chosen by
+manufacturers. However the arrival of Espressif's ESP8266 (and now the ESP32
+[@ESP32_Community2022-aa; @Kolban2017-jx] has shaken up the rest of industry by
+charging $2 per chip instead of $20. This has attracted a lot of attention and
+stimulated the creation of community-driven knowledge, documentation,
+libraries and tools; so much so that it is significantly quicker and easier to
+develop for this platform than most others.
+
+IoT hardware can be classified according to its connectivity technology;
+currently the useful ones are ethernet, wifi, bluetooth, zigbee, z-wave and
+cellular. Whilst wired connections are still relevant for some applications,
+it seems that most recent developments have concentrated on wireless devices.
+If we are to buy hundreds of IoT devices each in the next few years, we
+certainly won't be plugging them all into ethernet cables. Cellular technology
+remains stubbornly expensive both to buy and to run; fine for the now
+life-critical mobile phone, but not for those hundreds of devices.
+
+Of the remaining mainstream wireless technologies, bluetooth's USPs are it's
+ultra low-power short-range attributes and that every phone has it. For
+devices with small batteries such as fitness trackers, this allows them to
+last a few days between charges. Wifi has major issues with power use and
+connection negotiation speed but it has emerged as a major IoT connectivity
+choice because of it's ubiquity. Then there are the Z's – Z-wave is
+proprietary but popular with blue chips like Honeywell and GE, Zigbee is an
+open standard also popular with big corporations – the Phillips Hue light
+bulbs use it as does the Nest thermostat.
+
+Several 'hubs' have been launched by manufacturers such as Google, Amazon and
+Samsung that aim to bring all these devices together under one control, rather
+than having to manage dozens apps of physical remotes. For example, Samsung's
+SmartThings hub has 4 wireless radios covering z-wave, zigbee, bluetooth and
+wifi plus an ethernet port. 
+
+
+## COM3505 Week 03 Notes                                        {#sec:week03}
+
+### Learning Objectives #####################################################
+
+_Internet? What internet?!_ Up to now we've been programming the ESP as a
+standalone device. In the next period we'll create and connect to networks,
+and figure out how to configure connections for devices without UIs.
+
+Our objectives this week are to:
+
+<!-- was in 2: - start exploring the hardware space of IoT devices -->
+
+- understand more about the ESP32 and the Arduino IDE
+- deepen our understanding of the hardware space around the IoT (SoCs and
+  MCUs, devices vs. gateways, ...)
+- learn about the firmware/software languages used for the IoT
+
+Practical work will include:
+
+- a third outing for the breadboard, working towards a more permanent
+  prototype on matrixboard (optional)
+- some useful programming idioms:
+    - time slicing in the main loop
+    - adding debug code to sketches
+- starting work with the ESP's WiFi stack
+
+(There are a lot of exercises this week; you'll benefit from completing all of
+them, but if you don't have time don't worry, just make sure to study the
+model solutions in `exercises/Thing`.)
+
+
+### Assignments #############################################################
+
+**Exercises**:
+
+Exercises three through five continue the themes of weeks one and two:
+
+- **Ex03**:
+    - add two more [LEDs to your Ex02 board](#extension-to-blinky-exercise-02)
+    - run the three as traffic lights, triggered by the switch
+- **Hardware 3**: construct a [nine LED
+  breadboard](#a-final-breadboard-prototype-9-leds); write firmware to flash
+  the lights, or use use the [9LEDs
+  firmware](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/9LEDs)
+  from the course repo to flash the lights in sequence; try reversing the
+  sequence, etc.
+- **Ex04**: debugging infrastructure: experiment with macros to allow adding
+  flexible debug code
+- **Ex05**: arrange for tasks to be performed in different loop iterations
+  (e.g. every 1000 iterations do X; every 50k iterations do Y; ...)
+
+Exercise six brings us into the domain of the connected microcontroller at
+last:
+
+- **Ex06**: becoming a wifi access point and web server
+   - The ESP can act as a wifi access point, and is powerful enough to run a
+     simple web server. Using `WiFi.h` and `WebServer.h` fire up an access
+     point and serve one or more pages over the web.
+   - `WebServer webServer(80);` will create a web server on port 80
+   - `webServer.on("/", handleRoot);` will register the procedure `handleRoot`
+     to be called when a web request for `/` is received
+   - `webServer.send(200, "text/html", "hello!");` will serve "hello" to web
+     clients
+   - `WiFi.mode(WIFI_AP_STA))` and `WiFi.softAP("ssid", "password")` will
+     create an access point
+
+If you get the access point to work and then join it (e.g. from a phone or
+laptop), when you load `http://192.168.4.1` in a browser, you should see
+something like this:
+
+[ ![](images/webserver-250x191.png "first webserver") ](images/webserver.png)
+
+Now you've made a thing which is (almost) on the internet :) \ \ Do a little
+jig, dance around the room, make a cup of tea.
+
+
+### Notes on the Model Code from Week 2 #####################################
+
+(You'll find model versions of the exercises in
+[exercises/Thing](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/exercises/Thing).)
+
+
+#### Recap: Connecting to the ESP32 #########################################
+
+The ESP32 board we are using has a USB C socket to provide power and also
+allow communications between the microcontroller and your computer. Start by
+connecting the two together using the supplied cable. Start the Arduino IDE.
+Ensure that the `Tools>Board` selected is the "Adafruit ESP32S3 Feather 2MB
+PSRAM". Check in the `Tools>Port` menu to check that the serial connection has
+been established.
+
+
+#### Various Arduino Functions ##############################################
+
+Note: in the Arduino IDE certain words such as `OUTPUT`, `HIGH`, `TRUE` etc.
+are pre-defined and shown in blue. Similarly functions such as `pinMode` or
+`Serial.begin` are coloured in orange -- this can help you catch syntax
+errors. (Or if you can get VSCode / PlatformIO working, you'll get full
+highlighting and code completion.)
+
+```Arduino
+Serial.begin(115200);           // initialise the serial line
+```
+
+Serial communication (sending or receiving text characters one by one) has to
+be initiated with a call to the `begin` function before it can be used. The
+serial communications between the ESP32 and computer can operate at various
+speeds (or "baud rates") -- we use 115200 baud. If you aren't getting any
+response, or gibberish characters on the serial port monitor, then check
+you've got the correct speed set.
+
+```Arduino
+pinMode(LED_BUILTIN, OUTPUT);   // set up GPIO pin for built-in LED
+```
+
+`pinMode` is an Arduino procedure that tells the microcontroller to set up a
+single pin (first parameter) using a certain mode (second parameter). The two
+basic modes are `INPUT` and `OUTPUT`; `INPUT_PULLUP` connects an internal
+resistor between the pin and 3.3V (good for listening for pull down events;
+we'll hear more about these later in the course).
+
+```Arduino
+delay(1000);                  // ...and pause
+```
+
+The delay function in Arduino takes milliseconds as it's parameter -- so a
+`delay(1000)`; command pauses for 1 second. **Note**: this is a blocking
+method! Nothing else can happen on the core that is being paused for the
+duration of the call! (Later on we'll see methods to wait using interrupts and
+timers that don't involve blocking execution.)
+
+```Arduino
+uint64_t mac = ESP.getEfuseMac(); // ...to string (high 2, low 4):
+```
+
+The ESP32 Arduino layer includes some helpful functions like this one to allow
+us to get (read) the status of the electronic fuses. After the silicon for the
+ESP32 is manufactured using a common mask, each one is programmed to give it a
+unique identity -- including things like MAC addresses. These are one-time
+electronic 'fuses' that burn the MAC address into the chip so that it cannot
+be reprogrammed.
+
+
+#### Reading from Switches ##################################################
+
+```Arduino
+pinMode(5, INPUT_PULLUP); // pin 5: digital input, built-in pullup resistor
+```
+
+This `pinMode` call enables built-in pullup
+resistors connected between the pin and the positive supply voltage (3.3V).
+These prevent the input 'floating' when it isn't connected to anything and
+instead make the input go high.
+
+```Arduino
+  if(digitalRead(5) == LOW) { // switch pressed
+```
+
+The `digitalRead` function  returns the binary state of the input pin given as
+a parameter. Because we are using a pullup resistor and connecting the switch
+to 0V -- the logic that `digitalRead` returns is reversed. Therefore, when the
+switch is pressed, the function returns `LOW`.
+
+
+### Exercise 03 Notes #######################################################
+
+### Extension to Blinky (exercise 02) #######################################
+
+This exercise is to add two more [LEDs to your Ex02
+board](#extension-to-blinky-exercise-02), and then run the three as traffic
+lights, triggered by the switch.
+
+**Note**: remember from Chapter 2 that there are differences between the ESP32
+and ESP32S3 Feather, for example pin 32 becomes 6; 15 becomes 9 and 12 stays
+the same. (The physical positions are often the same on the board, just the
+numbering has changed.) The text below is correct, but the diagrams show the
+old numbers: beware!
+
+See also  section [-@sec:pinouts] on _pinouts_ below.
+
+Assemble the components shown in this schematic on your breadboard:
+
+[ ![Blinky Traffic Lights schematic](images/blinky-traffic-lights-schematic-200x256.png "Blinky Traffic Lights schematic") ](images/blinky-traffic-lights-schematic.png "Blinky Traffic Lights schematic")
+
+You should then have a breadboard that looks like this:
+
+[ ![Blinky Traffic Lights breadboard](images/blinky-traffic-lights-breadboard-200x261.png  "Blinky Traffic Lights breadboard") ](images/blinky-traffic-lights-breadboard.png  "Blinky Traffic Lights breadboard")
+
+Here's a picture of the ESP32 version:
+
+[ ![](images/ex03-traffic-lights-350x263.jpg "traffic lights") ](images/ex03-traffic-lights.jpg)
+
+And here's a pic of the S3 equivalent:
+
+[ ![](images/ex03-traffic-lights-s3-300x225.jpg "ex03 traffic lights s3") ](images/ex03-traffic-lights-s3.jpg)
+
+
+### A Final Breadboard Prototype: 9 LEDs ####################################
+
+Prototyping IoT devices has become much easier and cheaper in recent years.
+This makes development cycles much faster: from idea to prototype to product
+is now a cycle measured in weeks and months instead of years. We'll finish our
+quick tour of prototyping skills (that began in **Hardware 1** with soldering,
+breadboarding and using the multimeter and signal generator etc. and then went
+on in **Hardware 2** to wire up sensing from a switch and actuating an LED) by
+building a more (physically) complicated circuit. This week for **Hardware 3**
+we'll build it on a breadboard, then when you're in the lab you have the
+option to solder it onto matrixboard (which is a typical cycle in early
+prototyping; the next step would be to design a PCB and start manufacturing
+test boards).
+
+In the second half of term you'll have the opportunity to build projects that
+involve more complex hardware, e.g. to add GPS, or MP3 playing, or motor
+drivers, or ultrasonics, or etc. These may require soldering, and when they
+don't work first time the multimeter and oscilloscope are our first ports of
+call to discover why.
+
+(Hate soldering? No lab access? Don't worry, there are also projects that only
+use the ESP32 itself.)
+The circuit is electrically very simple, being [Week02's
+Blinky](#using-a-breadboard-to-make-a-sensoractuator-circuit) with lots more
+LEDs, each protected by its own resistor:
+
+[ ![9 LEDs breadboard 20](images/nine-leds-bb-20-350x263.jpg "9 LEDs breadboard 20") ](images/nine-leds-bb-20.jpg)
+
+The cathode (short leg) of each LED is connected in series with a 180Ω
+resistor that connects in turn to ground. The anode is connected to one of the
+GPIO (general purpose input-output) pins of the ESP32.
+
+
+#### Pinouts                                                   {#sec:pinouts}
+
+Because we're using lots of pins, it becomes a bit tricky to fit all the
+connections in, and we need to check the various references to see where is
+good to connect. We also need to be aware that the ESP32S3 has some
+differences from the ESP32 (which some of the images refer to).
+
+With the change in SoC from ESP32 to ESP32-S3, some of the pins on the Feather
+have changed their designations. If you are using I2C or SPI peripherals, then
+these will likely work without modification; as both boards define common
+designations such as SDA, MOSI etc. If you refer to the pins using A0-A5 then
+these are also common to both boards. Similarly pins 12 and 13 haven't changed
+between boards, but the other GPIO pins have changed numbers.
+
+(Also note that whereas the previous board support defined `BUILTIN_LED` for
+the red board LED pin, this has now been replaced with `LED_BUILTIN`.)
+
+Refer to the table below and these pinout diagrams:
+
+- [original ESP32 Feather pinout](https://cdn-learn.adafruit.com/assets/assets/000/111/179/original/wireless_Adafruit_HUZZAH32_ESP32_Feather_Pinout.png?1651089809)
+- [S3 Feather pinout](https://cdn-learn.adafruit.com/assets/assets/000/110/811/original/adafruit_products_Adafruit_Feather_ESP32-S3_Pinout.png?1649958374)
+
+Here are the original (ESP32) pinouts:
+
+[ ![ESP32 pinout schematic](images/huzzah-32-pinout-zerynth-300x368.png "ESP32 pinout schematic") ](images/huzzah-32-pinout-zerynth.png)
+
+<!--
+![pinouts on the ESP32 Huzzah](images/huzzah32esp32pinouts-350x348.png "Pinouts on the ESP32 Huzzah")
+-->
+
+And here's the new (S3) version:
+
+[ ![](images/feather-s3-pinouts-600x377.png "Feather S3 pinouts") ](images/feather-s3-pinouts.png)
+
+A summary of the changes:
+
+|   **ESP32**   | **ESP32-S3** |   **also called**  |
+| ------------- | ------------ | ------------------ |
+|       4       |      8       |       A5           |
+|       5       |     36       |       SCK          |
+|      12       |     12       |                    |
+|      13       |     13       |                    |
+|      14       |      5       |                    |
+|      15       |      9       |                    |
+|      16       |     38       |       RX           |
+|      17       |     39       |       TX           |
+|      18       |     35       |       MOSI         |
+|      19       |     37       |       MISO         |
+|      21       |              |                    |
+|      22       |      4       |       SCL          |
+|      23       |      3       |       SDA          |
+|      25       |     17       |       A1           |
+|      26       |     18       |       A0           |
+|      27       |     11       |                    |
+|      32       |      6       |                    |
+|      33       |     10       |                    |
+|      34       |     16       |       A2           |
+|      36       |     14       |       A4           |
+|      39       |     15       |       A3           |
+|               |      0       |  `BOOT BUTTON`     |
+|               |     33       |  `NEOPIXEL`        |
+|               |     21       |  `NEOPIXEL_POWER`  |
+
+
+An additional complexity is that (in common with other modules) the ESP has
+several names for many of its pins. Just when things were in danger of
+becoming sensible. Hey ho.
+
+<!--
+[ ![](images/huzzah-32-pinout-zerynth-500x515.jpg "Huzzah pinouts") ](images/huzzah-32-pinout-zerynth.jpg)
+-->
+
+There's a good description of [S3 pinout detail
+here](https://learn.adafruit.com/adafruit-esp32-s3-feather?view=all#pinouts),
+and a good general discussion on which [(original) ESP32 pins to use
+here](https://randomnerdtutorials.com/esp32-pinout-reference-gpios).
+
+In this case we'll use these pins:
+
+```cpp
+// LEDs
+uint8_t ledPins[] = {
+  18, // A0, was 26
+  17, // A1, was 25
+  12, // was 21
+   8, // A5, was  4
+  11, // was 27
+  10, // was 33
+   9, // was 15
+   6, // was 32
+   5, // was 14
+};
+```
+
+The course repo has example code called [9LEDs
+firmware](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/9LEDs).
+
+<!--
+Some more pics:
+![9 LEDs breadboard 01](images/nine-leds-bb-01-500.jpg "9 LEDs breadboard  1")
+![9 LEDs breadboard 02](images/nine-leds-bb-02-500.jpg "9 LEDs breadboard  2")
+![9 LEDs breadboard 03](images/nine-leds-bb-03-500.jpg "9 LEDs breadboard  3")
+![9 LEDs breadboard 04](images/nine-leds-bb-04-500.jpg "9 LEDs breadboard  4")
+![9 LEDs breadboard 05](images/nine-leds-bb-05-500.jpg "9 LEDs breadboard  5")
+![9 LEDs breadboard 06](images/nine-leds-bb-06-500.jpg "9 LEDs breadboard  6")
+![9 LEDs breadboard 07](images/nine-leds-bb-07-500.jpg "9 LEDs breadboard  7")
+![9 LEDs breadboard 08](images/nine-leds-bb-08-500.jpg "9 LEDs breadboard  8")
+![9 LEDs breadboard 09](images/nine-leds-bb-09-500.jpg "9 LEDs breadboard  9")
+![9 LEDs breadboard 10](images/nine-leds-bb-10-500.jpg "9 LEDs breadboard 10")
+![9 LEDs breadboard 11](images/nine-leds-bb-11-500.jpg "9 LEDs breadboard 11")
+![9 LEDs breadboard 12](images/nine-leds-bb-12-500.jpg "9 LEDs breadboard 12")
+![9 LEDs breadboard 13](images/nine-leds-bb-13-500.jpg "9 LEDs breadboard 13")
+![9 LEDs breadboard 14](images/nine-leds-bb-14-500.jpg "9 LEDs breadboard 14")
+![9 LEDs breadboard 15](images/nine-leds-bb-15-500.jpg "9 LEDs breadboard 15")
+![9 LEDs breadboard 16](images/nine-leds-bb-16-500.jpg "9 LEDs breadboard 16")
+![9 LEDs breadboard 17](images/nine-leds-bb-17-500.jpg "9 LEDs breadboard 17")
+![9 LEDs breadboard 18](images/nine-leds-bb-18-500.jpg "9 LEDs breadboard 18")
+![9 LEDs breadboard 19](images/nine-leds-bb-19-500.jpg "9 LEDs breadboard 19")
+
+![](images/nine-leds-bb-02-500.jpg "9 LEDs bb")
+![](images/nine-leds-bb-06-500.jpg "9 LEDs bb")
+[ ![](images/nine-leds-bb-20-350x263.jpg "9 LEDs bb") ](images/nine-leds-bb-20.jpg)
+-->
+
+
+## Further Reading ##########################################################
+
+- [@OReilly2015-cz] _Opportunities and Challenges in the IoT_, a conversation
+  with Cory Doctorow and Tim O'Reilly. 2015
+- [@Kolban2017-jx] Check out **Kolban's book on ESP32** (Neil Kolban) at
+  [leanpub.com/kolban-ESP32](https://leanpub.com/kolban-ESP32) -- it is
+  getting a little out of date, but is free and with loads of good stuff. (His
+  snippets library on github is worth a look too!)
+- [@ESP32_Community2022-aa] Have a general look around at the ESP32 Forum:
+  [esp32.com](https://esp32.com/).
+
+
+<!--
+TEMPLATE STUFF
+
+For further information, check the [this chapter](#intro).
+For further information, check the [this chapter's subsection](#first) section.
+Nature food paper: [@Edmondson2020-tv]
+
+This is the first paragraph of the introduction chapter.
+
+## First: Images
+
+This is the first subsection. Please, admire the gloriousnes of this seagull:
+
+![A cool seagull.](images/seagull.png)
+
+A bigger seagull:
+
+![A cool big seagull.](images/seagull.png){ width=320px }
+
+## Second: Tables
+
+This is the second subsection.
+
+
+Please, check [First: Images] subsection.
+
+Please, check [this](#first-images) subsection.
+
+| Index | Name |
+| ----- | ---- |
+| 0     | AAA  |
+| 1     | BBB  |
+| ...   | ...  |
+
+Table: This is an example table.
+
+## Third: Equations
+
+Formula example: $\mu = \sum_{i=0}^{N} \frac{x_i}{N}$
+
+Now, full size:
+
+$$\mu = \sum_{i=0}^{N} \frac{x_i}{N}$$
+
+And a code sample:
+
+```rb
+def hello_world
+  puts "hello world!"
+end
+
+hello_world
+```
+
+Check these unicode characters: ǽß¢ð€đŋμ
+
+
+## Fourth: Cross references
+
+These cross references are disabled by default. To enable them, check the
+_[Cross references](https://github.com/wikiti/pandoc-book-template#cross-references)_
+section on the README.md file.
+
+Here's a list of cross references:
+
+- Check @fig:seagull.
+- Check @tbl:table.
+- Check @eq:equation.
+
+![A cool seagull](images/seagull.png){#fig:seagull}
+
+$$ y = mx + b $$ {#eq:equation}
+
+| Index | Name |
+| ----- | ---- |
+| 0     | AAA  |
+| 1     | BBB  |
+| ...   | ...  |
+
+Table: This is an example table. {#tbl:table}
+-->

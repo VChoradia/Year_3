@@ -1,0 +1,44 @@
+---
+title: "Mi Casa su Botnet?"
+subtitle: |
+  _Learning the Internet of Things with  
+  WaterElf, unPhone and the ESP32_
+author: Hamish Cunningham
+thanks: |
+  I am indebted to Gareth Coleman for many vital contributions, the staff of
+  the Diamond Electronics Lab for creating a brilliant learning environment,
+  Valentin Radu for the machine learning sections, and all the Graduate
+  Teaching Assistants for helping out over the years. And to the students,
+  for Making Stuff Work :)  Thanks all!
+affiliation: |
+  Professor of Computer Science,  
+  University of Sheffield  
+  [hamish.gate.ac.uk](https://hamish.gate.ac.uk/),
+  [unphone.net](https://unphone.net/)  
+  _(with Gareth Coleman and Valentin Radu)_
+  []()
+rights: "Copyright © Hamish Cunningham. Licence: CC-BY-SA-NC 4.0."
+lang: en-UK
+tags: [IoT, Internet of Things, ESP32, ESP32S3, COM3505, unPhone, unPhone9]
+mainfont: DejaVu Sans
+book: true
+date: "Iteration 7 (Q1 2024, 6.1266.2022-07-13)."
+colorlinks: true
+listings: true
+
+# pandoc-crossref
+linkReferences: true
+numbersections: true
+
+# pandoc-citeproc
+bibliography: paperpile.bib
+link-citations: true
+nocite: |
+  @*
+
+# eisvogel
+titlepage: true
+documentclass: book
+biblio-title: Bibliography
+# float-placement-figure: htbp
+---

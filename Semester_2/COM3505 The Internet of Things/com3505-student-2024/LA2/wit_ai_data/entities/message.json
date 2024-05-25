@@ -1,0 +1,39 @@
+{
+    "name": "message",
+    "roles": [
+        "message"
+    ],
+    "lookups": [
+        "free-text",
+        "keywords"
+    ],
+    "keywords": [
+        {
+            "keyword": "How are you?",
+            "synonyms": [
+                "how are you",
+                "how are you?"
+            ]
+        },
+        {
+            "keyword": "Where are you?",
+            "synonyms": [
+                "where are you",
+                "where are you?"
+            ]
+        },
+        {
+            "keyword": "where did you go?",
+            "synonyms": [
+                "where did you go",
+                "where did you go?"
+            ]
+        },
+        {
+            "keyword": "where have you reached?",
+            "synonyms": [
+                "where have you reached?"
+            ]
+        }
+    ]
+}

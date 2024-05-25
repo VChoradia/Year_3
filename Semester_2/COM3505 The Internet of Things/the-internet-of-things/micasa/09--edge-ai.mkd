@@ -1,0 +1,264 @@
+
+# Learning in the Fog -- AI on the Edge #####################################
+
+If there is a subject with a greater reliance on impenentrable jargon than
+computing, I have yet to find it. Fog? Edge? (Mist, even?) Since "cloud" has
+become the accepted term for distributed computing, computation that happens
+locally has started to acquire its own terminology building on the same
+metaphor. A smart phone or an IoT device is an _edge_ device (a _droplet_
+perhaps, or _edge node_). The set of edge devices on a network make a _fog_ or
+_mist_.[^rain]
+
+[^rain]:
+     It works for me. I live in a country where rain is a way of life.
+
+We start this chapter by putting machine learning and AI in the context of
+edge devices in the fog. After motivation, the first issue to address is the
+relatively low power of computational resource available outside of the
+datacenter, which leads to a discussion of federated learning.
+
+
+## Why Learn at the Edge? [^learnatedge]
+
+The vast majority of current applications are designed for data processing to
+be performed predominantly in the cloud. There are several advantages for this
+model, such as:
+
+- data being available for processing at any time in the future.
+- data engineers have access to the raw data, which can lead to its better
+  understanding
+- aggregating data from multiple devices, each operating under different
+  conditions, can instruct better Machine Learning models.
+
+But more recently, privacy is becoming a growing concern in the population.
+Data has long been seen as an important asset by large companies, but only now
+individuals are starting to recognise this fact about their own data.
+Streaming data to the cloud may not be the model of future IoT applications.
+
+So what can we do instead to protect data privacy? One answer is to train
+Machine Learning models at the edge. The method with the most traction in
+current research is Federated Learning.
+
+[^learnatedge]:
+     These sections on machine learning contributed by Valentin Radu.
+
+
+## Federated Learning #######################################################
+
+**_Definition:_**
+
+> Federated learning is a machine learning setting where multiple entities
+> (clients) collaborate in solving a machine learning problem, under the
+> coordination of a central server or service provider. Each client’s raw data
+> is stored locally and not exchanged or transferred; instead, focused updates
+> intended for immediate aggregation are used to achieve the learning
+> objective. Focused updates are updates narrowly scoped to contain the
+> minimum information necessary for the specific learning task at hand;
+> aggregation is performed as earlier [sic.] as possible in the service of
+> data minimization ... [@Kairouz2019-fn]
+
+In essence, instead of sending your data to the cloud to train an ML model,
+with Federated Learning the ML model is sent from the server to the edge (on
+the client). Using the local data of the client, the model is updated to
+reflect a better performance on the local data. This local update of the model
+is then sent to the server for aggregation with updates from many other
+clients. The local data is discarded after the model update and never leaves
+the device in its raw form.
+
+Federated Learning enhances the following principles:
+
+- mitigates data privacy risks by using raw data only locally
+- reduces costs for the centralised server compared to traditional machine
+  learning (because more of the training computations are performed at the
+  edge)
+
+Federated Learning has been receiving substantial interest recently, both from
+research and industry, so it's worth exploring it in the context of IoT data.
+The underlying conditions for this method to work in the IoT space are that
+sensing devices (or nearby computing hosted on the local network, e.g.
+gateways or desktops) have sufficient computing resources to store a fraction
+of the data and perform the model updates.
+
+In 2016, McMahan et al. introduced FL: “We term our approach Federated
+Learning, since the learning task is solved by a loose federation of
+participating devices (which we refer to as clients) which are coordinated by
+a central server.” [@Brendan_McMahan2016-tb] An unbalanced and non-IID
+(identically and independently distributed) data partitioning across a massive
+number of unreliable devices with limited communication bandwidth are the best
+defining set of challenges. 
+
+
+### How does FL work?
+
+Developing a FL framework:
+
+1. Problem identification: The model engineer identifies a problem to be
+    solved with FL. 
+2. Client instrumentation: If needed, the clients (e.g. an app running on
+    mobile phones) are instrumented to store locally (with limits on time and
+    quantity) the necessary training data. In many cases, the app already will
+    have stored this data (e.g. a text messaging app must store text messages, a
+    photo management app already stores photos). However, in some cases additional
+    data or metadata might need to be maintained, e.g. user interaction data to
+    provide labels for a supervised learning task. 
+3. Simulation prototyping (optional): The model engineer may prototype model
+    architectures and test learning hyperparameters in an FL simulation using a
+    proxy dataset. 
+4. Federated model training: Multiple federated training tasks are started to
+    train different variations of the model, or use different optimization
+    hyperparameters. 
+5. (Federated) model evaluation: After the tasks have trained sufficiently
+    (typically a few days), the models are analyzed and good candidates selected.
+    Analysis may include metrics computed on standard datasets in the datacenter,
+    or federated evaluation wherein the models are pushed to held-out clients for
+    evaluation on local client data. 
+6. Deployment: Finally, once a good model is selected, it goes through a
+    standard model launch process, including manual quality assurance, live A/B
+    testing (usually by using the new model on some devices and the previous
+    generation model on other devices to compare their in-vivo performance), and a
+    staged rollout (so that poor behavior can be discovered and rolled back before
+    affecting too many users). The specific launch process for a model is set by
+    the owner of the application and is usually independent of how the model is
+    trained. In other words, this step would apply equally to a model trained with
+    federated learning or with a traditional datacenter approach.
+
+
+[ ![](images/fl-flow-750x368.png "FL activity flow") ](images/fl-flow.png)
+
+<!--
+breaks build:
+[WARNING] Could not convert image '/tmp/tex2pdf.-2651996a9e400786/e704e1490fdc352e0bd6cd6c3e6f7d99f72678a6.shtml': Cannot load file
+  Jpeg Invalid marker used
+  PNG Invalid PNG file, signature broken
+...
+
+![FL Flow](https://github.com/vradu10/FL/blob/main/flow.png "The representation of FL activity flow")
+
+![FL Flow](images/fl-flow.png "The representation of FL activity flow")
+
+[ ![FL Flow](images/fl-flow.png "The representation of FL activity flow") ](https://github.com/vradu10/FL/blob/main/flow.png "The representation of FL activity flow")
+-->
+
+
+The steps in training processes:
+
+1. Client selection: The server samples from a set of clients meeting
+    eligibility requirements. For example, mobile phones might only check in to
+    the server if they are plugged in, on an unmetered wi-fi connection, and idle,
+    in order to avoid impacting the user of the device. 
+2. Broadcast: The selected clients download the current model weights and a
+    training program (e.g. a TensorFlow graph) from the server. 
+3. Client computation: Each selected device locally computes an update to the
+    model by executing the training program, which might for example run SGD on
+    the local data (as in Federated Averaging). 
+4. Aggregation: The server collects an aggregate of the device updates. For
+    efficiency, stragglers might be dropped at this point once a sufficient number
+    of devices have reported results. This stage is also the integration point for
+    many other techniques which will be discussed later, possibly including:
+    secure aggregation for added privacy, lossy compression of aggregates for
+    communication efficiency, and noise addition and update clipping for
+    differential privacy. 
+5. Model update: The server locally updates the shared model based on the
+    aggregated update computed from the clients that participated in the current
+    round.
+
+Typical numbers found in the deployments used at Google's scale are presented
+in the table below.
+
+||Scale|
+|---|---|
+|Total population size | 10<sup>6</sup> – 10<sup>10</sup> devices |
+| Devices selected for one round of training | 50 – 5000 |
+| Total devices that participate in training one model | 10<sup>5</sup> – 10<sup>7</sup> |
+| Number of rounds for model convergence | 500 – 10000 |
+| Wall-clock training time | 1 – 10 days |
+
+
+### Applications of FL
+
+Google makes extensive use of FL in the Gboard mobile keyboard and in Android
+Messages. Each time you type on the Gboard and it predicts the word you intend
+to type next based on the text context, that is used as signal to strengthen
+the model being used for word prediction. This model is then pulled from your
+phone and from other users' phones to update a large global model that is
+capable of predicting the next word more robustly. Note here, not all the
+words you type are considered for sharing in the global model, such as
+usernames or passwords. But anything that falls in the general sense of using
+the language makes it into the global model.
+
+Apple is using cross-device FL in iOS 13 for applications like the QuickType
+keyboard and the vocal classifier for “Hey Siri”. The keyboard strategy is
+very similar to that of Google's. For the vocal keyword it stores samples that
+have a lower confidence and did not activate the device. If these are followed
+by a stronger example that wakes up the device, the immediately previous
+samples are considered for training and updating the local model.
+
+A growing application of FL is now taking place in medicine and banking, where
+data is highly confidential, but actors can allow computing to happen in their
+system closer to the data.
+
+
+### Research challenges
+
+**Non-Identical and Independently Distributed (non-IID)** phemomena in FL is
+usually explored in two directions -- in hardware and in data:
+
+- __Non-IID hardware__ refers to the fact that not all clients (edge devices)
+  have the same computing capability. As such, synchronisation solutions need
+  to be calibrated for the slower devices that will not finish their updates
+  as fast as other higher performance computing devices. The simplest approach
+  is to introduce a timer and consider only those clients that respond in
+  time, while discarding any contributions that come after that deadline.
+- __Non-IID data__ refers to the fact that not all clients have a uniform
+  distribution of data (volume or variation of instances). Some devices may
+  accumulate more data and the variation of that data be more useful for the
+  model update, while others may be exposed to just a small number of samples
+  and variations. One strategy is to use weighted average for contributions
+  based on the amount of data they integrate over.
+
+Two bottlenecks appear in practice:
+
+- Communication (WiFi, mobile network).
+- Reduced local computing resources.
+
+These bottlenecks can be addressed by compression using quantisation or model
+reduction:
+
+- Gradient compression -- reduces the size of the object communicated from the
+  client to the server.
+- Model broadcast compression -- reduces the size of the model communicated by
+  the server to clients.
+- Local computation reduction -- adapts the training to reduce the workload on
+  the client (e.g., model reduction, reduced cycles, hyperparameter turning).
+
+
+### Summary
+
+Federated Learning is a distributed learning setting. This is built on many
+clients contributing updates to a shared model. A centralised server chooses a
+set of clients to update the model. These clients update the global model with
+their own local data and push that back to the server. The server aggregates
+the updates from the contributing clients and pushes the updated model for
+many more clients to use (even if they don't participate in the update).
+
+
+### Hands on experience
+ 
+This course has no lab associated to the theoretical concepts. However, there
+are many resources online if you want to start playing with FL. The more
+popular repository is [FedML](https://github.com/FedML-AI). This has a set of
+examples and benchmarks you can explore independently. A dedicated
+implementation for IoT devices is proposed here
+[https://github.com/FedML-AI/FedML-IoT](https://github.com/FedML-AI/FedML-IoT).
+
+
+## COM3505 Week 09 Notes ####################################################
+
+### Learning Objectives
+
+Our objective this week is to get cracking on the projects, continuing the
+course theme of _learning by doing_. Four more weeks and you'll have had a
+real taste of creating a new IoT device, from breadboard to prototype, and be
+all set to become a practising IoT engineer :)
+
+You should have chosen your project now. If not, do so ASAP!

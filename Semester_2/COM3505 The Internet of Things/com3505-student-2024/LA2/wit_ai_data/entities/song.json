@@ -1,0 +1,78 @@
+{
+    "name": "song",
+    "roles": [
+        "song"
+    ],
+    "lookups": [
+        "free-text",
+        "keywords"
+    ],
+    "keywords": [
+        {
+            "keyword": "Baby, baby, baby, oh",
+            "synonyms": [
+                "baby, baby, baby, oh"
+            ]
+        },
+        {
+            "keyword": "First things first",
+            "synonyms": [
+                "first things first"
+            ]
+        },
+        {
+            "keyword": "I've got fire for a heart",
+            "synonyms": [
+                "i've got fire for a heart"
+            ]
+        },
+        {
+            "keyword": "I, oh-I, oh-I",
+            "synonyms": [
+                "i, oh-i, oh-i"
+            ]
+        },
+        {
+            "keyword": "Sam on",
+            "synonyms": [
+                "sam on"
+            ]
+        },
+        {
+            "keyword": "baby I don't need dollar bills to have fun tonight",
+            "synonyms": [
+                "baby i don't need dollar bills to have fun tonight"
+            ]
+        },
+        {
+            "keyword": "if you go hard",
+            "synonyms": [
+                "if you go hard"
+            ]
+        },
+        {
+            "keyword": "oops I did it again",
+            "synonyms": [
+                "oops i did it again"
+            ]
+        },
+        {
+            "keyword": "tsamina mina eh eh",
+            "synonyms": [
+                "tsamina mina eh eh"
+            ]
+        },
+        {
+            "keyword": "what is love",
+            "synonyms": [
+                "what is love"
+            ]
+        },
+        {
+            "keyword": "what is love?",
+            "synonyms": [
+                "what is love?"
+            ]
+        }
+    ]
+}

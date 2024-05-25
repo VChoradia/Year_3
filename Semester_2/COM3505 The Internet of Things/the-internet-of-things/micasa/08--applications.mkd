@@ -1,0 +1,509 @@
+
+# Applications ##############################################################
+
+<!--
+TODO
+[ ![](images/club-garden-farm-01-350x198.png "club garden farm 01") ](images/club-garden-farm-01.png)
+-->
+
+> There are two ways of constructing a software design: one way is to make it
+> so simple that there are obviously no deficiencies; the other way is to make
+> it so complicated that there are no obvious deficiencies. (C.A.R. Hoare)
+
+> If you try to make something beautiful, it is often ugly. If you try to make
+> something useful, it is often beautiful. (Oscar Wilde)
+
+Welcome to the end of the beginning: from now on we're in _project_ territory.
+The most important part of the rest of the course is to design, build, test
+and document an IoT device. Most often this involves both hardware and
+firmware (and sometimes cloud-based software), but it is also possible to do a
+good project that is only in firmware.
+
+The first half of this chapter does three things:
+
+- takes a whistle-stop tour of various applications of the IoT
+- introduces the various projects that students can undertake in the second
+  part of the course
+- details the safety hazards of using Lithium Polymer batteries, and how to
+  avoid them
+
+The rest of the chapter then details project options.[^garethcircuits]
+
+[^garethcircuits]:
+     Many of the project circuits and their descriptions were developed by
+     Gareth Coleman.
+
+TODO
+
+(**NOTE:** in 2024 the chip shortage has eased quite a bit, and we should be
+able to offer 3 default choices based on the LilyGO Watch, DIY Alexa
+(_Marvin_) and unPhone-based projects. There are also options that only use
+the ESP32S3 featherwing which is supplied in week 1. Other possibilities are
+included below for reference.)
+
+
+## Beep my Earing Whenever I Start Sounding Like a Donkey ###################
+
+Applications of IoT technology are many and varied. Existing products are as
+diverse as RFID warehousing and logistics trackers, exercise products such as
+Fitbit or the Polar heart rate monitor, the Good Night Lamp or the NEST
+thermostat. DIY projects are similarly numerous and diverse. For example:
+
+- An automatic hen-house door [@Monk2013-ey] which lets the critters out in
+  the morning and then shuts them in (safe from foxes!) at the end of the day.
+- A temperature monitoring web server with remote control of household
+  appliances [@Thakur2016-wv].
+- A low moisture alerts system for keeping track of indoor plant watering
+  needs [@Schwartz2016-ib] or wifi alarm [@Schwartz2016-lu].
+- An umbrella whose handle lights up when you’re leaving the house and it is
+  raining outside [@McEwen2013-ya].
+- An autonomous toy car robot that navigates with GPS [@Kurniawan2016-pu].
+- An automatic garden watering system [@Banzi2014-sp].
+- A barcode scanner for keeping track of your shopping [@Doukas2012-oj].
+
+It sometimes feels easier to define what _isn't_ IoT, than what is --
+particulary as the marketing departments of most major companies decided
+somewhere in the middle tennies that everything lying around in their product
+portfolio up to and including that old COBOL point-of-sale system that last
+sold in the late 1850s is actually a blazingly relevant IoT innovation that
+will transform your life, or at least help trim off that irritating positive
+bank balance that you've been worrying about. If a device...
+
+- ...is net-connected, whether permanently or intermittently,
+- based on a microcontroller,
+- and uses sensors and actuators to monitor and respond to external events...
+
+...then it probably qualifies for inclusion in the IoT. (If it is permanently
+powered, talks to the outside world via teletype or Morse code, and deploys
+enough compute power to run the entire world's automation capability in the
+1980s, it may not be.)
+
+
+## Projects: Design, Build, Document ########################################
+
+The course project is both a great opportunity to learn about the entirety of
+an IoT device and the main way that we assess the **depth** of your learning.
+(See chapter 1 for more details of the _threshold and grading_ assessment
+method in use from 2021.) The latter point means that you should pay a good
+deal of attention to documentation and presentation of your work:
+functionality is important, but the best projects will be those that combine
+great functionality with great documentation, both of the device itself and of
+the process of its creation.
+
+You now need to start:
+
+- designing
+- assembling any extra hardware that is needed
+- working on the firmware
+- thinking about how you will present the project (via your gitlab,
+  documentation and a 60 second video) in week 12
+
+<!--
+If you need extra lab time for the hardware build note that soldering and etc.
+facilities are available in the iForge, and that the DIA 2.02 lab is often
+available on Wednesday afternoons (after 3pm if not before). LoRaWAN should be
+available in most of the Diamond, and a somewhat random selection of other
+parts of campus (and in the corridor outside Hamish's office, but camping
+there may result in getting some strange looks :) Seriously, the transceiver
+in G28A is visible from some distance; give it a try and see!).
+-->
+
+As always you should keep checking in and pushing to your repository as you
+iterate through design, development, testing and documentation phases.
+
+
+### Possible Projects #######################################################
+
+There are many possible projects, some using additional hardware, some just
+using the ESP32 on its own. We supply a variety of add-on hardware for you to
+use in project work, but if you prefer it is also possible to do a project
+using just the ESP32 itself, for example:
+
+- binary diff for incremental OTA
+- power usage analysis and off-grid modelling
+- bed-time tracking and cloud-based data visualisation
+
+Projects using additional hardware:
+
+- DIY Alexa: a mic-and-speaker project with cloud-based voice recognition
+- lots of unphone-based projects (using the UI, IR LEDs, LoRa radio, SD card,
+  accelerometer, expander board, or etc.)
+- Robocar, a small motorised platform
+- thermal imaging with the [thermal camera
+  featherwing](https://www.adafruit.com/product/3622)
+- intrusion detection or etc. using a PIR sensor
+- location-based systems (e.g. a panic button for summoning help) using a GPS
+  featherwing
+- WaterElf version 9, a sustainable agriculture control and monitoring board
+- a music player, and/or musical instrument
+- a spoken note-taker with cloud ASR
+- a dawn simulator alarm clock
+- TV-b-gone, or TV remote control, using IR LEDs and (probably) an IR sensor
+  to test the operation of the LEDs
+- a ShakeMe UI: using an accelerometer for gesture-based control
+- persistence of vision using an LED strip (advanced!)
+- air quality monitoring (**not available in 2022** unless by special
+  arrangement)
+- text messaging without Telcos: basic communications over LoRaWAN
+- a predictive typing UI using a touchscreen
+- an ESP32 smartwatch (though you'll need to supply your own if doing this in
+  2022)
+- A.N. Other (just ask first!)
+
+Below we detail hardware build issues, relevant libraries and example code
+etc., after a look at the LiPo batteries used by some project options.
+
+
+## LiPo Safety ##############################################################
+
+### What are Lithium Polymer Batteries? #####################################
+
+Lithium Polymer (or LiPo) cells are one of the most effective commercially
+available rechargeable batteries, having high energy and power density. These
+batteries are used in all manner of mobile applications and are particularly
+popular with remote control (RC) hobbyists.
+
+If needed you will be given a LiPo battery as part of the project hardware for
+COM3505. The battery is **potentially dangerous** if damaged, or the
+electronics connected to the battery are damaged, or the battery is connected
+to inappropriate hardware. If in doubt, stop work and ask for help!
+
+
+### What are the Dangers? ###################################################
+
+Although these cells are very useful, they can be dangerous when mistreated or
+misused. There are three main causes of cell failure: puncture, over-heating
+and over-charging. If the battery fails as a result of any of these, hazardous
+electrolyte leakage, fire or explosions may occur.
+
+The rate of transfer of energy within the battery is strongly linked to its
+internal heat; when over-heated the cell's long term performance will degrade,
+more energy is released and the battery gets hotter, creating a dangerous
+feedback loop. If this continues the electrolyte will vaporise and cause the
+battery to expand, which may lead to fire or even an explosion.
+
+This same effect can be caused by over-charging the battery, or in some cases
+even just leaving it charged in the wrong circumstances. Henry (one of our
+previous teaching assistants on the course) used to fly an RC helicopter that
+ran off a multi-cell LiPo pack. Having forgotten to discharge it, it was left
+in a container in his shed. Many months later the cell exploded in a ball of
+flame nearly burning down the shed!
+
+The sensitive chemistry of the batteries can also lead to fire if the battery
+gets punctured and vents into the air.
+
+
+### Avoiding Problems #######################################################
+
+**ALWAYS** take the following precautions when using LiPos in COM3505:
+
+- Only use the battery in the configurations documented in these notes.
+- Only charge the battery using the board which we gave you.
+- Regularly inspect the hardware, especially if you need to make connections;
+  check the battery visually for damage, heating or possible puncture. If you
+  spot anything potentially problematic stop and ask for help immediately.
+- If a battery becomes hot:
+    - if it appears safe to do so, unplug it from the power source
+    - warn others present to move away from the battery and do so yourself
+    - allow the battery to cool before touching it
+    - stop work and ask for help
+- If you are at all unsure of any of these instructions please ask for help
+  from a member of staff.
+- See also [these safe handling instructions](https://goo.gl/HyrxFb).
+
+
+## Build and Development Notes ##############################################
+
+### DIY Alexa                                                   {#sec:marvin}
+
+Chris Greening's ESP32-based voice-controlled home automation system, [or “DIY
+Alexa” ](https://github.com/atomic14/diy-alexa), uses a custom microphone
+board for the ESP32 that he has developed based on a low-noise MEMS mic:
+
+[ ![](images/cmg-mic-01-350x263.jpg "CMG mic board") ](images/cmg-mic-01.jpg)
+
+[ ![](images/diy-alexa-01-350x203.png "DIY Alexa") ](images/diy-alexa-01.png)
+
+(We have one each of the mics, and speakers and speaker driver boards.)
+
+Other links:
+
+- [blog post](https://www.cmgresearch.com/2020/10/15/diy-alexa.html)
+- [introduction](https://youtube.com/watch?v=FZ4ayyTXM2s)
+- [github for DIY alexa](https://github.com/atomic14/diy-alexa)
+- [Alexa and tensorflow video](https://www.youtube.com/watch?v=re-dSV_a0tM)
+- [tensorflow for ESP32
+  video](https://www.youtube.com/watch?v=kZdIO82059E&t=0s)
+- [github for mic board](https://github.com/atomic14/ICS-43434-breakout-board)
+- [MEMS mics video](https://www.youtube.com/watch?v=3g7l5bm7fZ8)
+- [mic board docs](https://easyeda.com/chris_9044/ics-43434-tindie)
+- my [fork of Chris' code](https://github.com/hamishcunningham/diy-alexa),
+  that lowers recognition thresholds and adds some support for controlling a
+  featherwing LED array
+  - note that it has the mic's SCK pin on GPIO 32 and the SD on 33; if you've
+    wired yours differently you can edit these in `src/config.h`
+
+The sound input stage [is also documented separately](#sound-input).
+
+**Note:** you will need to solder header pins onto the amp and mic boards.
+Shout if you need help!
+
+
+#### Why "Marvin"?
+
+Marvin, the Paranoid Android, is a character in _The Hitchhikers' Guide to the
+Galaxy_, a Trilogy in Five Parts by Douglas Adams. He suffers from chronic
+pain in the diodes down his left side so tends to be a bit melancholy!
+
+Marvin is definitely more intelligent than the average robot as he can talk
+fluently, and when Chris Greening (an electronics experimenter from Edinburgh)
+decided to make a talking interface to some of his projects he decided to call
+it Marvin.
+
+Here's how to build one.
+
+
+#### Parts
+
+To talk to a robot (or a computer or a phone or a smart speaker or TV or etc.)
+we need the following components:
+
+- a microphone, to hear what we say
+- a loudspeaker, to play back what the computer says, and an amplifier to
+  drive the speaker
+- a processor that can recognise at least one word (a "wake word" like "Siri"
+  or "Alexa" -- in our case, "Marvin")
+- a way of wiring all the other parts together
+- a battery and an on/off switch
+- a resistor to set the gain on the amplifier
+- something to control: three ordinary LEDs can simulate several smart home
+  devices, for example
+
+For this project we're using an ICS43434 mic (on a circuit board designed by
+Chris Greening), a MAX98357 amplifier (from Adafruit in New York), a little 4Ω
+speaker from local factory shop Pimoroni, and an ESP32 microcontroller board
+(also from Adafruit, and called a "feather").
+
+A lot of the things we can use Marvin for have something to do with
+controlling other things: switching lights on or off, or turning the music
+down, for example. To have some things to control we'll also wire in some
+ordinary LEDs (Light Emitting Diodes; one red, one yellow, one green).
+
+Last but not least, we'll wire everything together on a breadboard.
+
+Together the set of parts looks like this:
+
+[ ![](images/parts-500x331.jpg "parts") ](images/parts.jpg)
+
+**Note:** we're not supplying batteries and switches before Easter; you can
+pick them up later in term if you with. (We're not supplying the LED array
+featherwing either.)
+
+
+#### Putting it all Together
+
+**Beware!!!** Every part has to be placed precisely into the right holes on
+the breadboard. There are letters across the top of the board, and numbers
+down the sides. Use these to help you place the parts correctly, and ask for
+help when you're not sure!
+
+Below are the circuit schematics and breadboard layouts.
+(Note that my fork has the mic's SCK pin on GPIO 32 and the SD on 33; if
+you've wired yours differently you can edit these in `src/config.h`.)
+
+[ ![](images/marvin_schem-500x340.png "marvin schem") ](images/marvin_schem.png)
+
+[ ![](images/marvin_bb-500x282.png "marvin bb") ](images/marvin_bb.png)
+
+
+##### 1. Wiring, and the ESP32 Feather
+
+First, make the circuit connections shown, then gently push the rectangular
+feather circuit board (the microcontroller) into the breadboard:
+
+[ ![](images/feathers-500x302.jpg "feathers") ](images/feathers.jpg)
+
+**Note 1:** in these pictures we also have an LED array on top, but we don't
+have those in stock for COM3505.
+
+**Note 2:** I got them the wrong way around in this picture!
+
+Also note that this step is fiddly and it is easy to bend the pins by
+accident. Ask for help if you need it!
+
+
+##### 2. Microphone
+
+Second, push in the mic board.
+
+Here is is positioned ready to insert:
+
+[ ![](images/mic1-500x375.jpg "mic1") ](images/mic1.jpg)
+
+And here it is when fully pressed in:
+
+[ ![](images/mic2-500x375.jpg "mic2") ](images/mic2.jpg)
+
+Easy peasy, lemon squeezy?
+
+
+
+##### 3. Amp and Speaker
+
+To connect the amplifier and the loudspeaker, first make sure that the
+terminals on the top are unscrewed sufficiently to allow the wires to fit in:
+
+[ ![](images/spk1-500x375.jpg "spk1") ](images/spk1.jpg)
+
+You may need to separate the red (positive) and black (negative, or ground)
+wires a little at the end. Then push them into the terminals, making sure that
+the red goes to positive as marked on the board with a "+" and the black to
+negative:
+
+[ ![](images/spk2-500x375.jpg "spk2") ](images/spk2.jpg)
+
+Then tighten up the screws and check that the wires won't pull out. (Don't
+pull _too_ hard!)
+
+[ ![](images/spk3-500x375.jpg "spk3") ](images/spk3.jpg)
+
+Now we can push the amplifier board into the breadboard. Here it is ready to
+be inserted:
+
+[ ![](images/spk4-500x375.jpg "spk4") ](images/spk4.jpg)
+
+Here it is from the other side:
+
+[ ![](images/spk5-500x375.jpg "spk5") ](images/spk5.jpg)
+
+
+And here's what we have so far (after pushing the amp down):
+
+[ ![](images/leds1-500x375.jpg "leds1") ](images/leds1.jpg)
+
+Getting close!
+
+
+##### 4. LEDs
+
+Now we'll add the red/yellow/green individual LEDs. (Later on these will
+simulate house lights in the "kitchen", on the "table" or in the "bedroom",
+and Marvin has been set up to respond to each of those words individually.)
+
+We'll use sockets on rows 26 (green), 25 (yellow) and 21 (red) for these:
+
+[ ![](images/leds2-500x375.jpg "leds2") ](images/leds2.jpg)
+
+Now **the tricky bit**: LEDs have what is called _polarity_. In other words,
+they have to be facing the right way around in the circuit (like the
+loudspeaker), so we need to be able to figure out which leg is which. Each LED
+has one slightly longer leg, and this one is the positive leg (or _anode_):
+
+[ ![](images/leds3-500x375.jpg "leds3") ](images/leds3.jpg)
+
+In Marvin's circuit, the positive side needs to be the one nearest to the
+feather, so make sure to put the longer pins into those holes. Here we can see
+the Green LED with it's positive (longer) pin in a hole just next to the
+number 26:
+
+[ ![](images/leds4-500x375.jpg "leds4") ](images/leds4.jpg)
+
+Next comes yellow, in 25:
+
+[ ![](images/leds5-500x375.jpg "leds5") ](images/leds5.jpg)
+
+Then red, in 21:
+
+[ ![](images/leds6-500x375.jpg "leds6") ](images/leds6.jpg)
+
+Nearly done!
+
+
+
+##### 5. Battery and Switch
+
+**Note:** as above we're not supplying these before Easter.
+
+All that's left is to connect the switch to the power input of the feather,
+then connect the battery to the other end of the switch. **Note** that these
+connectors are A) fiddly (and have to be the right way up to fit the little
+bar on the top side of the while plug into the hole in the black socket), and
+B) take quite a lot of force to plug in (and to pull out). Do ask for help if
+you're stuck!
+
+Here's the switch ready to connect:
+
+[ ![](images/bat1-500x375.jpg "bat1") ](images/bat1.jpg)
+
+And here it is ready to plug in:
+
+[ ![](images/bat2-500x375.jpg "bat2") ](images/bat2.jpg)
+
+And now plugged in:
+
+[ ![](images/bat3-500x375.jpg "bat3") ](images/bat3.jpg)
+
+Last of all, plug in the battery, and you're done!
+
+[ ![](images/bat4-500x375.jpg "bat4") ](images/bat4.jpg)
+
+
+
+##### 6. A Complete Marvin!
+
+Now we've got a whole Marvin :)
+
+[ ![](images/complete-500x375.jpg "complete") ](images/complete.jpg)
+
+Click down the switch, wait for a minute or two until things start flashing,
+then try a few sample phrases:
+
+- Marvin <<pause until you hear the "ting!">> turn on the lights
+- Marvin <<ting!>> turn off the kitchen
+- Marvin <<ting!>> tell me a joke
+- Marvin <<ting!>> tell us about life
+
+
+#### Marvin, Siri, Alexa, Google Home: a Privacy Nightmare?!
+
+How does it all work? And why bother?
+
+The processes that are happenning in Marvin can be thought of like this:
+
+[ ![](images/sys-arch-500x240.png "sys arch") ](images/sys-arch.png)
+
+**TODO** link back to Chris' page
+
+The utility of this type of system is borne out by the popularity of smart
+home hubs, smart speakers and the like. Their big disadvantage, of course, is
+that they transmit sound recordings from your environment to cloud-based
+services which are of their nature untrustworthy. One motivation for building
+our own versions is that we can be more confident of controlling these
+transmissions, and, in future, perhaps remove them all together.
+
+
+### unPhone Projects ########################################################
+
+[The unPhone](https://unphone.net/) short-circuits the hardware prototyping
+step by integrating a networked microcontroller with range of sensors and
+actuators, including
+
+- a touchscreen UI
+- infra-red LEDs
+- LoRa radio
+- SD card
+- accelerometer
+- an RGB LED
+- a vibration motor
+- battery management
+- power and reset switches
+- USB to serial
+- etc.
+
+In addition the unPhone supports an expander board which provides 
+two featherwing sockets and a small matrixboard prototyping area.
+
+To program the unPhone you must install a set of patched libraries in your
+development environment; see [Chapter 11](#unphone-yourself) and the
+[unPhoneLibrary
+repository](https://gitlab.com/hamishcunningham/unPhoneLibrary) for details.

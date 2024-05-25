@@ -1,0 +1,7 @@
+{
+    "version": 20200513,
+    "zip-command": "zip diy_alexa.zip diy_alexa\/app.json diy_alexa\/entities\/*.json diy_alexa\/intents\/*.json diy_alexa\/traits\/*.json diy_alexa\/utterances\/*.json diy_alexa\/composer\/*.json",
+    "name": "diy_alexa",
+    "lang": "en",
+    "timezone": "America\/Los_Angeles"
+}

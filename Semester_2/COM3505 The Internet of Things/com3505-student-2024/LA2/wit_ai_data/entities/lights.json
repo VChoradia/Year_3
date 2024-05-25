@@ -1,0 +1,33 @@
+{
+    "name": "lights",
+    "roles": [
+        "lights"
+    ],
+    "lookups": [
+        "free-text",
+        "keywords"
+    ],
+    "keywords": [
+        {
+            "keyword": "Lights",
+            "synonyms": [
+                "lights"
+            ]
+        },
+        {
+            "keyword": "off",
+            "synonyms": [
+                "lights",
+                "off"
+            ]
+        },
+        {
+            "keyword": "on",
+            "synonyms": [
+                "lights",
+                "ligt",
+                "on"
+            ]
+        }
+    ]
+}

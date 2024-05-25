@@ -1,0 +1,23 @@
+
+
+# Colophon ##################################################################
+
+These notes were:
+
+- developed on [GNU](https://www.gnu.org/) [Ubuntu](https://ubuntu.com/)
+  [Linux](https://www.linux.com/what-is-linux/)
+- edited with [Vim](https://www.vim.org/)
+- written in [Markdown](https://wikipedia.org/wiki/Markdown)
+- translated into LaTeX and then PDF by [Pandoc](http://pandoc.org/) (with
+  Pandoc-Crossref)
+- built in a [Docker CoreOS
+  TeX-live image](https://hub.docker.com/r/thomasweise/texlive) using GitLab continuous integration
+  and deployment onto [GitLab Pages](https://iot.unphone.net/)
+- probably longer, wordier and more chaotic because of [the
+  pandemonium](https://www.ncbi.nlm.nih.gov/research/coronavirus/); my
+  apologies!
+
+All opinions expressed are those of the author(s). YMMV.
+
+
+# Bibliography ##############################################################

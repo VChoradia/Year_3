@@ -1,0 +1,782 @@
+
+# Country of the Blind: Networking Devices Without UIs ######################
+
+This chapter covers two key tasks that the vast majority of all IoT devices
+must implement: _provisioning_ and _update_. Provisioning is about how devices
+are supplied with network credentials, and update is about how devices are
+brought up-to-date with new versions of their firmware. As usual we'll look at
+implementing these ourselves, then also look at Espressif's Rainmaker version
+and at the new Matter standard (which is about device interoperability, but
+also provides provisioning and update).
+
+Over the next two weeks we'll study these in some detail, and implement first
+provisioning and then update.
+
+
+## Provisioning and Update ##################################################
+
+When you first power up a Chromecast or a Firestick (for example) and plug it
+into your TV, it is useless. These devices, sharing many typical
+characteristics of the IoT, are special purpose stream-and-decode machines
+that are fed a URL by their controller (your smartphone) and then act as an
+intermediary between the cloud and the television. Without a network
+connection, nothing can happen.
+
+Whenever we supply IoT devices to third parties, we face the same problem. To
+solve it either:
+
+1. the device has to ship with network credentials, or
+1. it must support end-user configuration
+
+Chromecast leverages Google's _Home_ phone app to achieve the second of these.
+
+Secondly, all IoT devices must be considered vulnerable to attacks of one sort
+or another, just like any networked computer. This course is fairly new, but
+has already seen two major vulnerabilities in the ecosystems we rely on:
+
+- In 2017 WPA was shown to be vulnerable: “KRACK (Key Reinstallation Attack)
+  ... on the WPA ... By repeatedly resetting the nonce transmitted in the
+  third step of the WPA2 handshake, an attacker can gradually match encrypted
+  packets seen before and learn the full keychain used to encrypt the
+  traffic.” [Wikipedia](https://en.wikipedia.org/wiki/KRACK)
+- In autumn 2019 the ESP32's secure boot (encrypted flash) was shown to be
+  [vulnerable to voltage
+  glitching](https://www.espressif.com/en/news/ESP32_FIA_Analysis).
+
+The first of these (WPA) was fixed fairly rapidly by patches to the relevant
+libraries. The second was impossible to fix in firmware, and as a result
+Espressif had to develop version 3 silicon (which became available in 2022 as
+the ESP32-S3). The attack is quite difficult and restricted (being a.
+physical, b. complex and c. per-device), but no software patch is possible to
+fix the vulnerable existing hardware: all ESP32s in the field prior to this
+point will continue to be susceptible to this attack.
+
+Quoting [@Schneier2017-xr] (_Click Here to Kill Everybody: Security and
+Survival in a Hyper-connected World_):
+
+> “Everything is a computer. Ovens are computers that make things hot;
+> refrigerators are computers that keep things cold. These computers—from home
+> thermostats to chemical plants—are all online. The Internet, once a virtual
+> abstraction, can now sense and touch the physical world. As we open our
+> lives to this future, often called the Internet of Things, we are beginning
+> to see its enormous potential in ideas like driverless cars, smart cities,
+> and personal agents equipped with their own behavioral algorithms. But every
+> knife cuts two ways. All computers can be hacked. And Internet-connected
+> computers are the most vulnerable. Forget data theft: cutting-edge digital
+> attackers can now crash your car, your pacemaker, and the nation’s power
+> grid.”
+
+Clearly, we need the ability to update our devices in the field; in the worst
+case we might even need to brick[^brick] the hardware and send a replacement!
+How do we manage this process? Read on...
+
+[^brick]:
+     If you damage your hardware beyond repair, it turns from an interesting
+     electronic gadget into an inanimate lump: it becomes, in other words,
+     pretty much like a brick. Hence the colloquial verb "to brick", which
+     bears an intimate relationship with the term "FUBAR" in the engineer's
+     vocabulary. It is recommended to avoid exploring these in practice as far
+     as you can manage.
+
+
+### WiFi-based Provisioning #################################################
+
+The most obvious way to _provision_ (or provide network credentials to) a
+network-connected microcontroller like the ESP32 is to connect over WiFi and
+send the credentials over the radio. There have been several options developed
+to do this, including:
+
+- WiFi Protected Setup (WPS, an early attempt) — but some forms were shown to
+  be crackable in 2011, and it is now often disabled on devices that support
+  it
+- SmartConfig — but this is mostly only availible for Texas Instruments (TI)
+  chips (and the non-AES version relies on security by obscurity: ouch!)
+- using the device as a WiFi access point and serving a configutation site
+  from the device
+
+The SmartConfig control flow looks like this:
+
+[ ![](images/smart-config-350x347.jpg "Smart Config control flow") ](images/smart-config.jpg)
+
+A more general solution, which is possible on all devices (like the ESP32)
+that support operating as a WiFi access point (AP), is to allow client
+connections over e.g. WPA + HTTP(S) (which is as secure as the rest of the
+web!) and then serve HTML to the client that allows triggering of a scan for
+available networks and entering of network credentials (which the device can
+then use to try and join itself, as a client). This is called WiFi-based
+provisioning, and is a robust and common approach. (The exercises this week
+are to implement this technique, using the webserver from last week. Flow of
+control is a little complex, involving the ESP32, your smartphone or laptop,
+and wireless router. Give yourself plenty of time to think it through, and try
+to develop your own solution before looking at how mine works.)
+
+Recent versions of ESP IDF provide provisioning libraries, and these work both
+over WiFi and Bluetooth. We'll roll our own, which is a bit fiddly but
+definitely educational :)
+
+
+### Over-the-Air Updates (OTA) ##############################################
+
+How can we ensure that IoT devices get patched promptly when security holes
+appear?
+
+The answer is OTA, or over-the-air updates: when your microcontroller is
+connected via a fast network (e.g. over WiFi), it can download new firmware
+versions whenever they’re available. There are upsides, but also downsides:
+
+- if you corrupt firmware in such a way that the device can no longer boot,
+  you’ve bricked your device
+- the implications for flash memory resources on the device are that it must
+  be double (or triple) the size of a single flash image; this is because OTA
+  updates, where the net might suddenly drop, must be staged in a separate
+  space on flash (and if you want to support _factory reset_ functionality
+  then you also need a third area to store the factory firmware version)
+
+Several partitions in flash are used for update staging, e.g.:
+
+![](images/esp-flash04.jpg "OTA partitions")[^lucaota]
+
+[^lucaota]:
+     [From Luca
+     Dentalla.](http://www.lucadentella.it/en/2016/12/22/esp32-4-flash-bootloader-e-freertos/)
+
+Here we see three partitions in use: 
+
+- the `factory` partition is a baseline version that can be used for a "reset
+  to factory settings" function, or as a last resort boot target if other
+  partitions become unusable
+- `ota_0` and `ota_1` are used one each for
+    - the currently running image, and
+    - as download space for an update image
+
+The sequence of an update then goes something like this:
+
+- a firmware (`.bin`) file and its version number are published to a
+  web-accessible site known to the device (e.g. by hard-coding the address
+  into each image)
+- the ESP periodically polls that web location (e.g. at every reboot); if the
+  available version is greater than the current firmware version then:
+    - download the new firmware to whichever flash partition is currently not
+      in use
+    - verify the download; set the bootloader flag to the new partition
+    - restart; now the new version runs
+
+Diagrammatically:
+
+[ ![](images/ota-sequence-350x183.png "OTA sequence") ](images/ota-sequence.png)[^andreasschweizer]
+
+[^andreasschweizer]:
+     [From Andreas
+     Schweizer.](https://blog.classycode.com/over-the-air-updating-an-esp32-29f83ebbcca2)
+
+See below for an exercise to implement this style of OTA.
+
+Note that the Arduino IDE also provides a form of OTA, accessible via the
+`Tools>Port` menu option when running an OTA capable sketch from a machine
+connected to the same network as the ESP. See
+`File>Examples>ArduinoOTA>BasicOTA` for an example sketch. (This only works
+via the IDE; [more details on this
+video](https://www.youtube.com/watch?v=lQavz_U8nd4).)
+
+We'll move on to implementing OTA (on top of WiFi provisioning) next week.
+
+
+### WiFi Provisioning + OTA = ??? ###########################################
+
+What happens when we combine both approaches under a web front end that
+provides management of the update binaries, device registration and the like?
+An early attempt at this type of system (for the ESP8266 and later ESP32 and
+other MCUs) was built by [Andreas
+Spiess](https://www.youtube.com/channel/UCu7_D0o48KbfhpEohoP7YSQ) and
+colleagues, called [IoTAppStory](https://iotappstory.com/):
+
+[ ![](images/iotappstory-400x225.png "IoT App Story") ](images/iotappstory.png)
+
+This project provides a library for devices to poll a firmware repository and
+recognise when updates are available, then triggering OTA update. It follows
+an "app store" model as [described in this
+video](https://www.youtube.com/watch?v=_4NRqIa-cvo).
+
+
+### RainMaker Provisioning & OTA #############################################
+
+When we're programming the ESP32, we can take advantage of
+[RainMaker](https://rainmaker.espressif.com/), which, from IDF 4.0 and above,
+is Espressif's official solution to the provisioning and OTA tasks. (It also
+provides a simple device control and configuration mechanism via library calls
+and a phone app. Also note that there are lower level APIs in IDF that are
+applicable to provisioning and OTA, and involve less commitment to Espressif's
+IoT architecture than Rainmaker.)
+
+[ ![](images/rainmaker-intro-350x280.png "RainMaker architecture") ](images/rainmaker-intro.png)
+
+<!--
+[ ![](images/rainmaker-3-350x317.jpg "RainMaker IoT") ](images/rainmaker-3.jpg)
+[ ![](images/rainmaker-intro-200x160.png "RainMaker architecture") ](images/rainmaker-intro.png)
+-->
+
+We call the library from `app_main`, specifying any parameters we would like
+to expose on the device. We also upload firmware to a repository to support
+OTA. We can now manage the device from a phone app.
+
+The advantages:
+
+- reasonably stable
+- efficient
+- Android and iOS support
+
+Disadvantages:
+
+- relies on an Espressif cloud account (on AWS)
+- the free version is limited to small numbers of devices
+
+For example, if we have three devices integrated (or "claimed") on our
+RainMaker account, the android app displays:
+
+[ ![](images/rainmaker-1-200x356.png "RainMaker Android app 1") ](images/rainmaker-1.png)
+
+If we then open a device that exposes three controls, we see something like
+this:
+
+[ ![](images/rainmaker-2-200x356.png "RainMaker Android app 2") ](images/rainmaker-2.png)
+
+All this is so neat, Espressif drew a pretty picture to go with it :)
+
+[ ![](images/rainmaker-3-200x181.jpg "RainMaker IoT") ](images/rainmaker-3.jpg)
+
+Give it a try? But try the exercises below first!
+
+
+### Provisioning and OTA with Matter #########################################
+
+New kid on the provisioning and OTA block is Matter, a Connectivity Standards
+Alliance initiative that launched in 2022. Matter is
+
+> a proprietary standard for home automation that is royalty-free, with
+> manufacturers only incurring certification costs. Announced on 18 December
+> 2019, Matter aims to reduce fragmentation across different vendors, and
+> achieve interoperability among smart home devices and Internet of things
+> (IoT) platforms from different providers. The project group was launched and
+> introduced by Amazon, Apple, Google, Comcast and the Zigbee Alliance, now
+> Connectivity Standards Alliance (CSA). Subsequent members include IKEA,
+> Huawei, and Schneider. Matter-compatible software updates for many existing
+> hubs became available in late 2022, with Matter-enabled devices and software
+> updates expected to be released during 2023.
+> [WikiPedia](https://en.wikipedia.org/wiki/Matter_(standard))
+
+It is early 2023 as I write this, and I'm short on time, so I asked ChatGPT
+to help:
+
+> Please give me a short introductory paragraph to the new Matter IoT
+> standard, and then describe how it supports provisioning and OTA.
+
+> Matter is a new standard for the Internet of Things (IoT) that aims to make
+> smart home devices more interoperable and secure. It was developed by the
+> Connectivity Standards Alliance (formerly known as the Zigbee Alliance) in
+> collaboration with major tech companies such as Apple, Google, Amazon, and
+> Samsung. Matter builds on existing IoT standards, such as Zigbee and Thread,
+> and uses the IP protocol to provide a common language for smart devices.
+> With Matter, users can easily connect and control a wide range of smart
+> devices from different manufacturers, without the need for additional hubs
+> or bridges.
+
+> Matter also supports two key features for IoT devices: provisioning and
+> over-the-air (OTA) updates. Provisioning refers to the process of setting up
+> and configuring a new device on a network. Matter devices can be provisioned
+> using a mobile app that scans a QR code on the device or by using a secure
+> method such as NFC or Bluetooth LE. This makes it easy for users to add new
+> devices to their network without the need for complicated setup procedures.
+
+> OTA updates are another important feature supported by Matter. With OTA,
+> devices can receive updates to their firmware or software over the air,
+> without the need for physical access. Matter devices can receive OTA updates
+> securely and reliably, ensuring that they always have the latest features
+> and security patches. This is especially important for IoT devices, as they
+> are often deployed in hard-to-reach locations and may be vulnerable to
+> security threats. With Matter, users can be confident that their smart
+> devices are up-to-date and secure.
+> [chat.openai.com, 24th Feb 2023](https://chat.openai.com/chat)
+
+Jeez, how cheap can this guy get?! Wikipedia is bad enough, though at least it
+was written by human beings. Now he's dumping robotext on us! That's it, I'm
+going to the bar instead.
+
+An interesting problem, isn't it? What can we trust? There have been
+fascinating studies of Wikipedia authorship, and, despite the heroic efforts
+of its curators, we would be foolish to place 100% trust in anything there of
+a contentious nature or of potential marketing value. Now we're faced with an
+even thornier problem: what of the probabilistic continuations that the new
+'foundational models' of the biggest of the Generative Pre-trained
+Transformers gives us? We'll return to the question of AI in Chapter 6, but
+for now let's just say: don't believe anything you haven't verified from
+several sources!
+
+In this case I've read through the above quotes, and they seem correct to me,
+though one or two details may be incorrect, and I note that the GPT training
+data currently was all collected before 2020, whereas Matter has only more
+recently been finalised....
+
+Here are a couple more sources:
+
+- There's a good [guide from Seeed
+  Studio](https://www.seeedstudio.com/blog/2022/11/03/how-matter-will-transform-your-smart-home/).
+- _Stacey on IoT_ has a lot of [good Matter
+  coverage](https://staceyoniot.com/?s=matter), going back to discussions
+  about its [origins in the CHIP
+  project](https://staceyoniot.com/you-can-learn-much-about-matter-from-the-project-chip-github-repo/)
+  (Connected Home over IP) through to a (late 2022) review of why [Matter
+  isn't
+  ready](https://staceyoniot.com/podcast-matter-upgrades-arent-ready-for-prime-time/).
+
+Matter is probably too new to be sure of as yet, but we should definitely keep
+an eye.
+
+
+## COM3505 Week 04 Notes ####################################################
+
+### Learning Objectives #####################################################
+
+Our objectives this week are to:
+
+- deepen our knowledge of IoT device provisioning
+- continue practical work with the ESP's wifi stack, and develop provisioning
+  capabilities in firmware
+- finish off our hardware prototyping work (which we'll restart for projects
+  around week 8)
+
+
+### Assignments #############################################################
+
+To turn _things_ into _internet things_ we need to connect them to a network.
+One way to connect a device without a user interface to a wifi network is to
+make it a wifi access point and serve a website that displays what other
+network access points are available. We can then allow the user to choose an
+access point and enter the corresponding key.
+
+We have three exercises this week that build up to this type of _provisioning_
+functionality, and one (optional) hardware exercise to polish your soldering
+skills:
+
+- **Ex07**: simple utilities for creating web pages
+   - C (and to a degree C++) is a low-level language, and generating HTML
+     simply and efficiently can be challenging. To maintain a different long
+     string for each page you want to serve on the device is unwieldy and
+     error-prone. Create some utilities for representing and manipulating HTML
+     elements and serving pages. (You might take inspiration from templating
+     libraries, for example.)
+- **Ex08**: become a web client and send your email & the MAC address of your
+  ESP to our server (see Blackboard for the IP address)
+    - you'll need to use the `WiFiClientSecure` class from the WiFi library,
+      see `File>Examples>WiFiClientSecure` in the Arduino IDE
+<!-- ; you may also
+      need to [patch your core repository](#patch-the-core-for-ex08) to deal
+      with the server's self-signed TLS certificate[^notin2022] -->
+- **Ex09**: adapt Ex07/08 to allow connection of the device to arbitrary
+  networks
+    - in Ex06 you learned how to create a wifi access point and serve HTML
+      pages to devices connected to that access point
+    - using the `WiFi.scanNetworks()` method, serve HTML pages that list the
+      available access points that the ESP can see, and allow a user to choose
+      one, enter its key, and have the ESP connect to that network
+    - `WiFi.printDiag(Serial);` is useful for printing wifi status
+    - the default IP address of the ESP when running in access point mode is
+      192.168.4.1 -- so if you join the ESP's network from a phone or laptop,
+      go to [http://192.168.4.1](http://192.168.4.1/) to see pages served from the
+      device
+- **Hardware 4** (optional): move last week's [nine LED breadboard
+  prototype](#a-final-breadboard-prototype-9-leds) onto
+  [matrixboard](#moving-9-leds-to-matrixboard) and experiment some more with
+  the [9LEDs
+  firmware](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/9LEDs)
+
+[^notin2022]:
+     Hopefully since iteration 5 (2022) we don't need to do this any more, but
+     if you have a particular need for an earlier core version then you might
+     still hit this bug. See Ex08.cpp for details.
+
+
+#### Coding Hints ###########################################################
+
+Ex07 is about templating: basic string manipulation to create HTML from
+component parts. The model solution uses an array of strings, but there are,
+as usual, many different valid solutions (inc. reusing 3rd party libraries).
+
+Ex08 needs to use WiFiClientSecure, talk to the server (detailed on
+Blackboard, or create your own) on the specified port, and get the URL and
+paths correct. Under those circumstances it will return a line of text
+starting "Received...". <!-- (Note that in some versions of the Arduino core
+you need a patch: [see below](#patch-the-core-for-ex08).) -->
+
+Ex09 is about running a web server (and wifi access point to connect to it)
+which lists all the other access points the ESP is in range of, and allows you
+to tell the ESP the credentials needed to connect to one of your choice.
+
+We can use the solutions from Ex06 (create an access point and web server)
+along with Ex07 (utilities for creating web pages) to get us started here.
+(See the arrangements for running multiple setups and loops in
+`exercises/Thing/sketch/sketch.ino` for an example of chaining the various
+exercises together.) Then for Ex08 and Ex09 we can use the `WiFi` and
+`WiFiClientSecure` classes, with calls to the following methods (and others):
+
+```cpp
+WiFi.begin(SSID, PSK);
+WiFi.status();
+WiFi.localIP();
+webServer.handleClient();
+myWiFiClient.connect(com3505Addr, com3505Port);
+myWiFiClient.print(
+  String("GET ") + url + " HTTP/1.1\r\n" +
+  "Host: " + com3505Addr + "\r\n" + "Connection: close\r\n\r\n"
+);
+myWiFiClient.available();
+myWiFiClient.stop();
+myWiFiClient.readStringUntil('\r');
+```
+
+For Ex09 my code additionally uses:
+
+```cpp
+WiFi.scanNetworks();
+WiFi.SSID(i);
+WiFi.RSSI(i);
+```
+
+Dive in!
+
+
+<!--
+#### Patch the core for Ex08 ################################################
+
+If you hit a problem getting your ESP to connect to the course server (using
+the `WiFiClientSecure.connect()` method) then it may be due to a mismatch
+between the way the server is secured and the version of the Arduino core
+library you're using. (This library layers on top of a port of `mbedTLS` in
+ESP IDF to implement secure, socket-based web communication between clients
+and servers over HTTPS.) Make sure that your problem isn't something simpler
+first (e.g. connection to the wrong wifi network!) but if you're sure that
+your ESP can see the server but is refusing to connect, try the following.
+
+The HTTPS server that we use to collect data from your ESP devices is hosted
+inside the University firewall, and has no external visibility. This means
+that we can't use e.g. LetsEncrypt or similar to generate a signed X509
+certificate, and have to use a self-signed certificate instead. What happens
+when we try to make a connection? A web browser will give the user a warning
+and allow them to make an exception if required, but in the IoT we typically
+have no user interface (and often no user present). So we need to tell the
+library code (in this case `WiFiClientSecure`) not to check the certificate
+authority (CA) chain.
+
+In early versions of the Arduino core it is easy: just don't present a
+certificate and it will connect without problems. In very recent versions it
+is also easy: supply a client certificate (self-signed) and call a
+`setInsecure` method and it will connect without checking the CA chain.
+Versions in the middle present a problem as neither option is available, and
+this includes the IDF 4.3 beta version that our default setup sometimes uses.
+To get over this problem, we must import (or "cherry pick") a single commit
+that implements the `setInsecure` method. Assuming you've used the setup
+method `magic.sh setup` then you can do this as follows:
+
+```bash
+cd arduino-esp32
+git pull
+git describe
+git cherry-pick ef99cd7fe7778719c92d6f8df0f10d3f0f7aa35e
+```
+
+Now edit `libraries/WiFiClientSecure/src/ssl_client.cpp` to resolve conflicts
+(search on "====" and delete that and the ">>>>" and "<<<<" parts). To tell
+git that the repository isn't in conflict any more you can do:
+
+```bash
+git add `libraries/WiFiClientSecure/src/ssl_client.cpp` to register resolution
+```
+-->
+
+
+#### Which WiFi Network? What if it Doesn't Connect? ########################
+
+It is _possible_ to get an ESP to connect to Eduroam, but the Enterprise WPA
+security protocol can be tricky to navigate. You may find it convenient,
+therefore, to connect your ESP to a portable hotspot created via your phone or
+other device. On campus you can also use the "other devices" network; see
+Blackboard for details.
+
+If your ESP doesn't connect, don't panic. Try printing some diagnostics,
+phoning a friend or standing on your head and singing the Congolese national
+anthem backwards in Latin a couple of times. Then try some more diagnostics.
+
+You may also hit problems getting other devices to connect to the ESP32's
+internal access point. Different operating systems try to guess the
+characteristics of the networks they are asked to join in various ways, and
+this sometimes interacts badly with the model code. Android in particular may
+(or may not!) refuse to join the ESP's access point, or join and then fail to
+deliver HTTP requests to the server we set up. Things to try if this happens:
+
+- `magic.sh erase_flash`[^magicerase] and burn the firmware again
+- try joining from a different machine to do the wifi provisioning
+- power down, wait a minute, power up
+- hit it with a hammer[^hammer]
+
+When you've managed to get the ESP onto a wifi network, it will (on serial)
+report its IP address; you can then use that IP to connect to the web server
+instead of 192.168.4.1, which tends to be more reliable.
+
+[^magicerase]:
+     If you're not using the `magic.sh` script `idf.py` will do a similar
+     job like this: `idf-py erase_flash`, or google your IDE's solution.
+[^hammer]:
+     Hitting it won't help of course, but might make you feel better.
+     Temporarily: when Andy asks you to explain why you need a new one the
+     happy feeling will likely evapourate. You could try blaming it on the
+     silly hat that Guy made you wear?
+
+Finally, you probably **don't** want to use the University's `WifiGuest`
+network, as this requires sign-in. (Kudos if you manage it; give me a demo!)
+
+
+#### Details of Our Cloud Server (for Ex08) #################################
+
+The internal cloud server for the course accepts simple GET requests with
+parameters that can be used to pass a little data to our persistent store.
+
+The data format is `key=value`, e.g.: `email=hamish@gate.ac.uk`, and it
+requires a `.ac.uk` email address. A request to store the device's MAC address
+would look like this:
+`https://HOSTNAME.shef.ac.uk:9194/com3505-2024?mac=ThisESPsMAC&email=MyName@sheffield.ac.uk`
+
+(As before HOSTNAME is given on your Blackboard page for the course.)
+
+
+### Moving 9 LEDs to Matrixboard ############################################
+
+**Note:** this requires soldering, which is optional. No worries if you don't
+want to do it, just have a quick skim of the written material here and move
+on.
+
+Last week we built [a 9 LED breadboard](#a-final-breadboard-prototype-9-leds).
+This week the task is to transfer the circuit to a piece of matrixboard and
+solder it up into a more permanent form. (Breadboards are great for
+short-lived experiments, but some of the projects you might build later on
+need to be more robust, so practicing our soldering and circuitry skills is a
+good idea.)
+
+You'll need your breadboard, and some more parts from your kit:
+
+[ ![](images/nine-leds-mb-01-350x187.jpg "9 leds matrixboard") ](images/nine-leds-mb-01-500.jpg)
+
+<!--
+[ ![](images/nine-leds-mb-02-350x263.jpg "9 leds matrixboard") ](images/nine-leds-mb-02-500.jpg)
+
+[ ![](images/nine-leds-mb-03-350x263.jpg "9 leds matrixboard") ](images/nine-leds-mb-03-500.jpg)
+-->
+
+<!--
+![9 LEDs matrixboard 01](images/nine-leds-mb-01-500.jpg)
+![9 LEDs matrixboard 02](images/nine-leds-mb-02-500.jpg)
+![9 LEDs matrixboard 03](images/nine-leds-mb-03-500.jpg)
+-->
+
+Try folding the resistors in a group:
+
+[ ![](images/nine-leds-mb-04-250x218.jpg "9 leds matrixboard") ](images/nine-leds-mb-04-500.jpg)
+
+<!--
+[ ![](images/nine-leds-mb-05-350x263.jpg "9 leds matrixboard") ](images/nine-leds-mb-05-500.jpg)
+-->
+
+<!--
+![9 LEDs matrixboard 04](images/nine-leds-mb-04-500.jpg)
+![9 LEDs matrixboard 05](images/nine-leds-mb-05-500.jpg)
+-->
+
+Place the resistors and LEDs first, ready for soldering:
+
+[ ![](images/nine-leds-mb-06-350x347.jpg "9 leds matrixboard") ](images/nine-leds-mb-06-500.jpg)
+
+[ ![](images/nine-leds-mb-07-350x206.jpg "9 leds matrixboard") ](images/nine-leds-mb-07-500.jpg)
+
+<!--
+![9 LEDs matrixboard 06](images/nine-leds-mb-06-500.jpg)
+![9 LEDs matrixboard 07](images/nine-leds-mb-07-500.jpg)
+-->
+
+Soldering this circuit is fiddly; remember to make sure both surfaces are hot
+before applying the solder.
+
+<!--
+[ ![](images/nine-leds-mb-08-350x263.jpg "9 leds matrixboard") ](images/nine-leds-mb-08-500.jpg)
+![9 LEDs matrixboard 08](images/nine-leds-mb-08-500.jpg)
+-->
+
+Use bent wire from some of the components to form a ground rail:
+
+[ ![](images/nine-leds-mb-09-350x302.jpg "9 leds matrixboard") ](images/nine-leds-mb-09-500.jpg)
+
+[ ![](images/nine-leds-mb-10-350x263.jpg "9 leds matrixboard") ](images/nine-leds-mb-10-500.jpg)
+
+<!--
+![9 LEDs matrixboard 09](images/nine-leds-mb-09-500.jpg)
+![9 LEDs matrixboard 10](images/nine-leds-mb-10-500.jpg)
+-->
+
+When you've done the LEDs and resistors, add a ground jumper, and then move
+the other jumpers (connecting the GPIOs to the LEDs' anodes) over:
+
+[ ![](images/nine-leds-mb-13-350x267.jpg "9 leds matrixboard") ](images/nine-leds-mb-13-500.jpg)
+
+<!--
+![9 LEDs matrixboard 13](images/nine-leds-mb-13-500.jpg)
+-->
+
+Fold the wires together to make connections between jumpers, LEDs and
+resistors, and solder them:
+
+[ ![](images/nine-leds-mb-14-350x263.jpg "9 leds matrixboard") ](images/nine-leds-mb-14-500.jpg)
+
+<!--
+[ ![](images/nine-leds-mb-15-350x467.jpg "9 leds matrixboard") ](images/nine-leds-mb-15-500.jpg)
+
+[ ![](images/nine-leds-mb-16-350x467.jpg "9 leds matrixboard") ](images/nine-leds-mb-16-500.jpg)
+-->
+
+<!--
+![9 LEDs matrixboard 14](images/nine-leds-mb-14-500.jpg)
+![9 LEDs matrixboard 15](images/nine-leds-mb-15-500.jpg)
+![9 LEDs matrixboard 16](images/nine-leds-mb-16-500.jpg)
+-->
+
+Having an extra pair of hands helps!
+
+[ ![](images/nine-leds-mb-17-350x263.jpg "9 leds matrixboard") ](images/nine-leds-mb-17-500.jpg)
+
+<!--
+![9 LEDs matrixboard 17](images/nine-leds-mb-17-500.jpg)
+-->
+
+<!--
+[ ![](images/nine-leds-mb-18-350x263.jpg "9 leds matrixboard") ](images/nine-leds-mb-18-500.jpg)
+[ ![](images/nine-leds-mb-20-350x263.jpg "9 leds matrixboard") ](images/nine-leds-mb-20-500.jpg)
+[ ![](images/nine-leds-mb-22-350x263.jpg "9 leds matrixboard") ](images/nine-leds-mb-22-500.jpg)
+-->
+
+<!--
+![9 LEDs matrixboard 18](images/nine-leds-mb-18-500.jpg)
+![9 LEDs matrixboard 20](images/nine-leds-mb-20-500.jpg)
+![9 LEDs matrixboard 22](images/nine-leds-mb-22-500.jpg)
+-->
+
+Now burn the firmware in the (e.g. using the [9LEDs
+code](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/9LEDs)).
+
+
+## Further Reading ##########################################################
+
+We'll start looking at local communications protocols next week, and also a
+bit more history and context; you could get ahead by checking these out:
+
+- Sparkfun tutorials on communications protocols:
+    - [learn.sparkfun.com...serial](https://learn.sparkfun.com/tutorials/serial-communication)
+    - [learn...i2c](https://learn.sparkfun.com/tutorials/i2c)
+- [@Sterling2014-my] _The Epic Struggle for the Internet of Things_.
+- [@Rubell2018-gi] _Adafruit.io_.
+- [@Van_Kranenburg2012-ps] _Discussion Paper on the Internet of Things_.
+
+Finally, [@The_Economist2019-ym]'s _Chips with everything_ (from _The
+Economist_ Sept 2019 **Special Issue on the IoT**) presented an interesting
+summary of the IoT gold-rush in general, and smart homes work in particular,
+which we excerpt below:
+
+> One way to think of it is as the second phase of the internet. This will
+> carry with it the business models that have come to dominate the first
+> phase—all-conquering “platform” monopolies, for instance, or the data-driven
+> approach that critics call “surveillance capitalism”. Ever more companies
+> will become tech companies; the internet will become all-pervasive. As a
+> result, a series of unresolved arguments about ownership, data,
+> surveillance, competition and security will spill over from the virtual
+> world into the real one.
+
+> Start with ownership. As Mr Musk showed, the internet gives firms the
+> ability to stay connected to their products even after they have been sold,
+> transforming them into something closer to services than goods. That has
+> already blurred traditional ideas of ownership. When Microsoft closed its
+> ebook store in July, for instance, its customers lost the ability to read
+> titles they had bought 
+
+> Virtual business models will jar in the physical world. Tech firms are
+> generally happy to move fast and break things. But you cannot release the
+> beta version of a fridge. 
+
+> In the virtual world, arguments about what should be tracked, and who owns
+> the resulting data, can seem airy and theoretical. In the real one, they
+> will feel more urgent.
+
+> The need for standards, and for iot devices to talk to each other, will add
+> to the leaders’ advantages—as will consumer fears, some of them justified,
+> over the vulnerability of internet-connected cars, medical implants and
+> other devices to hacking.
+
+> The trick with the iot, as with anything, will be to maximise the benefits
+> while minimising the harms. [p. 13]
+
+> Attracted by the lure of new business, and fearful of missing out, firms are
+> piling in. Computing giants such as Microsoft, Dell, Intel and Huawei
+> promise to help industries computerise by supplying the infrastructure to
+> smarten up their factories, the sensors to gather data and the computing
+> power to analyse what they collect. They are competing and co-operating with
+> older industrial firms: Siemens, a German industrial giant, has been on an
+> iot acquisition spree, buying up companies specialising in everything from
+> sensors to office automation. Consumer brands are scrambling, too:
+> Whirlpool, the world’s biggest maker of home appliances, already offers
+> smart dishwashers that can be controlled remotely by a smartphone app that
+> also scans food barcodes and conveys cooking instructions to an oven.
+
+> A world of ubiquitous sensors is a world of ubiquitous surveillance.
+> Consumer gadgets stream usage data back to their corporate makers. Smart
+> buildings—from airports to office blocks—can already track the people who
+> move through them in real time. Thirty years of hacks and cyber-attacks have
+> proved that computers are insecure machines. As they spread, so will that
+> insecurity. Miscreants will be able to exploit it remotely and at a huge
+> scale. [p. TQ 4]
+
+> Consumers can buy smart light bulbs, such as Hue from Philips, a Dutch
+> electronics giant, which can be switched on or off by phone or voice and can
+> generate thousands of tones and shades. Viewers of “12 Monkeys”, an American
+> science-fiction tv series released in 2015, can download an app that will
+> sync with their light bulbs, automatically changing their colour and
+> brightness to match the mood of an episode moment by moment.
+
+On the difficulties of hooking Smart Home systems together (Ben Wood):
+
+> “It’s a very Heath Robinson kind of patchwork, a jigsaw puzzle of
+> connectivity.” 
+
+> products from one manufacturer often fail to work well with those from
+> another. Standards do exist: Zigbee and z-wave are wireless networking
+> protocols designed for the type of low-power radios found in smart-home
+> gadgetry. But many firms either use proprietary standards or implement
+> existing standards in ways that prevent their products working with those
+> from other companies.
+
+> Many companies are involved. Tim Hatt at gsma Intelligence says that
+> telecoms firms are keen to find new, higher-margin businesses rather than
+> simply acting as “bit pipes”, so they have built smart-home offerings as
+> well. Vodafone, a telecoms company, advertises the v-Home hub as a central
+> control point for smart-home devices. sk Telecom, a South Korean firm, has
+> the Nugu. at&t, an American company, offers its Smart Home Manager. Others
+> are startups, such as Wink, which launched with backing from General
+> Electric. In Britain, even British Gas, a former state-owned energy
+> monopoly, has got in on the act. It launched Hive, a smart-home ecosystem in
+> 2013.
+
+> That fragmentation means risks
+
+> Until fairly recently, says Mr Wood, the assumption was that smart homes
+> would be controlled from phones. But, he says, the reality is different.
+> “Pulling out your phone, unlocking it, tapping an app, then using it to turn
+> the lights on, is much more complicated and annoying than simply walking
+> across the room and pushing a button”. Voice, he says, is by far the most
+> convenient user-interface.
+
+> Amazon’s Alexa and Google Home, the two firms’ smart-speaker products,
+> already have greater market penetration than rival smart-home hubs. [pp. TQ
+> 5-6]

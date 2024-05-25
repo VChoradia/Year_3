@@ -1,0 +1,29 @@
+# The Internet Of Things
+
+[Mi Casa su Botnet? _Learning the Internet of Things with WaterElf, unPhone
+and the ESP32_](https://iot.unphone.net/)
+
+(**Course notes and exercises for the University of Sheffield Computer Science
+Department's COM3505, the Internet of Things.**)
+
+Hamish Cunningham, Professor of Computer Science, University of Sheffield  
+
+[hamish.gate.ac.uk](https://hamish.gate.ac.uk/),
+[unphone.net](https://unphone.net/),
+[hamish.gate.ac.uk/pages/iot.html](https://hamish.gate.ac.uk/pages/iot.html)
+
+Copyright © Hamish Cunningham
+
+Licences: [CC-BY-SA-NC (docs) or GPL3 (code)](LICENCE.mkd)
+
+**Note:** the sources live here; compiled HTML, PDF etc. [are on GitLab pages
+via iot.unphone.net](https://iot.unphone.net/).
+
+
+## Thanks!
+
+I am endebted to Gareth Coleman for many vital contributions, the staff of the
+Diamond Electronics Lab for creating a brilliant learning environment,
+Valentin Radu for the machine learning sections, and all the Graduate Teaching
+Assistants for helping out over the years. And to the students, for Making
+Stuff Work :)  Thanks all!

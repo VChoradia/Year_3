@@ -1,0 +1,6 @@
+{
+    "name": "weather",
+    "entities": [
+        "weather:weather"
+    ]
+}

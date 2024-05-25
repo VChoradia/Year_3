@@ -1,0 +1,6 @@
+{
+    "name": "search",
+    "entities": [
+        "search:search"
+    ]
+}

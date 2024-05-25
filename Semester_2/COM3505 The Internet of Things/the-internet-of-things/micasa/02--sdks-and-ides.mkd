@@ -1,0 +1,1617 @@
+
+# Definitions, and a Burning Question #######################################
+
+> When you can measure what you are speaking about, and express it in numbers,
+> you know something about it; but when you cannot measure it, when you cannot
+> express it in numbers, your knowledge is of a meager and unsatisfactory
+> kind: it may be the beginning of knowledge, but you have scarcely in your
+> thoughts advanced to the stage of science. (William Thompson)
+
+> Not everything that counts can be counted, and not everything that can be
+> counted counts. (Albert Einstein)
+
+Low cost networked computers are adding eyes and ears (or _sensors_) and arms,
+legs and voices (or _actuators_) to the Internet. These new devices are being
+connected to on-line brains (_big data_ and _deep learning_ in the
+cloud)[^andai]. This new field is the IoT, of course. Will the result be a
+‘world robot’ [@Schneier2017-xr]?! This chapter will start to cover some of
+the context and history of the IoT. Chapters that follow will cover the
+hardware that makes it possible, the communications protocols and security
+systems it relies on, and the cloud-side analytics that make sense of the data
+it produces.
+
+The practical work this week is to getting to know the SDKs and IDEs[^sdks]
+that allow us to develop software (or _firmware_[^firmware]) for the
+net-connected microcontrollers that are the foundations of IoT devices.
+
+[^andai]:
+     Not to mention Artificial Intelligence (AI) -- see [@sec:ai]!
+[^sdks]:
+     SDK: Software Development Kit; IDE: Integrated Development Environment.
+[^firmware]:
+     The term _firmware_ refers to the level at which the programs we upload
+     to microcontrollers runs. It is, technically, software, but it is so low
+     level that it is _almost_ hardware; hence: firmware :)
+
+We'll begin with a couple of definitions, then look at the genesis of the
+software ecosystem that we'll be using to program our IoT devices, before
+moving on to the practical question of development tools.
+
+
+## Defining the IoT                                           {#sec:defining}
+
+There are many **definitions** of the Internet of Things (IoT); one of the
+most exciting is given by Bruce Schneier in his provocative piece _Click Here
+to Kill Everyone_:
+
+> ...the Internet of Things has three parts. There are the sensors that
+> collect data about us and our environment... Then there are the “smarts”
+> that figure out what the data means and what to do about it... And finally,
+> there are the actuators that affect our environment. … You can think of the
+> sensors as the eyes and ears of the internet. You can think of the actuators
+> as the hands and feet of the internet. And you can think of the stuff in the
+> middle as the brain. We are building an internet that senses, thinks, and
+> acts. This is the classic definition of a robot. We’re building a world-size
+> robot, and we don’t even realize it. [@Schneier2017-xr]
+
+At the other extreme the IoT is about what becomes possible when **networked
+microcontrollers** become cheap enough to embed in very many everyday
+contexts, from central heating thermostats to garage doors. These devices face
+tight constraints of power usage and cost, and concomitant challenges to their
+security and functionality. They also quickly become extremely numerous,
+driving work on big data analytics and cloud computing.
+
+The technology of networked devices goes back perhaps 50 years or more. The
+coining of the term itself is often credited to Kevin Ashton in 1999, while
+working at the Auto ID Center at MIT [@Ashton2011-mc], of which more later.
+
+
+## Revolutionary Code: from MIT Printers to the Arduino #####################
+
+If we understand the past we stand a better chance of seeing into the future.
+Where did the IoT come from? Where did the systems we're going to be coding
+with come from? Later on we'll learn about an embedded electronics ecosystem
+that brought the needs of Italian artists together with the origins of the
+operating system that drives much of the internet and the compiler suite that
+has been ported to more architectures than any other... and spawned _the
+Arduino_.
+
+But first: do you own a phone?
+
+You are very probably carrying a phone, but do you **own** it?! Call me an old
+stickler, but I think that if I own something then:
+
+- I can take it apart and see what it contains
+- I can modify it
+- I can repair it
+
+Do those things apply to your phone? How about your laptop? Your tablet? In
+the 2020s we often pay for electronics which the people who sell then claim we
+will own, but if we take the trouble to read the licencing documents that
+accompany them we often find that we have few rights over them, and that
+repair, for example, is expensive or difficult or voids the manufacturer's
+warranty. Much of the electronic and computational ecosystems we'll spend most
+of our time with in this course arose from a similar realisation some 50 years
+ago.
+
+
+### Return with me to Boston in the 1970s... ################################
+
+Back when I was a wee small snotty thing, and many of you were only minute
+folds in the quantum potential of possible future universes, the PDP 10 was a
+cool computer:
+
+[ ![](images/pdp10.jpg "A PDP 10")](images/pdp10.jpg) ^[[<!-- [] -->Wikimedia.](https://upload.wikimedia.org/wikipedia/commons/3/35/PDP-10_1090.jpg)]
+
+It was the first machine to make time sharing (or _multitasking_) common, and
+it had a huge maximum memory of... a whole megabyte![^pdponesp32]
+
+The operating system code (assembler) on the PDP 10 and its immediate cousins
+was _routinely shared and improved_ by a community of programmers (or
+"hackers"[^hack]) at MIT, including one Richard Stallman.
+
+[^hack]:
+     'The use of “hacker” to mean “security breaker” is a confusion on the
+     part of the mass media. We hackers refuse to recognize that meaning, and
+     continue using the word to mean someone who loves to program, someone who
+     enjoys playful cleverness, or the combination of the two.'
+     [@Stallman2002-fh]
+[^pdponesp32]:
+     Recently the sucessor computer to the PDP10, the PDP11, has been
+     completely
+     [emulated on an ESP32](https://www.hackster.io/news/tiny-3d-printed-dec-vt-102-hides-a-fully-functional-esp32-powered-pdp-11-minicomputer-ac427f15b19d)!
+
+
+### Whaddya Mean, I can't Fix It?! ##########################################
+
+As computing companies became bigger and more profitable in the 1980s
+practices began to change: there started to be no more access to source code,
+and users would have to sign an NDA[^nda] even to get access to a binary.
+Stallman suffered the consequences of an aversion to NDAs when he was refused
+access to the source for a printer control program, even though his intention
+was to improve that program. He says: 'This meant that the first step in using
+a computer was to promise not to help your neighbor. A cooperating community
+was forbidden. The rule made by the owners of proprietary software was, “If
+you share with your neighbor, you are a pirate. If you want any changes, beg
+us to make them.”' [@Stallman2002-fh]
+
+[^nda]:
+     NDA: Non-Disclosure Agreement. If you're considering signing one of these
+     read it VERY carefully!
+
+
+### What To Do? #############################################################
+
+> 'So I looked for a way that a programmer could do something for the good.
+> I asked myself, was there a program or programs that I could write, so as
+> to make a community possible once again?
+
+> The answer was clear: what was needed first was an operating system. That
+> is the crucial software for starting to use a computer. With an operating
+> system, you can do many things; without one, you cannot run the computer
+> at all. With a free operating system, we could again have a community of
+> cooperating hackers—and invite anyone to join. And anyone would be able to
+> use a computer without starting out by conspiring to deprive his or her
+> friends.' (Ibid.)
+
+And this is what lead to the kernel code that runs your Android phone, the
+GNU/Linux operating system that runs the majority of servers in the cloud, and
+the compiler code you'll use to create firmware to run on the ESP32 in this
+course...
+
+Why does this matter?
+
+- If you want to build quickly you need to stand on the shoulders of giants.
+  Open source software has been so successful in the years since Stallman
+  started work on GNU that we've come to take it for granted, but imagine that
+  you had to start every project from scratch -- we'd be working at a small
+  fraction of the pace that is possible using the free libraries, tools and
+  operating systems out there.
+- If you want to build well, you want the building blocks to have been tested,
+  tested, and tested again. Open source projects have become ubiquitous and
+  often far more widely used than their closed equivalents.
+- If you want to make money from software, you need to be popular! Sharing
+  code is often a prerequisite, and your commit history on github or gitlab is
+  frequently taken into account when applying for jobs.
+- There's no security without code audit, and if there's no code that you have
+  access to, there's no audit... (One of the latest in a long string of
+  examples is the [Solar Winds
+  hack](https://www.schneier.com/blog/archives/2020/12/russias-solarwinds-attack.html);
+  no user of this closed system could see into it, or check what its updates
+  were doing.)
+
+And, perhaps most important of all, we have been describing the genesis of the
+whole free and open source software movement, which has been responsible for
+huge portions of the code running our world, and which in combination probably
+constitute the most complex machine ever constructed. Where will it go? Where
+will _humanity_ go, locked into a triple crisis of pandemic, environment and
+economy? The two questions are (perhaps uncomfortably) tightly linked.
+
+Ok, enough context for now. We'll come back to IoT history next week; now for
+something practical :)
+
+
+## Coding Support Tools: IDEs, SDKs, Libraries {#sec:coding}
+
+When we write code to run on a microprocessor (e.g. on your laptop, phone, or
+that Cray you have in the garden shed) we use all the facilities of the
+operating system, a modern programming language and its library ecosystem to
+insulate ourselves from the underlying hardware and to provide a set of
+abstractions, APIs and components that can make us productive at high speed.
+In recent times we have started adding on-line cloud APIs to the mix, making
+our potential deployments of computational resource truly vast.
+
+On a microcontroller like the ESP32 in your kits, we have a lot less support:
+programming is typically with low level languages (C, C++, occasionally bits
+of assembler), the 'operating system' is more like a task management library,
+and the development tools are often cranky and basic. Firmware usually has to
+be uploaded to the device over a serial line or JTAG connection, and the
+tooling to perform this task is different for every hardware family.
+
+In some cases a new world of Javascript or Python programming and
+drag-and-drop upload (e.g. over USB mass storage class) is starting to become
+available for the IoT, but:
+
+1. this is not yet widespread
+1. it still uses the manufacturer's C libraries under the hood
+
+The second of these points in particular means that projects that need to use
+the hardware efficiently and to exploit all of the available facilities will
+most often write in C/C++.
+
+(Not convinced? See [Appendix
+B](#appendix-b-circuitpython-on-feather-s3-and-unphone) for how to use Python
+on the Feather S3 and the unPhone. In fact Python is becoming a good choice
+for IoT prototyping at least, especially if you already know it.)
+
+This section begins by looking at the basic (toolchain, SDK and library)
+building blocks of development on the ESP32, then goes on to describe
+available development environments. Later on (section [-@sec:setup]) will talk
+you through installing your own development environment and taking your first
+steps in programming an IoT device.
+
+
+### Toolchains: In the Beginning, There Was The C Compiler... ###############
+
+In any novel embedded system the foundational step is to port a C compiler to
+the new chip. The compiler, linker and the tools that take a binary image and
+burn it into the memory space of the device (in a form that can then be sucked
+up by a bootloader and turned into a running process) are called collectively
+**the toolchain**. The compiler is generally an unusual beast, as it has to
+run on one platform (your development machine, `x86_64` perhaps) but produce
+binaries for a different architecture (Xtensa being the one on the ESP32 in
+your parts kit, or RISC-V the coming thing); i.e. we need a _cross compiler_.
+So when installing a development environment for the ESP32 we need to pick up
+the Xtensa port of GCC (the [GNU Compiler Collection](https://gcc.gnu.org/),
+aka GNU C Compiler).
+
+There's good news and bad news about this step:
+
+- **the good news** is that Espressif, the ESP32's manufacturer, provides
+  various convenience scripts and build system targets to download and
+  configure the appropriate toolchain
+- **the bad news** is that there are a lot of versions, they tend to be pretty
+  complex to work with and they are sometimes incompatible with each other, or
+  with the local Python installation[^python].
+
+[^python]:
+     Python's release policy: if it isn't incompatible with all previous and
+     future versions, add some library dependencies to abandoned projects that
+     fail to compile on all target architectures, a new virtualisation
+     environment to deal with different Python versions and a new language
+     feature that gets activated at random depending on what day of the week
+     it is and what flavour of tea you're drinking.
+
+There are snakes in the long grass, wear your wellingtons.
+
+
+### ESP-IDF, FreeRTOS and the ESP32 Arduino Core ############################
+
+A compiler, when ported to an IoT microcontroller, will open up the magical
+gates of productivity and allow you to do... not very much at all! The
+differentiators between the (many) different chips competing for IoT oxygen
+relate to their hardware facilities, and to access these we almost always need
+more than is provided by the standard C library. (On the smaller, more
+resource-constrained devices, the standard library may not even be present due
+to lack of space; in the case of the C++ library this is actually quite
+likely.) In order to sell chips, then, the microcontroller manufacturer needs
+to supply a set of libraries that expose the hardware functionality of its
+wares in as friendly and powerful a way as possible.
+
+On the ESP32 there are two main layers that we will be dealing with in some
+detail (and a third which we'll touch on here and there):
+
+1. the native SDK, ESP-IDF (which is mostly written in C)
+1. a compatibility layer, or **Arduino core**, that integrates with the 
+   Arduino languages (mostly C++) and libraries
+1. a real-time task and event management library, **FreeRTOS**
+
+We'll describe each of these in the rest of this section; section
+[-@sec:week02] below will start us off on the process of installing and
+running the various SDKs, libraries and development tools that we need to
+learn.
+
+
+#### ESP-IDF {#sec:idf}
+
+Espressif, maker of the ESP32, provides an SDK and library set called
+**ESP-IDF**, or [Espressif IoT Development
+Framework](https://docs.espressif.com/projects/esp-idf/en/latest/), whose
+development is hosted [as open source on
+GitHub](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/)
+[@Oner2021-jx].
+
+ESP-IDF has grown to be a large and successful open source project that
+incorporates ports of many other libraries to ESP hardware. For example,
+[MbedTLS](https://www.trustedfirmware.org/projects/mbed-tls/) ([source
+code](https://github.com/ARMmbed/mbedtls)) is a very popular small footprint
+cryptographics library (supporting certificate-based security and the TLS
+protocol that underlies security on the web via HTTPS). Espressif support a
+port of MbedTLS ([documented
+here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/protocols/esp_tls.html),
+[source
+here](https://github.com/espressif/esp-idf/blob/master/components/mbedtls/port/include/mbedtls/esp_config.h))
+that exploits the ESP32's hardware acceleration facilities for tasks like
+random number generation or hashing. This hides the peculiarities of the ESP's
+underlying hardware from the programmer, who can instead use familiar and
+well-documented abstractions as surfaced by the MbedTLS library.
+
+Other libraries that are supported for the ESP32 via ESP-IDF include:
+
+- `lwip`: a complete TCP/IP stack
+- `spiffs`: filesystem over the SPI protocol (for flash RAM)
+- `protobuf-c`: protocol buffers serialisation format
+- `mqtt`: the MQTT publish-subscribe messaging protocol
+- `coap`: the CoAP communication protocol
+- lots of others!
+
+In each case IDF adapts the library to particularities of the underlying
+hardware, making it easier for programmers to exploit the chip to its full
+potential without learning about the grungey details of which register does
+what under what conditions.
+
+Whenever we write code for the ESP32 we will be using ESP-IDF APIs, either
+directly or indirectly. To begin with, the easiest way is to use them
+_indirectly_, letting the Arduino compatibility layer take the strain (see
+below).
+
+As of early 2024 there are two main [versions of
+IDF](https://github.com/espressif/esp-idf/releases) that we will come across:
+
+- **4.4.x**: the last version 4 release, and the most stable platform for ESP
+  programming in the last several years; we will default to using this version
+- **5.1.x**: the latest stable release; 5.0 was a release with a lot of new
+  stuff and various breaking changes, particularly in the build system, so I
+  haven't updated all of the course material to this version as yet; (if
+  you're trying to program one of the most recent ESP32 chips that aren't
+  supported on version 4, or other bells and whistles, then you'll need this
+  version, with Arduino Core 3.0.0 alpha 3 at time of writing)
+
+<!--
+- **3.3.x**: this is now quite old, but is still in use as a stable and widely
+  supported version
+- **4.3.2**: this is the most recent stable release and is needed if we want
+  to fully exploit the device (and related systems like RainMaker), but is
+  starting to lag behind a little if we want to use newer versions of the
+  ESP32
+- **4.4.x**: is just about to become an official release (with an RC now
+  available as I write in January 2022), and contains supports for all chips
+  up to and including the ESP32-S3
+-->
+
+From version 4 IDF changed its principal build system from GNU Make to CMake,
+and this has made supporting multiple versions quite complex. (In version 5
+GNU Make is deprecated.) There are three scripts provided by the distribution
+that set up the environment needed for the build systems to work:
+
+- **idf.py**: a Python script that wraps the build system and provided
+  commands like `flash` (to burn firmware) and `monitor` (to listen on
+  serial); this lives somewhere like `~/esp/esp-idf` depending on how you've
+  set up the install (`~/the-internet-of-things/support/tooling/esp-idf` if
+  you're using the setup scripts supplied for this course)
+- **export.sh**[^windoze]: a shell script that sets up variables including
+  `IDF_PATH`, the location of the IDF file tree; this also lives in `esp-idf`
+- **activate**: a Python `venv` (virtual environment) script that sets up
+  `PATH` etc. to pull in the requisite flavour of Python; this lives in
+  `~/.espressif`; a common cause of errors is that the virtual environment
+  gets out of sync with the rest of the IDF install[^deletepenv]
+
+[^windoze]:
+     This, and everything else, will be called something different (e.g.
+     `export.bat`) on non-unix platforms.
+[^deletepenv]:
+     When this happens, deleting the relevant tree from
+     `~/.espressif/python_env` and re-running `esp-idf/install.sh` can help.
+
+Each of these has changed and evolved over different versions of IDF, and they
+present a difficult moving target to IDEs and automation scripts like Eclipse,
+PlatformIO and VSCode. (It is also a rapidly changing system integrating many
+3rd party libraries.) This means that it has previously been quite challenging
+to get a 4.4.x IDF setup working with the Arduino layer. Luckily this has
+mostly passed, with the **2.0.6** release of the Arduino core being based on
+4.4. We'll start with 2.0.6 for our work. (Version 5.1 looks good, but the
+Arduino Core hasn't quite gone to its matching version 3.0.0 yet.)
+
+An additional complexity is that IDF provides a configuration tool,
+`menuconfig` (based on the `KConfig` language), originally developed for the
+Linux Kernel. This exposes many of the optional features of IDF and of the
+libraries it incorporates. To use it you have to be doing a native IDF build
+of one type or another (which means you can't easily use it in the Arduino
+IDE). Some of its capabilities are mirrored in configuration that is exposed
+by the Arduino core, but not all.
+
+
+#### FreeRTOS  {#sec:freertos}
+
+Another important facility that we can access via the Espressif SDK is
+**FreeRTOS**, an [open source real time 'operating
+system'](https://www.freertos.org/). FreeRTOS provides an abstraction for task
+initialisation, spawning and management, including timer interrupts and the
+ability to achieve a form of multiprocessing using priority-based scheduling.
+The ESP32 is a dual core chip (although the memory space is shared across both
+cores, i.e. it provides _symmetric multiprocessing_, or SMP). FreeRTOS allows
+us to exploit situations where several tasks can run simultaneously, or where
+several tasks can be interleaved on a single core to emulate multithreading.
+
+This doesn't necessarily make life simpler! Most microcontroller code, at
+least in the hobbyist and maker spaces, is written to target single core
+chips, and the potential for shooting yourself in the foot rises very quickly
+when trying to adapt to a world where multiple things may be happening (or at
+least seeming to happen) all at once. Who owns this piece of memory? What will
+happen when two tasks both try and talk over this bus? Why does my code behave
+differently if I pause a task for a few microseconds? To begin with at least,
+it may be easier to limit yourself to a single task that runs an infinite
+loop, and worry about FreeRTOS later on. (This is what happens, in fact, when
+we delegate our main program entry point to the Arduino "core" for ESP32: the
+`setup` and `loop` procedures which characterise Arduino programming are
+implemented for us using a FreeRTOS task, but we don't have to worry about the
+details.)
+
+Later on, interrupts, tasks, event queues, mutexes and semaphores will all
+become objects of interest, and if you've a mind to dive into the mysteries of
+FreeRTOS that's where you'll find them. Enjoy!
+
+
+#### The Arduino Core for ESP32 #############################################
+
+Fairly early in the lifetime of the ESP32's predecessor chip, the
+ESP8266[^naming], a Bulgarian developer going by the somewhat cryptic moniker
+of `me-no-dev` decided that what was needed was integration with the Arduino
+ecosystem. He set out to develop a compatibility layer between Arduino
+libraries and development tools and the ESP8266. The work rapidly captured the
+imagination of a large number of developers, and has become a mainstay of the
+ESP community: nowadays there are commits from more than 500 people in the
+github repos, and perhaps 10,000 commits overall. Espressif could see that
+this was a good thing: they hired `me-no-dev` and he now works full time on
+the "Arduino core" for the ESP32. The project [can be found
+here](https://github.com/espressif/arduino-esp32).
+
+[^naming]:
+     During our tale Espressif's love of easily understandable product names
+     and narrative coherence will often be in evidence; a recent example is an
+     apparent intention to name an ESP32 successor that uses a completely
+     different instruction set and architecture -- RISC V -- the **ESP32-C3**.
+     Good to see them sticking to their guns and being just as thoroughly
+     mystifying for new stuff as they were for old.
+
+What's an **Arduino core** when it's at home? I'm not sure where the term
+originated, but it basically means all the code that interfaces a device and
+its toolchain, compiler settings, and libraries to **a)** other Arduino
+library code and **b)** the Arduino IDE. This piece of kit is incredibly
+useful, because the Arduino ecosystem is _massive_. Pick up any electronic
+component (sensor, actuator, dog brush or kitchen sink) and the likelihood is
+that someone has published an Arduino-compatible library for it. This makes
+programming from the Arduino APIs hugely more productive than otherwise,
+because we're almost always working from widely used running code. Win win
+win!
+
+Motherhood, apple pie, happy ever after. Except: VERSION HELL!!!
+
+
+#### Version Hell!!! ########################################################
+
+When we program the ESP32 we're typically using C code from ESP-IDF, C code
+from the libraries that have been ported to the ESP chip family and included
+as part of ESP-IDF, C++ code that translates between ESP-IDF and the Arduino
+APIs, and C++ code that exposes sensor and actuator hardware within the
+Arduino ecosystem. (All of these are in active development, and all have their
+own release cycles.) We are then compiling this morass with a toolchain that
+has its own version trail, controlled by a build system that comes in a whole
+bunch of different and subtly incompatible flavours and, finally, uploading it
+to the IoT device using a Python script written in ... erm, Python (possibly
+one of the least stable programming languages ever devised[^python2]).
+
+[^python2]:
+     Python undoubtedly has many fine qualities. In fact I wish I knew it
+     better, and used it more. It also, unfortunately, has its own particular
+     [VERSION
+     HELL](http://www.hackerfactor.com/blog/index.php?/archives/825-8-Reasons-Python-Sucks.html),
+     which does tend to complicate life a little here and there.
+
+Hmmm.
+
+The types of things that tend to go wrong are:
+
+- one library needs a particular version of the C compiler, but another needs
+  a different version
+- the build system (e.g. CMake, GNU Make, Ninja, the `idf.py` script from
+  Espressif, custom scripts provided by library developers, the Arduino IDE or
+  CLI, PlatformIO, VSCode, Eclipse, ...) expects one shape of file tree, but
+  in the current version things have changed
+- the release of the Arduino core that you want to use includes a static
+  version of ESP-IDF, but you need to reconfigure the latter to tailor its
+  features, and can't get the reconfigured version to match the static version
+  in the core
+- you start making rather poor jokes about the boss wanting you to wear a
+  silly hat when programming
+- your head explodes and your family disown you after clearing up all the mess
+- you realise that you've actually gone a bit daft and those people in white
+  coats at the door have turned up to drag you off to a secure
+  institution[^no] [^backup] [^sane] [^far]
+
+[^no]:
+     No! I'm not coming! You'll never take me a....
+[^backup]:
+     Subsequent lectures will be provided by our backup lecturer.
+[^sane]:
+     Don't worry, they're quite sane.
+[^far]:
+     So far.
+
+So: if things go wrong, don't worry. You're not alone. Section [-@sec:setup]
+tries to map out a path of relatively easy and reliable options. But first,
+let's round off this discussion with a look at the available build system CLIs
+and IDEs.
+
+
+### Developer Tools: CLIs and IDEs ##########################################
+
+The game, lest we forget amidst all this gratuitous verbiage, is to
+(cross-)compile our code against 1001 IoT and embedded systems libraries and
+burn the resultant firmware images to an ESP32. Along the way it might be nice
+to throw in a bit of:
+
+- code completion and syntax highlighting
+- compiler error message interpretation
+- serial communications monitoring (so we can see messages coming off the
+  microcontroller with low overhead)
+- runtime exception interpretation
+- debugger support
+- test suite automation 
+
+We have two main families of options for doing (some subset of) these things:
+
+- integrated development environments (IDEs), and dedicated code editors
+- command-line interface (CLI) build systems
+
+Examples of IDEs include:
+
+- [Arduino IDE (ArdIDE)](https://www.arduino.cc/en/software): originating from
+  the Arduino project, this is a Java desktop application which is a great
+  place to start work with IoT programming, but is fairly basic in comparison
+  to more recent IDEs.
+- [Arduino Create](https://www.arduino.cc/en/Main/Create), including a
+  web-based IDE. This is relatively new, and could be a good option, but I
+  haven't had time to evaluate it as yet.[^pullreq]
+- [Eclipse](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/eclipse-setup.html):
+  possibly the biggest IDE ever built! Full-featured, but has a reputation for
+  complexity. If you know Eclipse already and don't mind experimenting a bit
+  this could be a good choice.
+- [PlatformIO](https://platformio.org/): an IoT build system abstraction
+  layer. To some degree, PlatformIO is an ambitious attempt to maintain
+  firmware infrastructure for a very large number of IoT device types. The
+  development team is energetic and committed, but this is a big task!
+  PlatformIO integrates IDF and the Arduino core, but until recently has
+  suffered a little from the version problems discussed above. Simple cases
+  probably work out of the box, but more complex configurations sometimes
+  not. In 2024 it is stable though, and a good choice.[^pioevolution]
+- [VSCode](https://code.visualstudio.com/): probably the leading pure code
+  editor in 2024 (and Microsoft's first successful attempt to cozy up to open
+  source developers). The C/C++ tools are good, and the ecosystem of plugins
+  large and well-supported. You can use VSCode as standalone editor, or via a
+  [PlatformIO plugin](https://platformio.org/install/ide?install=vscode), or a
+  dedicated [ESP-IDF
+  plugin](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/vscode-setup.html).
+  (The latter is fairly new, and may not support Arduino projects very well,
+  but may be worth a try!)
+- [Vim](https://www.vim.org/), which actually trounces all the other options
+  hands down, but does require you to remember command sequences like `gUw`
+  and `ZZ` and `:r! column -t`. All the best people use it.
+- Did someone mention Emacs? What's that?
+
+[^pullreq]:
+     If you try Arduino Create (or Arduino CLI) and have spare time, why not
+     [fork this repository on
+     GitLab](https://gitlab.com/hamishcunningham/the-internet-of-things), add
+     a section about how it went and make a pull request?
+[^pioevolution]:
+     At time of writing (early 2024) it supports both IDF 4.4.x and 5.x, but
+     we mostly use the former in our examples.
+
+Examples of CLI build systems include:
+
+- ArdIDE called from the command line (not to be confused with the separate
+  [Arduino CLI](https://www.arduino.cc/pro/cli) system, which I also haven't
+  found time to evaluate as yet)
+- [PlatformIO
+  CLI](https://docs.platformio.org/en/latest/core/index.html#piocore) (aka,
+  confusingly, PlatformIO core)
+- Peter Lerup's [makeEspArduino](https://github.com/plerup/makeEspArduino),
+  which layers on both GNU Make and the build metadata present in the Arduino
+  cores
+- IDF + GNU Make or CMake on top of Ninja or GNU Make and/or via idf.py (in
+  which case we can actually end up using a Python script to call CMake which
+  may then call GNU Make, which then calls back to Python to talk to the ESP32
+  and provides a keyboard shortcut which will under certain circumstances then
+  call back to CMake, which then....)
+- [Docker](https://www.docker.com/) images from Espressif or the the [image
+  supplied for this
+  course](https://hub.docker.com/r/hamishcunningham/iot/tags))
+
+I was talking to someone recently who works at one of the big semiconductor
+companies (the one that specifies the architecture used by the chip in your
+phone) about the difference between microcontrollers and microprocessors and
+remembering all the weird challenges that the former tend to throw at you.
+"Welcome to embedded", she smiled, where getting your toolchain installed can
+be a week's work :)
+
+
+## Cross-Platform Development with Containers ###############################
+
+We've looked a little at the complexity of the development ecosystem for
+typical IoT (net-connected microcontroller) devices, and mentioned the
+plethora of support tools that are available just for the device which this
+course is based on. Before we move on to practical work, a digression on
+solving the cross-platform problem for these tools.
+
+Many embedded system projects use some variant of Linux as their host
+environment. Linux is the only widely-used operating system in which
+predictable and repeatable builds are straightforward, and the only
+environment where we can be confident that we're using a maximally open (and
+auditable) codebase. The support tools we provide for this course (e.g.
+`magic.sh`) require the core GNU/Linux toolset to work.
+
+What if we're forced to use a different platform, e.g. Windows or MacOS? There
+are many answers, going back to venerable emulation projects like Cygwin or
+more modern techniques like virtualisation, but the up-to-the-minute answer is
+to use _containerisation_. This section revises a little recent history in
+that field (and touches on the way that continuous integration and continuous
+delivery have become widespread, partly as a result). Section [-@sec:docker]
+introduces the docker images most relevant for our purposes.
+
+
+### VMs, the Cloud, and Containers ##########################################
+
+When Amazon realised (in the early naughties) that no one went shopping in the
+middle of the night, they founded Amazon Web Services, whose first product was
+EC2 (the 'elastic compute cloud'). Those of us working on 'big data' analytics
+and trying to juggle inadequate hardware budgets with mushrooming data
+sizes[^twitterdata] suddenly realised that instead of buying servers, we could
+buy time. For us this meant that we could use only what we needed; for
+corporate users it meant that costs could move from CapEx (capital expenditure
+budgets) to OpEx (operational expenditure), making a lot of accountants very
+happy. The whole space mushroomed, and cloud computing became a thing.
+
+How did cloud platforms partition machines for different uses? The technology
+was based on virtualisation, the movement of compute loads onto Virtual
+Machines (VMs), which was a big trend for the next decade or so. The ability
+to spread loads meant much more efficient use of servers.
+
+This was a big step forward, but we still had multiple copies of the operating
+system (OS) running for each VM. The next step was to solve this using what
+came to be called _containers_, starting with LXC (Linux Containers) and
+becoming most popular as [Docker](https://docker.com/). Containers share a
+base image of the OS and layer thin (_union_) filesystems on top. A
+specification (e.g. `Dockerfile`) allows recreation of diverse configurations
+from base images, and it has become very cheap and easy to spin up new images.
+
+One of the unexpected benefits of these trends has been that we now have a
+straightforward way to freeze a computational environment (operating system
+plus arbitrary applications) and move it between machines. Hence the current
+discussion: we can use containers to encapsulate complicated development
+environments like our IoT build systems and expect them to operate in a
+constant manner across platforms.
+
+We can also standardise the way we integrate, test and deploy complex
+projects, which we'll discuss briefly in the next section.
+
+[^twitterdata]:
+     I remember when we first got access to the Twitter firehose feed, buying
+     a disk drive to store a data set, and finding that by the time we'd
+     downloaded the data it was double the size of what we'd specified. When
+     you consider that the data was essentially 140 character textual material
+     that compresses very readily, it really came home to me how many people
+     are out there!
+
+
+### DevOps, Containers and CI/CD ############################################
+
+Why do complex systems stop working? Bitrot! Well, more precisely, we create
+complex combinations of library, compilers, databases, operating systems,
+deployment tools, web server runtimes, load balancers... all with their own
+versions, dependencies and release cycles. If we lose track of all those
+versions, it can become impossible to recreate, and if dependency evolution
+leads to incompatibilities, the maintenance task can grow very large.
+
+A second major source of software entropy is that as time goes on all types of
+systems evolve ("a building isn't something you finish but something you
+start" [@Brand1994-hw]), and while adding and changing features we often
+introduce bugs and regressions.
+
+The modern answer to how we cope with these various types of chaos in our
+software development lives is often known as CI/CD:
+
+- continuous integration (CI): whenever anything changes, build, test and
+  deploy (to test environments) immediately
+- continuous deployment (CD): deploy new versions to production environments
+  as soon as possible
+
+Along with the ubiquity of hosted version control (think GitLab or GitHub or
+the like), CI/CD has become an industry standard, at least in the open source
+world. Containerisation plays a vital role in this picture, allowing us to:
+
+- freeze configuration in the container recipe (e.g. `Dockerfile`,
+  `docker-compose.yml`, `.gitlab-ci.yml` ...)
+- spin up an image, test, publish results, store outputs
+- have an up-to-the-minute health-check available 24/7
+
+These facilities are now built-in to the version control hosting sites and
+many others. For example, the on-line and PDF versions of these notes are
+generated using a [LaTeX Docker
+image](https://hub.docker.com/r/thomasweise/texlive) and a [CI/CD
+script](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/.gitlab-ci.yml)
+with
+[Makefile](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/micasa/Makefile)
+to pull in the [Pandoc text processor](https://pandoc.org/). Every time I push
+a change to the gitlab repository, the book gets regenerated and re-published.
+Sweet.
+
+
+### Portable Development Environments #######################################
+
+To summarise, containers allow us to specify, compose and distribute entire
+computational environments in a simple and efficient manner. Repository
+providers like [Docker hub](https://hub.docker.com/) facilitate this process
+and have become powerful tools for developers. The downside is that we are
+adding yet another layer of complexity to an already complex
+picture[^paulondocker], and it would be a mistake to expect to fully
+understand the container ecosystem without putting in significant effort, but
+when we get caught in the maze of IoT build systems it is well worth trying to
+see if an appropriate (and **trusted!**) image exists and giving it a whirl.
+
+[^paulondocker]:
+     Paul Beech summarised my account of developing Docker images for the
+     [unPhone](https://unphone.net/) as "I had a build problem, so I used
+     Docker, and now I have two problems..."
+
+
+## A Helper Script: magic.sh  ###############################################
+
+**Note:** if you're not a Linux command line fan, try a different approach!
+One good option in 2024 the is [docker + web serial approach](#sec:docker).
+
+We provide a helper script in [the course
+repo](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/support)
+to give you an idea of how the various build systems, IDEs and related tooling
+fits together. If you're developing on Ubuntu 22.04 you can use the script
+directly (using the `setup` command to get started; see `magic.sh -h` for more
+commands). Otherwise, you can check the script's code for inspiration, or
+follow the instructions for another platform of your choice. (If you've never
+used the \*nix command line or written shell script `magic.sh` may look like,
+well,
+[magic](https://lab.cccb.org/en/arthur-c-clarke-any-sufficiently-advanced-technology-is-indistinguishable-from-magic/).
+Don't panic! So long as you know [where your towel
+is](https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Knowing_where_one's_towel_is),
+you'll be fine. Just follow the instructions for your platform that are hosted
+by the IDE you wish to use.)
+
+**Rationale**: we would like our ideal build system to do these things:
+
+- work with the ESP32/Arduino compatibility layer (or "core",
+  `arduino-esp32`) and with ESP-IDF
+- allow reconfiguration of ESP-IDF components (which implies the ability to
+  rebuild the `arduino-esp32` layer via `esp32-arduino-lib-builder`, perhaps
+  using docker)
+- provide a simple CLI (command-line interface) to make automation tasks
+  like CI/CD (continuous integration / continuous deployment) easier
+- provide a modern IDE with code completion and etc. (and support a debugger
+  like ESP-PROG)
+- be cross-platform
+
+To achieve these things, we have (at least) these options:
+
+- the GNU Make build system in IDF versions 3 and below
+- the CMake build system in IDF versions 4 and above
+- the Arduino (Java Swing) IDE (either versions up to 1.9 or version 2+)
+- the Arduino CLI (included in the IDE from version 2)
+- the Arduino web IDE
+- the VSCode ESP-IDF plugin from Espressif
+- the PlatformIO IoT build ecosystem, with both CLI and VSCode forms
+- the `makeEspArduino` Makefile (for GNU Make)
+- support tools for rebuilding the Arduino core: `esp32-arduino-lib-builder`
+- docker images supporting the lib-builder: `lbernstone-docker`
+- Espressif's own docker images for ESP-IDF, with CMake underneath and the
+  editor of your choice on top
+
+None of them do all the things we would like to do, at least not reliably
+and while keeping pace with the evolution of the ESP ecosystem. (For
+example, when I wrote this in November 2021, the excellent docker images from
+Larry Bernstone that encapsulate the complex versionning and rebuild process
+of the Arduino core are available only for an alpha of the 2.0.0 release,
+whereas the core itself now has a release candidate of 2.0.1... Fortunately in
+2024 things have improved significantly.)
+
+What to do?
+
+The `magic.sh` script supports several builds using `PlatformIO `or
+`makeEspArduino`, which are largely compatible with the (1.8.x) Arduino IDE.
+Other examples do more complex tasks, e.g. running an IDE build (with optional
+lib-builder reconfiguration) in a docker container, then exporting the
+firmware .bin to the host machine to allow cross-platform burning to devices.
+It all gets pretty hairy, and tends to be brittle as a result. So I recommend
+thatyou figure out your ideal build process in easy stages. Start with
+something very simple (e.g. the Arduino IDE version 1.8.19, or the
+makeEspArduino CLI), get the hang of building and burning firmware to the ESP,
+and then add bells and whistles later on as required. In 2024 the [docker +
+web serial approach](#sec:docker) is also a good choice to start with.
+
+---
+
+Ok, that's the end of Chapter 2's general material. The rest of the chapter
+gives specific tasks for Week 2.
+
+---
+
+<!--
+The rest of this section will describe two of the most straightfoward options
+for getting started, and also provide a few notes on options for using VSCode.
+
+**Note**: you can try out the recipes here to get started on programming the
+device, or just read them and then follow the instructions in section
+[-@sec:week02] below. The recipes here point you to supplier documentation; in
+[@sec:week02] also introduce support scripts and docker images that you may be
+able to use for shortcuts.
+-->
+
+
+## COM3505 Week 02 Notes                                        {#sec:week02}
+
+### Learning Objectives #####################################################
+
+Our objectives this week are to:
+
+- set up the programming environments and start coding and burning new
+  firmware to the ESP32
+- breadboard a circuit and code firmware for it
+- explore useful background on the Arduino ecosystem, open source and open
+  hardware culture
+
+
+### Assignments, Set Up, Exercises 1 & 2 (Ex01, Ex02) #######################
+
+**Notes**:
+
+- [add a .gitignore file](#sec:gitignore) to your repository, [set up your
+  programming environment as below](#sec:setup) and burn example firmware to
+  your ESP32
+- coding hints:
+    - you will need to use the Arduino library functions `Serial.begin` and
+      `pinMode` (in `setup`), and `Serial.println` and `digitalWrite` (in
+      `loop`); the ESP32 library function `getEfuseMac` will give you access
+      to the MAC address
+    - the Arduino IDE has lots of example sketches built in... (see
+      `File>Examples`; try `ESP32>ChipID` for an example of using `Serial`,
+      and `Tools>Serial Monitor` to see the results)
+- push your work to your gitlab repo regularly
+
+**Exercises**:
+
+- **Ex01**: take a copy[^magiccopy] of the [HelloWorld
+  code](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/exercises/HelloWorld/README.mkd)
+  and modify it to:
+    - print the device MAC address (and monitor it over the serial line)
+    - research the issues involved with String processing on the Arduino
+      platform, and add commented code to your sketch illustrating the various
+      alternatives
+    - if you're feeling brave, try and work out the problem with the results
+      returned by `getEfuseMac` -- how would you fix that?
+- **Hardware 2**[^likely1]: fit your ESP32 to the breadboard and add an LED
+  and a switch to create a sensor/actuator circuit
+    - instructions and diagrams [are below](#hardware-2-sensoractuator-board)
+- **Ex02**: using the breadboard you constructed above, blink the external LED
+  and read from the switch
+    - note: you'll need the `INPUT_PULLUP` macro for the switch code
+- check in and push your code in your own repository (`com3505-student-2024`):
+    - if you haven't already, please add a .gitignore file containing `build`
+      and `.pio` and `.vscode` as appropriate (see above)
+    - `git add [any files you created]`
+    - `git commit -vam "a helpful commit message"`
+    - `git push`
+
+[^magiccopy]:
+     The `magic.sh` script supports an argument `copy-me-to` which copies and
+     renames a firmware tree. E.g. `cd HelloWorld; ./magic.sh copy-me-to
+     ~/NewExample`.
+
+[^likely1]:
+     **Hardware 1** is the electronics lab intro sheet -- see last week's
+     notes.
+
+As noted in [chapter 1's "how the course works"](#how-the-course-works), there
+are example solutions in the course materials tree. Have a go at doing your
+own version before looking at these!
+
+
+### Adding a .gitignore File                                 {#sec:gitignore}
+
+First, to avoid checking in lots of emphemeral build files, add a file called
+`.gitignore` to the top level of your repository, containing:
+
+```
+.pio
+.vscode
+build
+```
+
+To do this from the command line try something like this:
+```bash
+cd com3505-student-2024
+cat <<EOF >.gitignore
+.pio
+.vscode
+build
+EOF
+git add .gitignore
+git commit -vm 'added a .gitignore file'
+git push
+```
+
+From now on files or directories like `.pio` (PlatformIO's build tree) will
+not be added to the repo or listed in git status requests.
+
+
+### Set up your Programming Environment                          {#sec:setup}
+
+As discussed above there are lots of options, and lots of potential pitfalls, 
+so give yourself plenty of time to do this task, and don't be surprised if you
+need to come back to it multiple times to refine your toolset.
+
+I recommend that you start with the [Docker/PlatformIO/WebSerial](#sec:docker)
+approach, or possibly the Arduino IDE (version 1.8.19, which is old and clunky
+but reliable). (When using the former you can choose your favourite editor to
+go with the compile and flash tools, e.g. VSCode or vim or ...)
+
+Once you have one of these working, if you wish you might then try PlatformIO
+in VSCode. The ambitious amongst you might try Eclipse (if you've used it
+before and liked it), or Arduino Create. The important thing this week is just
+to get one environment running (and if you're happy with it feel free to stop
+there!).
+
+Follow these steps:
+
+- follow the instructions below for [setting up docker](#sec:docker) or [the
+  Arduino IDE](#using-the-arduino-ide-ardide), and try the `Blink` and
+  `GetChipID` examples
+- familiarise yourself with course repository if you haven't already:
+  [gitlab.com/hamishcunningham/the-internet-of-things](https://gitlab.com/hamishcunningham/the-internet-of-things)
+- try the course gitlab's `HelloWorld`, from
+  [...the-internet-of-things/exercises/HelloWorld](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/HelloWorld)
+- experiment with other build methods and IDEs to taste
+
+Support for these tools on the University machines is limited to Docker (from
+2024), Arduino IDE and VSCode. The latter should allow you to install
+PlatformIO <!-- , though you need to ensure that the plugins are installed to
+your `U:` drive so that your project-specific data follows you around --> (see
+[-@sec:vscode]).
+
+To run on other platforms, I've provided a firmware template and shell script
+in the course materials which **may**, if you're running on Ubuntu 22.04 or
+other recent Debian derivative, set things up for you without much
+intervention. You can also use this via Docker, or in a VM. See section
+[-@sec:magic] below.
+
+The rest of this section details how to work with various different IDE and
+CLI methods. You don't need _all_ of them, one or two is fine :)
+
+
+#### Using the Arduino IDE (ArdIDE) #########################################
+
+One of the simplest and most reliable ways of programming the ESP32 is using
+[the Arduino IDE](https://www.arduino.cc/en/software). This IDE is a little
+like me: quite robust and reliable, but a little antiquated. It is a good
+place to get started, but possibly not where you want to remain for the whole
+course. Your choice though: if you like it, go with it. 
+
+To pick up the compiler toolchain and other specifics we also need to install
+an IDE plugin known as a _core_ -- see above. The easiest way to install the
+IDE and the ESP32 core is to follow the "boards manager" [instructions in the
+core
+documentation](https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html#installing-using-arduino-ide).
+Choose a stable release version, and install core version 2.0.6, which
+should give you [IDF release
+4.4.3](https://docs.espressif.com/projects/esp-idf/en/v4.4.3/esp32s3/).[^boardscaveat]
+
+[^boardscaveat]:
+     One caveat: using the board manager installation method also means that
+     the configuration utility for IDF (`menuconfig`) can't be used (because
+     the Arduino layer installs a pre-compiled version of IDF).
+
+For example:
+
+- install [the IDE version
+  1.8.19](https://www.arduino.cc/en/software#legacy-ide-18x) from [the
+  Arduino.cc download site](https://www.arduino.cc/en/software) (on University
+  machines it should already be present, or available from the _software
+  center_)
+- plug your ESP32 Feather board into a USB socket on your computer
+- put your board into bootloader mode by holding `boot` and pressing (and
+  releasing) `reset` (see also the [Adafruit docs for your
+  board](https://learn.adafruit.com/adafruit-esp32-s3-feather?view=all))
+- launch the IDE
+- open `File>Preferences` and add the `Additional Boards Manager URLs` as
+  described in [the ESP32 Arduino core
+  docs](https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html#installing-using-boards-manager):
+  paste in the `stable release link`
+- go to `Tools>Board>Boards Manager` and type `esp` in the search box, which
+  should now bring up `esp32 by Espressif Systems`; install **version 2.0.6**
+  (a several hundred MB download; it took about 5 minutes on a Diamond
+  Electronics lab machine)
+- now go back to `Tools` and
+  - from `>Board` select `Adafruit ESP32S3 Feather 2MB PSRAM`
+  - from `>Port` select the USB connection (probably `/dev/ttyACM0` or
+    `/dev/ttyACM1` on Ubuntu, or `/dev/cu.SLAB_USBtoUART` on a MAC, or e.g.
+    `COM15` on Windows)
+- open an example from the File menu, e.g. `File>Examples>01.Basic>Blink` and
+  upload ("burn") to the ESP by clicking on the arrow towards the top left of
+  the IDE; if this works, there should (eventually) be a `Done uploading`
+  message on the middle bar (beneath the code pane)
+- press `reset` once more and your ESP should start blinking its red LED
+
+Congratulations, you have successfully burnt your first ESP32 firmware!
+
+Another useful example to try at this point is `GetChipID`:
+
+- open this from the "Examples for Adafruit
+  ESP32-S3 Feather 2MB PSRAM" section:  `File>Examples>ESP32>ChipID>GetChipID`
+- close any other open sketch
+- open the `Serial Monitor` window (from `Tools`)
+- set the baud rate (bottom right) to 115200
+- upload to the ESP
+- hit the board's reset button; check that the port is still the same and
+  change if needed ([see below](#troubleshooting-ports))
+- you should now see output like "ESP32 Chip model =..." etc. in the monitor
+
+If you got that lot to work, you have:
+
+- got a running version of both ESP-IDF and the ESP32 Arduino core
+- got a working configuration of the ArdIDE
+- successfully uploaded (or "burned" or "flashed") firmware to your ESP32
+  Feather
+- listened on the serial line between your machine and the ESP, and displayed
+  the results
+
+Probably time for a brew!
+
+
+##### Troubleshooting Ports #################################################
+
+Didn't work? The most common problem at this point (and it is, sadly, a new
+one that recent boards have brought to the table) is getting the right
+sequence of boot+reset/burn/reset, followed by flash, followed by another
+reset, followed by opening a serial monitor on the correct port. The sequence
+needs to go like this:
+
+- Plug in the board; at this point a serial port should show up (e.g.
+  `/dev/ttyACM0` on Ubuntu or COM9 on Windows). Select this port in your IDE
+  (from the Tools menu for Arduino).
+- Put the board into ROM bootloader mode, which is necessary in order to allow
+  flashing of new firmware. To do this hold down the `boot` button, press and
+  release `reset`, then release `boot`.
+  - Another way to do this is to unplug the USB connection, hold down boot and
+    then replug (and release boot).
+- Now get your IDE to flash (or "burn", or "upload") your new firmware; in the
+  Arduino IDE use the big arrow in the top left. If this fails:
+  - repeat the `boot/reset` sequence; you may need to do this several times!
+- When you see "uploading finished", the board will likely need another reset
+  in order to leave bootloader mode and run the newly burned firmware.
+  (PlatformIO manages to achieve this reset automagically, so do wait a few
+  seconds to see if your IDE manages it too.)
+- At this point one of the typical "gotcha"s may happen, which is that the
+  operating system thinks your board has disappeared and another been
+  connected, and so allocates a _new_ serial port. Your IDE doesn't know what
+  has happenned, and will need to be told about the "new" board in order to
+  display what is happening on serial. Ouch! In the Arduino IDE, go back to
+  the Tools menu and choose the new port. (The old port is no longer valid and
+  may have disappeared.) You may (or may not!) need to also close and reopen
+  the serial monitor.
+- You might also see "Access is denied" messages. This error is triggered when
+  compiling a sketch that is in a directory that you don't currently have
+  write permission to. This tends to happen with the built-in examples on
+  Arduino IDE installs on the Uni machines -- the examples are considered part
+  of the software install, which is read only for normal users. The fix is to
+  "save as" or otherwise copy the sketch to your own file space, re-open and
+  compile from there.
+- Other things to try: in `File>Preferences` enable verbose messages for
+  upload. This may give a clue to e.g. port problems. Or try unplugging your
+  board, shutting down the IDE, restarting your machine then trying again!
+- A Python 3.8 issue causes problems with networked Windows drives. If you see
+  "UNC paths are not supported" errors, move your working directory to a local
+  drive (e.g. `C:`).
+- Sometimes after a successful flash and reset, the serial monitor process
+  hangs. Hitting "return" in the console sometimes fixes it!
+- See also this problem with the Arduino core for the S3 that exhibits on the
+  Feather, to do with the way the device presents itself to the OS (to support
+  CircuitPython, UF2, and JTAG over USB, for example). The (long) story is
+  here:
+    - [summary 1](https://forums.adafruit.com/viewtopic.php?p=959330#p959330)
+      and
+      [summary 2](https://forums.adafruit.com/viewtopic.php?p=959745#p959745)
+      of original discussions on Adafruit forums
+    - [discussion](https://forums.adafruit.com/viewtopic.php?p=959981#p959981)
+      and [pull request](https://github.com/espressif/arduino-esp32/pull/7828)
+      of the likely fix
+    - [example of how to run that in PlatformIO](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/exercises/HelloWorld/platformio.ini#L17)
+      in the course example code (triggers a big download!)
+    - in the Arduino IDE it may do the same to replace the stable boards
+      manager URL in preferences with the development version, and choose the
+      latest
+    - if you've used `magic.sh setup` on Ubuntu, for a quicker download try
+      checking out commit `f69bbfe` in
+      `the-internet-of-things/support/tooling/Arduino/hardware/espressif/esp32`
+      (Arduino) or
+      `the-internet-of-things/support/tooling/platformio/packages/framework-arduinoespressif32`
+      (PlatformIO)
+- The version of ESPTool can sometimes cause problems in VSCode; there's an
+  example of setting it to an older version in the `HelloWorld`
+  `platformio.ini`: `  platformio/tool-esptoolpy@1.40300.0` (in the
+  `platform_packages` section).
+- If you try everything to get VCCode to flash with no success, try coding
+  in VSCode (and building to check your compile) and then flashing from
+  Arduino.
+- Note that when using PlatformIO via `pio run -t upload -t monitor`, after a
+  successful flash you may need to wait until the `--- Terminal on ...`
+  messages appear before hitting reset in order to ensure that the serial
+  monitor works.
+
+Older boards with extra UART control chips manage this process better, but to
+support Python (see chapter [-@sec:python]) and the UF2 bootloader, and to
+exploit the ESP32S3's built-in USB capabilities, the new boards have gone back
+to the boot/reset style. See also the relevant discussion of [Arduino IDE
+firmware
+uploading](https://learn.adafruit.com/adafruit-esp32-s3-feather?view=all#upload-sketch-3108001),
+[native USB
+glitches](https://learn.adafruit.com/adafruit-esp32-s3-feather?view=all#native-usb-and-manual-bootloading-3108009)
+and [entering bootload
+mode](https://learn.adafruit.com/adafruit-esp32-s3-feather?view=all#enter-manual-bootload-mode-3108011)
+in [Adafruit's board
+docs](https://learn.adafruit.com/adafruit-esp32-s3-feather?view=all).
+
+
+#### Using VSCode and the PlatformIO Plugin                      {#sec:vscode}
+
+In 2024 [VSCode](https://code.visualstudio.com/) with PlatformIO
+is probably the most popular fully-featured development environment for
+programming IoT devices.
+
+To install, follow the [PlatformIO
+plugin](https://platformio.org/install/ide?install=vscode) instructions.
+
+<!--
+On Sheffield University machines make sure that the plugin install is stored
+on the `U:` drive.
+-->
+
+The sequence goes like this:
+
+- open VSCode
+- install the PlatformIO plugin and go to PlatformIO home (which should
+  trigger installation of the PlatformIO core, after which you need to restart
+  VSCode)
+- go back to PlatformIO home, and "Pick a folder"; a good option is
+  `HelloWorld` from the course repo, so you may wish to clone (or download and
+  unzip) that now
+- when the HelloWorld directory is opened you should see a list of items in
+  the `EXPLORER` tab at the top left; click on `platformio.ini`, and the IDE
+  will install the toolchain (which takes a few minutes)
+- do a build and burn:
+  - click the arrow in the bottom bar (tooltip: `PlatformIO: Upload`)
+  - select `Show All Tasks...`
+  - choose `PlatformIO Upload and Monitor (adafruit_feather_esp32s3)`
+
+
+##### Troubleshooting ########################################################
+
+[See above](https://iot.unphone.net/#troubleshooting-ports) for port related
+issues. Others:
+
+- If you're seeing lots of red squiggles in places you don't expect, then
+  you've probably openned code without going through PlatformIO (which sets up
+  all the necessary paths to find include files and libraries and etc.). The
+  solution is to close everything ("Close Folder" in the File menu) then go to
+  PlatformIO home and "Choose folder"; select one that contains
+  `platformio.ini` and you should be good to go.
+
+
+#### Using magic.sh and the Firmware Template                    {#sec:magic}
+
+**NOTES:**
+
+- these examples are designed for Ubuntu 20.04. You'll need to use Docker or a
+  VM or emulation (Cygwin, WSL2, ...) or etc. if you want to try them on other
+  platforms[^portthem]
+- the `magic.sh` script contains a lot of stuff that you almost certainly
+  won't need (e.g. devops docker manipulation, Arduino IDE stdout parsing,
+  VSCode in docker setup, etc. etc.); only go there if you need to!
+
+[^portthem]:
+     Or feel free to port them! And send me a pull request!
+
+In our `the-internet-of-things` course materials git repository you can find
+directory trees called `support` and `exercises/HelloWorld`. These contain
+example firmware code (functionally similar to the `Blink` example supplied
+with the Arduino IDE) and a script called `magic.sh` that (if it works) could
+simplify your install and CLI build work. To use `magic.sh`:
+
+```bash
+# the best place to keep this stuff is in $HOME, so:
+cd
+# get a working copy of the main setup and build script:
+wget https://gitlab.com/hamishcunningham/the-internet-of-things/-/raw/master/support/magic.sh
+chmod 755 ./magic.sh
+# clone the course repo and the unphone repo if you want copies:
+./magic.sh clone
+# we don't need the first copy of magic.sh any more as the cloned repo has one:
+rm ./magic.sh
+cd the-internet-of-things/support
+# download the various development tools we'll be using:
+./magic.sh setup
+# if you want to install the Arduino IDE:
+./magic.sh arduino-setup
+```
+
+You should now have a directory called something like
+`/home/yourname/the-internet-of-things/support/tooling` containing the Arduino
+ESP32 core, the Arduino IDE (with sketchbook and preferences directories),
+PlatformIO CLI, `makeEspArduino` and (one or more versions of) ESP-IDF, and
+also directories called `unphone` and `unPhoneLibrary` containing library
+code.
+
+To do a command-line build of a conventional `.ino` sketch, first put your
+Feather into bootloader mode by holding `boot` and pressing `reset`, then try:
+
+```bash
+cd the-internet-of-things/exercises/HelloWorld
+../../support/magic.sh pio run -t upload -t monitor
+```
+
+When the upload has finished you may need to press `reset` again to load the
+new firmware. If all is well you should see something like
+
+```
+ahem, hello world
+IDF version: 4.4.3
+ESP_ARDUINO_VERSION_MAJOR=2; MINOR=0; PATCH=6
+...
+ARDUINO_BOARD=Adafruit Feather ESP32-S3 2MB PSRAM
+```
+
+To take a copy of one of the examples, use the `copy-me-to` command from
+inside the example. E.g. if you have your gitlab repo checked out in your home
+directory, this would create a new tree there:
+
+```bash
+../../support/magic.sh copy-me-to ~/com3505-student-2024/MyNewExample
+```
+
+For more details [take a peak at the
+script](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/exercises/HelloWorld/magic.sh)
+or try
+
+```bash
+.../magic.sh -h
+.../magic.sh -H
+```
+
+You can also do this via Docker: see next section.
+
+
+#### Docker + PlatformIO + WebSerial to build cross-platform  {#sec:docker}
+
+This is a reliable and repeatable method that works cross-platform, and gets
+around Windows and MacOS problems with serial port access. This section will
+use Windows as an example; see next for more details on how to do this on
+Linux or MacOS.
+
+This method has a three step process:
+
+- **build**: cd your project, make your next round of edits and then
+  `.\build.ps1`
+- **prepare device for flashing:** plug in your device (e.g. feather) and put
+  it into boot mode
+- **flash device**: from chrome, flash the file `firmware_merged.bin` from the
+  previous step then reset
+
+Initial configuration can be a bit of a pain, but afterwards the process
+should be very reliable.
+
+
+##### Prerequisites:
+
+- a project configured to build with PlatformIO (i.e. containing a
+  `platformio.ini` file)
+- a `merge_bin.py` script in the top level of that project
+
+**Note**: this method doesn't play well with network drives on Windows; you
+can't do this on the U:\ drive in Sheffield, for example. So put your files in
+a local directory, e.g. `cd $env:localappdata` (which will take you somewhere
+like `C:\Users\YourName\AppData\Local`) first and work from there, e.g. `git
+clone https://gitlab.com/hamishcunningham/the-internet-of-things` and then `cd
+the-internet-of-things/exercises/HelloWorld`.
+
+
+##### Installation and configuration:
+
+- open a powershell terminal
+- check versions (you may need to reopen powershell first):
+  - `PS C:\> docker -v`; I'm running `Docker version 24.0.7`
+  - if there's no docker present, install docker engine
+- try `docker run hello-world`
+  - if you get an error like "command not found", or `docker: error during
+    connect ... docker daemon is not running` install docker desktop if it
+    isn't already on your machine (I'm running 4.26.1), with WSL support
+- start docker desktop and follow the configuration steps called "Finish
+  setting up Docker Desktop":
+- first accept recommended settings:
+
+[ ![](images/docker-desktop-finish-500x257.png "docker desktop finish") ](images/docker-desktop-finish.png)[^docker-desktop-finish]
+
+[^docker-desktop-finish]:
+     Docker desktop configuration.
+
+- allow `Docker Desktop Privileged Helper` to make changes to your device
+  (you'll need to enter your password)
+- you should get a welcome screen; continue without signing in:
+
+[ ![](images/docker-desktop-signin-500x486.png "docker desktop signin") ](images/docker-desktop-signin.png)[^docker-desktop-signin]
+
+[^docker-desktop-signin]:
+     Docker desktop sign in.
+
+- skip the "role" etc. screen
+- you may need to wait a few mins during steps, as it may need to do a WSL
+  update
+- if it crashes, restart :)
+- when the docker desktop main window is visible we should be in business; it
+  looks like this:
+
+[ ![](images/docker-desktop-ui-500x374.png "docker desktop ui") ](images/docker-desktop-ui.png)[^docker-desktop-ui]
+
+[^docker-desktop-ui]:
+     Docker desktop UI.
+
+- we should now be able to do `docker run hello-world` from powershell:
+
+```bash
+PS C:\> docker run hello-world
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+c1ec31eb5944: Pull complete
+Digest: sha256:4bd78111b6914a99dbc560e6a20eab57ff6655aea4a80c50b0c5491968cbc2e6
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+...
+```
+
+All good, we're ready to build :)
+
+
+##### Build your firmware and flash it to your device
+
+Now navigate to the directory containing your project. (If you don't have one,
+try our
+[HelloWorld](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/HelloWorld)
+example to get started. GitLab will download just that directory for you if
+you click on "code" and select "zip" at the bottom.)
+
+```
+PS C:\> cd .\the-internet-of-things-master-exercises-HelloWorld\exercises\HelloWorld\
+PS C:\the-internet-of-things-master-exercises-HelloWorld\exercises\HelloWorld> ls
+    Directory: C:\the-internet-of-things-master-exercises-HelloWorld\exercises\HelloWorld
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22/01/2024     12:11                sketch
+-a----        22/01/2024     12:11             59 .gitignore
+-a----        22/01/2024     12:11           1355 merge_bin.py
+-a----        22/01/2024     12:11           1131 platformio.ini
+-a----        22/01/2024     12:11           2755 README.mkd
+```
+
+Finally, let's do a compile: `.\build.ps1`. With luck and a prevailing wind
+this should create a file called something like
+`.pio/build/adafruit_feather_esp32s3/firmware_merged.bin` which we can now
+flash to the device using [the WebSerial ESP flashing
+tool](https://adafruit.github.io/Adafruit_WebSerial_ESPTool/) from Adafruit.
+
+(If you then want to monitor the serial line try tools like the Arduino IDE's
+`Tools>Serial Monitor` or command-line tool like `tio`, or PlatformIO core's
+`-t monitor` option.)
+
+
+#### Using Docker with magic.sh, pio or idf.py             {#sec:magicdocker}
+
+Finally, here are some more details of using the `magic.sh` script with docker
+on Linux.
+
+Espressif provide a Docker image for ESP-IDF, and I've also prepared an image
+that bundles the Arduino ESP32 core, Platformio CLI, the course git
+repositories and various bits and pieces. You should be able to install docker
+on your own machines and get working straight away, but there are two caveats:
+
+- These images all use several gigabytes of disk, so be prepared for a long
+  download!
+- By default the serial port (which you need in order to flash firmware to the
+  ESP32 device) is not passed through to the container. When your host machine
+  is running Linux, you can do this via a command like `docker run`
+  `--device=/dev/ttyUSB0:/dev/ttyUSB0`, but on Windows the equivalent way to
+  access the COM ports is difficult and unreliable. This means that after
+  compiling with the container you will need to run a separate burn command on
+  the host machine.
+
+To run a PlatformIO CLI build, for example, try:
+
+```bash
+  # cd to a directory on your docker host containing .platfomio:
+  cd ~/the-internet-of-things/exercises/HelloWorld
+  # run the iot:pio image:
+  docker run -ti --device=/dev/ttyACM0 -v $PWD:/home/ubuntu/project \
+    hamishcunningham/iot:magic
+  # cd into the mapped host project directory:
+  cd project
+  # compile the sketch:
+  pio run
+```
+
+If you're on Linux you can flash and monitor firmware from the image using a
+flag like `--device /dev/ttyUSB0`. From MacOS or Windows quit the image after
+building and search for `firmware.bin` in `./pio` after building. Then use
+some local utility (e.g. `idf.py`) or a web serial tool to flash.
+
+As usual the `magic.sh` script has some convenience commands to get you
+started:
+
+- `magic.sh -D`: when run from a directory containing `sketch/sketch.ino` this
+  command will run the course docker image
+- from within the image you can use the PlatformIO CLI, for example: `pio run
+  -t upload -t monitor`
+- equivalently: `magic.sh -D pio run -t upload -t monitor`
+
+There are lots of gotchas when developing with Docker; e.g. by default any
+changes you make to a running container (like triggering PlatformIO to install
+an XTensa toolchain) will be lost when you quit that container. It is a very
+powerful tool, and becoming an industry standard for operations, but be aware
+that there will be a learning curve :)
+
+Note: if you see an error like 
+
+```bash
+~/the-internet-of-things/exercises/9LEDs $ ../../support/magic.sh -D
+docker: Error response from daemon: error gathering device information while adding custom device "/dev/ttyUSB0": no such file or directory.
+ERRO[0000] error waiting for container: context canceled 
+```
+
+it means you haven't got access to the serial port that your ESP32 is
+connected to. (Perhaps the port isn't available, or on Linux perhaps you're
+not in the `dialout` group?)
+
+
+#### Using PlatformIO CLI ###################################################
+
+[PlatformIO](platformio.org) has lots of nice features for IoT development,
+including managing the toolchain installation process and library
+installation. Instead of fiddling with your IDE or persuading our Docker image
+to run, if you have the correct `platformio.ini` configuration file in your
+project the system will manage everything for you.
+
+For example, to build and burn the [HelloWorld
+example](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/exercises/HelloWorld)
+try this:
+
+- follow the [PlatformIO CLI installation
+  instructions](https://docs.platformio.org/en/latest/core/installation.html)
+  for your platform
+- change directory to a directory containing code and `platformio.ini`, e.g.:
+  `cd the-internet-of-things/exercises/HelloWorld`
+- build/upload/monitor: `pio run -t upload -t monitor`
+
+If you hit port-related trouble, [see above](#troubleshooting-ports).
+
+Note that you can use the CLI in a terminal from within VSCode by navigating
+to the PlatformIO IDE home within `code` and then selecting `PlatformIO Core
+CLI`. If you like the command line this gives you the best of both worlds, a
+powerful editor with autocomplete etc. plus a quick way to run compiles and
+scripts and etc. without having to resort to the mouse!
+
+
+### Hardware 2: Sensor/Actuator Board #######################################
+
+We are using a breadboard (also known as proto-board) to assemble our circuits
+in the labs. Breadboards allow components and wires to be pushed into holes
+and connected without soldering. (In **Hardware 1** you use one to experiment
+with voltages, resistors, and measuring a circuit's performance with a
+multimeter. These are important skills for IoT device prototyping, and will be
+useful for your project work later in the term.)
+
+To recap, a breadboard has some connections between holes already made --
+shown in this diagram:
+
+![Diagram of breadboard connections](images/breadboard-connections.png "Diagram of breadboard connections")[^breadboardeg]
+
+[^breadboardeg]:
+     From [Kornakproto](http://kornakprotoblog.blogspot.co.uk/).
+
+
+#### Using a Breadboard to Make a Sensor/Actuator Circuit ###################
+
+**NOTES:**
+
+- Changes from ESP32 Feather to ESP32S3: pin 32 becomes 6, 14 becomes 5. (The
+  physical positions are the same on the board, just the numbering has
+  changed.) The text below is correct, but the diagrams show the old numbers:
+  beware!
+- For more detail about finding pins see the discussion in [@sec:pinouts].
+
+Take your ESP32 feather device and carefully lay it in place on the breadboard
+over the holes indicated:
+
+[ ![Feather in breadboard](images/feather-in-breadboard-200x348.png "Feather in breadboard") ](images/feather-in-breadboard.png)
+
+Now push gently on the edges of the feather to insert the pins into the holes
+-- you are aiming to keep the device parallel to the breadboard as it goes
+into the holes, rather than push one side down and leave the other up. Keep
+moving around pushing in different places if it seems stuck -- often new
+breadboards are a bit stiff at first. If the pins aren't going in easily then
+check that they are all lined up above the holes correctly -- if not you can
+bend them gently with a pair of fine pliers. You will need to use some force
+to push the device down onto the breadboard. To get an idea of how much force
+might be needed, take a jumper wire and try inserting that into a hole, then
+multiply that by 28. Try not to bend the header pins -- if you do then use the
+pliers to return them to their correct orientation.
+
+Once the feather device is inserted, add a LED, 120Ω (or thereabouts) resistor
+and push-button switch from your kit as shown:
+
+[ ![](images/blinky-in-breadboard-200x323.png "Blinky components in breadboard") ](images/blinky-in-breadboard.png)
+
+Pay attention to the orientation of the LED -- as it is a (light emitting)
+*diode* it will only work one way round. The longer lead of the LED is the
+anode and it connects to the ESP32 output pin -- the shorter lead is the
+cathode and it connects to the negative or ground connection. Add jumper leads
+to complete the circuit as shown -- colour codes help to make the circuit more
+readable:
+
+[ ![](images/blinky-in-breadboard-with-connections-200x242.png "connections in breadboard") ](images/blinky-in-breadboard-with-connections.png)
+
+The circuit pictured above can be represented as a schematic -- this is a more
+abstract representation of the components and connections:
+
+[ ![](images/blinky-schematic-200x231.png  "Blinky schematic") ](images/blinky-schematic.png)
+
+The trick here is that the LED is connected to pin 6 and the switch to pin
+5, so we might usefully define these in our C code as `int pushButton = 5,
+externalLED = 6;`.
+
+The code for this sketch should make use of the internal pull-ups inside the
+ESP32. Simply pass the "input pullup" macro to the pinMode command:
+`pinMode(pushButton, INPUT_PULLUP)` These are optional resistors that connect
+to +v and the input pin. These make the inputs high, unless they are connected
+to ground. See this diagram:
+
+[ ![](images/pullup-200x273.png "Diagram of internal pull-up") ](images/pullup.png)
+
+Below are some pictures of an example board. Note that this one is using the
+ESP32 with "stacking headers" (additional sockets on top of the board) so we
+can use both the breadboard sockets or the stacking sockets to connect to.
+
+<!--
+[ ![](images/hw2-111656-350x263.jpg "hardware 2 example") ](images/hw2-111656.jpg)
+[ ![](images/hw2-111701-350x263.jpg "hardware 2 example") ](images/hw2-111701.jpg)
+-->
+[ ![](images/hw2-111708-350x263.jpg "hardware 2 example") ](images/hw2-111708.jpg)
+
+[ ![](images/hw2-111715-350x263.jpg "hardware 2 example") ](images/hw2-111715.jpg)
+
+You're now ready to work with the LED and switch in firmware to answer
+Exercise 2 as above.
+
+When you've finished your version, have a look at
+[exercises/Thing/sketch/Ex02.cpp](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/Thing/sketch/Ex02.cpp).
+(To run exercise 2, set `LABNUM` to 2 in `sketch.ino`.) How similar is it to
+yours? Does it work better, or not as well? If you try running it on your
+hardware, you'll likely find that the switch isn't very responsive and often
+needs pressing several times before it works. Why might that be?
+
+All will be revealed... :)
+
+
+## Further Reading
+
+- [@Greenfield2017-am] “Rise of the Machines: Who Is the ‘Internet of Things’
+  Good For?” The Guardian, June 6.
+- Essays and lectures on free software: 
+    - [@Stallman2002-fh] [Free Software, Free Society: Selected Essays of
+      Richard M. Stallman](https://www.gnu.org/philosophy/fsfs/rms-essays.pdf)
+    - [GNU.org essays and articles on philopsophy](https://www.gnu.org/philosophy/essays-and-articles.en.html)
+- [@Perzanowski2016-hw] The End of Ownership: Personal Property in the Digital
+  Economy. MIT Press 2016
+- the IoT in general [@McEwen2013-ya; @Bassi2013-uh; @Nold2011-ut;
+  @Kurniawan2016-pu; @Slama2015-cp]
+- security [@Dhanjani2015-pj; @MacDermott2018-qw; @Sivaraman2015-ve]
+- the Things Network and LoRaWAN [@The_Things_Network2018-xs;
+  @Adelantado2017-gf; @Blenn2017-dl]
+- Arduino [@Banzi2014-sp; @Margolis2011-oh; @Monk2013-ey; @Doukas2012-oj;
+  @Pfister2011-ph]
+- Raspberry Pi [@Upton2014-on]
+- safety issues in relation to LiPo batteries [@Nerc2016-ob]
+- [Open Rights Group](https://www.openrightsgroup.org/)
+- [@Doctorow2012-pc] Pirate Cinema. 2012  http://craphound.com/pc/download/

@@ -1,0 +1,99 @@
+
+<!-- others -->
+
+### Smart Watches ###########################################################
+
+(If you want to do a project on this in 2022 you will have to supply your own
+as we don't have them in stock.)
+
+The [Lilygo
+T-Watch-2020](http://www.lilygo.cn/prod_view.aspx?TypeId=50053&Id=1290) is a
+smart watch development kit based on the ESP32.
+
+[ ![](images/lilygo-watch-01-350x350.jpg "Lilygo T-Watch-2020") ](images/lilygo-watch-01.jpg)
+
+The watch includes an accelerometer, touch display, infra-red sensor,
+loudspeaker and vibration motor. In other words it fits out definition of IoT
+devices: a networked microcontroller with sensors (accelerometer; touch input)
+and actuators (screen; vibration motor; the ESP32's radio). It is powered by a
+LiPo battery managed by an AXP202 PMU[^pmu] and has its own RTC[^rtc].
+
+[^pmu]:
+     PMU: Power Management Unit.
+[^rtc]:
+     RTC: Real Time Clock.
+
+There are many possible projects you can build with the watch, for example:
+
+- exercise tracker
+- data logger
+- small-screen UI
+- fuzzy predictive text
+- home automation
+- etc. etc. etc. (just drop me an email first to check scope)
+
+If you want to emphasise the hardware component of the project, you could also
+connect the watch to your feather (over WiFi or BT or BLE) and use the feather
+/ LED / etc. combination as an actuator (e.g.: turn the TV on or off over IR
+when I enter the room), perhaps using a gesture language. In the other
+direction you might experiment with control of your watch via a mic on your
+feather, for example.
+
+How to get started? The most comprehensive firmware setup currently available
+is probably [Bill Dudley's github
+project](https://github.com/wfdudley/T-watch-2020), and there is some example
+shell code illustrating how to set this up [in the exercises
+tree](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/LilygoWatch).
+
+
+### Predictive Text UI ######################################################
+
+There's a simple predictive text library (see `predictor.cpp`) in your
+exercises tree (which was originally written by Mark Hepple -- thanks Mark! --
+and then ported to the ESP32). Currently the UI, using the unphone
+touchscreen, is very basic -- can you improve it? How many words can you
+support on the ESP without running out of memory?
+
+[ ![](images/touchscreen-featherwing-350x350.jpg "touchscreen featherwing") ](images/touchscreen-featherwing.jpg)
+
+
+### Musical Instrument ######################################################
+
+Using the [VS1053](http://www.vlsi.fi/en/products/vs1053.html)'s [MIDI
+synthesis](http://www.vlsi.fi/fileadmin/software/VS10XX/vs1053mid.mp3)
+capability and e.g. the ESP's touch sensors as control mechanisms many musical
+instruments become possible. Pick up a [music player
+featherwing](https://www.adafruit.com/product/3357) if you want to build one
+of these.
+
+
+### Bedtime Tracker #########################################################
+
+Eyes drooping? C programming not seeming quite as exciting as usual? Perhaps
+you should be getting more sleep :)  Can you track your screen-off shut-eye
+time using a light sensor, and present the data back in an easy to interpret
+form?
+
+
+### Battleships Game ########################################################
+
+(**This requires a pair of ESPs, both with touchscreens, so check that these
+are available to you before chosing!**)
+
+This is a [popular game](https://en.wikipedia.org/wiki/Battleship_(game)) with
+simple UI requirements, perfect for a connected microcontroller like the
+ESP32.
+
+
+### A Note on UIs ###########################################################
+
+These libaries might be worth looking at if you want to do sophisticated
+UI stuff:
+
+- [LittleVGL](https://littlevgl.com), which is now supported by Espressif, and
+  looks like the best bet for ESP32 at present
+- [Micro GFX](https://ugfx.io), also supported by Espressif, also looks good
+  but the source code doesn't seem to be on a public version control system
+- [Embedded Wizard](https://www.embedded-wizard.de/platforms/espressif-esp32)
+  which supports ESP32 (though not the Adafruit board specifically), but isn't
+  open source

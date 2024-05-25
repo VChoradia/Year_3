@@ -1,0 +1,35 @@
+# Dockerfile for 2022 tiot magic.sh / Platformio CLI builds
+
+
+
+#  SUPERSEDED BY Dockerfile
+
+
+
+#
+# create an image using something like
+#   docker build .
+# run the image using something like
+#   docker run --device=/dev/ttyUSB0 <image ID>
+# tag and push to hub.docker.com something like
+#   docker tag <image ID> hamishcunningham/iot:pio
+#   docker push hamishcunningham/iot:pio
+# run from docker hub with something like
+#   docker run --device=/dev/ttyUSB0 -it \
+#     -v $PWD:/home/ubuntu/project hamishcunningham/iot:pio
+
+# TODO doesn't seem to cache ~/.plaformio, so had to do docker commit instead;
+# how to fix?
+
+FROM hamishcunningham/iot:magic
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/London
+USER ubuntu
+WORKDIR /home/ubuntu
+
+RUN python3 -c "$(wget -O - https://raw.githubusercontent.com/platformio/platformio/master/scripts/get-platformio.py)"
+ENV PIO="/home/ubuntu/.platformio/penv/bin/pio"
+SHELL ["/bin/bash", "-c"]
+RUN echo 'source /home/ubuntu/.platformio/penv/bin/activate' >>/home/ubuntu/.bashrc
+#RUN /bin/bash -c "cd the-internet-of-things/exercises/HelloWorld && ${PIO} run"
+RUN cd the-internet-of-things/exercises/HelloWorld && ${PIO} run

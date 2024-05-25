@@ -1,0 +1,54 @@
+{
+    "name": "morning",
+    "roles": [
+        "morning"
+    ],
+    "lookups": [
+        "free-text",
+        "keywords"
+    ],
+    "keywords": [
+        {
+            "keyword": "Bonjour",
+            "synonyms": [
+                "bonjour"
+            ]
+        },
+        {
+            "keyword": "Buenos dias",
+            "synonyms": [
+                "buenos dias"
+            ]
+        },
+        {
+            "keyword": "Buenos d\u00edas",
+            "synonyms": [
+                "buenos d\u00edas"
+            ]
+        },
+        {
+            "keyword": "Good Morning",
+            "synonyms": [
+                "good morning"
+            ]
+        },
+        {
+            "keyword": "Morning",
+            "synonyms": [
+                "morning"
+            ]
+        },
+        {
+            "keyword": "goood morning",
+            "synonyms": [
+                "goood morning"
+            ]
+        },
+        {
+            "keyword": "\u0938\u0941\u092a\u094d\u0930\u092d\u093e\u0924",
+            "synonyms": [
+                "\u0938\u0941\u092a\u094d\u0930\u092d\u093e\u0924"
+            ]
+        }
+    ]
+}

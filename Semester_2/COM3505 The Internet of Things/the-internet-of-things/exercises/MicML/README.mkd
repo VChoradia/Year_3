@@ -1,0 +1,30 @@
+
+# MicML #####################################################################
+
+This is an example of sound processing with the ESP32. It is a bit
+**out-of-date**, so best check the course notes [section on
+Marvin](https://iot.unphone.net/#sec:marvin) or [my fork of Chris G's
+code](https://github.com/hamishcunningham/diy-alexa) instead.
+
+
+## Note on builds ###########################################################
+
+At this version it compiles with pio, magic.sh (IDF 4.3) and ArdIDE:
+
+> commit 5e14af20f5056c85b180f7816bfdfa024a546505 (HEAD -> master, origin/master, origin/HEAD)
+> Date:   Fri Feb 12 14:45:25 2021 +0000
+
+Beyond this is likely won't run properly with IDF 4.3 (triggers server comms bug).
+
+
+## New version: Chris Greening's ICS-43434 mic board ########################
+
+Code from [his github
+here](https://github.com/atomic14/ICS-43434-breakout-board).
+
+Attempts to communicate with [a node server here](server/).
+
+To (re-)create [the lib/tfmicro
+tree](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/MicML)
+in MicML [follow his instructions
+here](https://github.com/atomic14/platformio-tensorflow-lite).

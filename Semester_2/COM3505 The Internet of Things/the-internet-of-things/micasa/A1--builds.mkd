@@ -1,0 +1,300 @@
+
+# Appendix A: More Notes on Build Systems  ##################################
+
+This chapter contains material on build systems and build issues (e.g. timing)
+that are beyond the scope of the course. They are of varying relevance; use
+them as advanced background if you wish, but note that they may not work as
+expected!
+
+References to the `magic.sh` script below refer to a version which is now
+present as
+[`old-magic.sh`](https://gitlab.com/hamishcunningham/the-internet-of-things/-/blob/master/support/old-magic.sh).
+
+
+## CLI on a Raspberry Pi ####################################################
+
+This section describes setting up an ESP-IDF CLI build. The instructions are
+for a Raspberry Pi running the Debian Buster port (which used to be known as
+Raspbian but now seems to have mutated into RaspiOS[^namingconfusion]). The
+instructions should work pretty much unchanged on Ubuntu 20.04. (If you are on
+other platforms you'll need to adapt the instructions or use a VM or docker --
+see next section.)
+
+[^namingconfusion]:
+     Actually the names seem to relate to some change in responsibilities;
+     [delve here if you
+     care](https://www.raspberrypi.org/forums/viewtopic.php?f=66&t=275380#p1668466).
+
+If you need a cheap machine to develop for the IoT, Raspberry Pi models 4 or
+400 are both capable of doing the job. They won't be the fastest environment,
+but for around £/$/€100 you can get a capable computer that will plug into
+your TV or HDMI monitor and do everything you need to for the course. (A good
+choice would be [this kit, for
+example](https://shop.pimoroni.com/products/raspberry-pi-4-desktop-kit?variant=31856449290323),
+or [this
+one](https://shop.pimoroni.com/products/raspberry-pi-400-personal-computer-kit?variant=32280730107987).)
+
+Below I describe how to get up and running with ESP32 development on the Pi.
+Note that the setup process took several hours (on a fast network), so don't
+leave it until 10 minutes before your deadline :)  (The complete setup uses
+around 2.5GB of the flash disk, depending on configuration.)
+
+Here's some more timing information, for install and build (using the firmware
+and scripts in the _HelloWorld_ example, which will be introduced later):
+
+- IDF/Arduino core install using `magic.sh setup`
+  - 3 minutes on 4 core Intel i7 with 32GB RAM
+  - 20 minutes on a Pi 4 (4GB RAM)
+- HelloWorld build from scratch using `magic.sh idf-py build`
+  - 1.5 minutes on the i7
+  - 25 minutes on the Pi
+- HelloWorld rebuild (changes in `main` only) using `magic.sh idf-py build`
+  - 5 seconds on the i7
+  - 15 seconds on the Pi
+
+Note that although setup and clean compiles are slow on the Pi, the
+compile/burn/test cycle is reasonably quick at under 30 seconds. This means
+that you **can** work productively on a Raspberry Pi, so long as you allow an
+hour for the initial setup. (This is from the command line, of course; running
+a big IDE like VS Code or Eclipse would no doubt be slower!)
+
+To **set up the operating system**:
+
+- install RaspiOS buster (I used the August 2020 version; later versions
+  should work)
+- choose a **strong** password
+- connect to a network
+- run Raspberry Pi Configuration (e.g. from the Preferences menu) and:
+  - turn off Auto Login
+  - disable the Spash Screen
+  - enable ssh if you plan to remote log in; copy a public key to  
+    `~/.ssh/authorized_keys` and turn off password login in  
+    `/etc/ssh/sshd_config` by adding `PasswordAuthentication no`
+- install all updates and reboot
+
+To **get the ESP32 development environments running**:
+
+- first choose which IDF version to base your install from, e.g.:
+  - `latest`: the most recent available,
+    [instructions here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html)
+  - `stable`: the last release,
+    [instructions here](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/index.html)
+- then clone the repository, 
+
+For example, **using a pre-release IDF 4.3** in December 2020:
+
+- install software prerequisites:
+  - `sudo apt-get install git wget flex bison gperf python3 python3-pip
+    python3-setuptools cmake ninja-build ccache libffi-dev libssl-dev dfu-util`
+- make `python3` the default:  
+  `sudo update-alternatives --install /usr/bin/python python  
+  /usr/bin/python3 10`
+- clone the ESP-IDF and Arduino core git repositories:
+  - `mkdir ~/esp`
+  - `cd ~/esp`
+  - `git clone --recursive https://github.com/espressif/esp-idf.git`
+  - `git clone --recursive https://github.com/espressif/arduino-esp32.git`
+  - `cd esp-idf`
+  - `git submodule update --init --recursive`
+  - `git checkout --recurse-submodules 357a27760`
+  - `cd ../arduino-esp32;`
+  - `git submodule update --init --recursive`
+  - `git checkout --recurse-submodules 41e392f66`[^versions]
+- toolchain: download the Xtensa compiler etc.:
+  - `cd ~/esp/esp-idf`
+  - `./install.sh`
+- set up environment variables:
+  - `echo "PATH=$PATH:~/.local/bin; export PATH" >>~/.bashrc`
+  - `echo "alias get_idf='. $HOME/esp/esp-idf/export.sh'" >>~/.bashrc`
+- now you can run `get_idf` to set up or refresh the SDK in any terminal
+  session; check that this is working:
+  - `get_idf`
+  - `which idf.py`: this should report something like  
+    `/home/pi/esp/esp-idf/tools/idf.py`
+
+[^versions]:
+     Why the wierd checkout numbers? These are git commit hashes, which
+     identify unique commits in the version history. We need them because of
+     [version hell](#version-hell)! (Less flippantly, there are only a subset
+     of versions where IDF and Arduino core match up, especially if we want to
+     use recent developments.)
+ 
+To **try burning an example**:
+
+- `cd; cp -a esp/esp-idf/examples/get-started/hello_world .`
+- `cd hello_world; idf.py build flash monitor`
+
+Well done! Please give yourself a pat on the back. If you're feeling brave:
+VSCode for the Pi [is available here](https://code.headmelted.com/) :)
+
+
+## CLI Using Docker #########################################################
+
+If you don't have an Ubuntu or RasbiOS environment available, you can try
+using docker (although you won't be able to burn firmware directly unless
+you're on another Linux platform).
+
+If you've cloned the course repo
+([the-internet-of-things](https://gitlab.com/hamishcunningham/the-internet-of-things))
+and cd'd into it, and connected an ESP32 to USB, you should now be able to do
+the following:
+
+- create an image using something like:
+    - `sudo docker build . -t 20.04:magic`
+- run the image and build the firmware using something like:
+    - `sudo docker run --device=/dev/ttyUSB0 -it 20.04:magic`
+    - `cd the-internet-of-things/exercises/HelloWorld/`
+    - `./magic.sh idf-py build` (or just `./magic.sh` on Linux, which will
+      also do the burn and monitor serial)
+
+(Command-line syntax for docker on non-Linux platforms may also be a little
+different; see the [docker docs](https://docs.docker.com/).)
+
+If you're on Linux, and you have the correct device specified (`/dev/ttyUSB0`,
+for example), then you should also be able to burn the firmware, e.g. by just
+doing `./magic.sh`. This won't work on MacOS or Windoze because [no easy way
+to map the serial port driver model currenly
+exists](https://forums.docker.com/t/how-to-expose-host-serial-port-to-container-correctly/81588/3)
+In this case you'll need to copy the
+`the-internet-of-things/exercises/HelloWorld/build/HelloWorld.bin` file out of
+your container and burn the firmware using a local install of ESP-IDF (which
+somewhat defeats the object!). If you want to try this, the command that is
+needed to burn the firmware can be copied from the output of the docker build,
+e.g.:
+
+```
+...
+Generated /home/ubuntu/the-internet-of-things/exercises/HelloWorld/build/HelloWorld.bin
+[1081/1082] cd /root/esp/esp-idf/components/esptool_py && /usr/bin/cmake -D IDF_PATH="/root/esp/esp-idf" -D ESPTOOLPY="/root/.espressif/python_en...D WORKING_DIRECTORY="/home/ubuntu/the-internet-of-things/exercises/HelloWorld/build" -P /root/esp/esp-idf/components/esptool_py/run_esptool.cmake
+esptool.py --chip esp32 -p /dev/ttyUSB0 -b 921600 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 40m --flash_size 4MB 0x8000 partition_table/partition-table.bin 0x16000 ota_data_initial.bin 0x1000 bootloader/bootloader.bin 0x20000 HelloWorld.bin
+esptool.py v3.0-dev
+Serial port /dev/ttyUSB0
+Connecting......
+```
+
+
+## VSCode IDF Extension #####################################################
+
+A new kid on the block for ESP32 development support is the ESP-IDF VSCode
+plugin: see the [installation
+guide](https://github.com/espressif/vscode-esp-idf-extension/#quick-installation-guide)
+for details. The plugin is still pretty new, and the process of getting it to
+work with a clone of both the IDF and the Arduino core is pretty involved.
+When it works, though, it looks like a nice environment to use :)
+
+I got it to work like this (on Ubuntu 20.04):
+
+- install prerequisites, including:
+  `sudo apt-get install python3-venv`
+- install VSCode (`snap install --classic code` on Ubuntu)
+- download esp-idf (e.g. via `magic.sh setup`)
+- activate the python environment:  
+  `source ~/.espressif/python_env/idf4.3_py3.8_env/bin/activate`
+- set up env vars `source ~/esp/esp-idf/export.sh`
+- launch VSCode, e.g.: `code`
+- `Cntrl+P`
+- `ext install espressif.esp-idf-extension`
+- close VSCode
+- do plugin prereqs, e.g.  
+  `~/.espressif/python_env/idf4.3_py3.8_env/bin/python -m pip install -r`  
+  `~/.vscode/extensions/espressif.esp-idf-extension-0.5.1/  
+  esp_debug_adapter/requirements.txt`
+- relaunch VSCode
+- press F1 and select ESP-IDF: Configure ESP-IDF extension
+- configure the extension to use your IDF; feed it your values of `PATH`,
+  `OPENOCD_SCRIPTS` and python, e.g.  
+  `~/.espressif/python_env/idf4.3_py3.8_env/bin/python`
+- relaunch VSCode, e.g.: `code the-internet-of-things/exercises/HelloWorld`
+- see [getting
+  started](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/vscode-setup.html),
+  or click the `build/flash/monitor` button on the bottom bar
+
+See also: [Quick User Guide for the ESP-IDF VS Code
+Extension](https://youtu.be/Lc6ausiKvQM).
+
+
+## Using VSCode with the Arduino Extension [^simonfish]
+
+This section is about using VSCode in a more basic, but still useful mode.
+
+Some more tweaks may need to be done for full IntelliSense compatibility, so
+you may need to hide squigglies until we figure out the additional paths you
+need to add. You can still use these instructions to do things like uploading
+your code to the ESP32, though.
+
+[^simonfish]:
+     This section contributed by Simon Fish.
+
+First install VSCode itself; on Ubuntu you can do that like this on recent
+versions:
+
+```bash
+snap install code --classic
+```
+
+You can then run the beast from the command line with `code`, or from the
+launcher by `vs...`.
+
+Now install the C++ and Arduino extensions:
+
+- Follow the installation instructions at [this
+  page](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.vscode-arduino)
+  to install the Arduino extension and at [this
+  page](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
+  to install the C/C++ extension.
+- Add the following keys and values to your settings.json, usually stored at
+  `~/.config/Code/User/settings.json` on Linux systems:
+    - your Arduino IDE installation directory
+    - the `libraries` directory under that one
+
+E.g.:
+```json
+"arduino.path": "/.../arduino-PR-beta1.9-BUILD-115",
+"C_Cpp.default.includePath": ["/.../arduino-PR-beta1.9-BUILD-115/libraries/"]
+```
+
+Make sure your JSON is still valid, and save it. You might also need to close
+and reopen Visual Studio Code for your include path to be recognised.
+
+Doing all of the above will give you access to many of the Arduino IDE's
+functions from within the Command Palette (usualy Ctrl+Shift+P) within VSCode
+under the same names.
+
+
+## FAQ #####################################################################
+
+- "I'm working on windows and the `HelloWorld/sketch` example doesn't work in
+  ArdIDE...?" The `sketch/` folder uses symbolic links to restructure the code
+  from `main/` in a form that ArdIDE will accept. On Windows symbolic links
+  don't exist by default, so you'll need to copy the files from `main/`
+  manually instead, to create a structure like that in `sketch/`. To do this
+  on Linux or MacOS we can use `cp -aL ./sketch ..` to create a copy in the
+  parent directory that will work on Windows. The same can be achieved from
+  Windows itself using WSL or cygwin, or manually doing copy commands.
+- "I'm on Ubuntu and getting permissions errors on `/dev/ttyUSB0`?" Check that
+  you've added yourself to the `dialout` group.
+- "What flavour of C++ do these tools use?" Depending on what versions of ESP
+  IDF we're using, either C++14 or C++17; see e.g.
+  [here](https://www.esp32.com/viewtopic.php?f=10&t=7400&p=31257#p41667) for
+  details.
+- "I tried your install recipe for the SDKs and they didn't work...?" Try
+  going back to Espressif's documentation:
+  - instructions for ArdIDE and the ESP32 layer [can be found here](
+    https://github.com/espressif/arduino-esp32#installation-instructions)
+  - instructions [for the IDF here](
+    https://docs.espressif.com/projects/esp-idf/en/latest/get-started/)
+- "I get 'bad magic number' when configuring?" Try deleting the `.pyc` files
+  under `~/.espressif`.
+- "I get 'mbedtls/include isn't a directory' when building?" Try `git
+  submodule update --init --recursive` in `~/esp/esp-idf`, or a clean
+  clone/checkout of IDF.
+- I'm on docker and get `docker: Error response from daemon: error gathering
+  device information while adding custom device "/dev/ttyUSB0": no such file
+  or directory.`? This probably means you haven't got access to the serial
+  port that your ESP32 is connected to.
+- "Can I go home now?" On receipt of a solid contribution to the Computer
+  Scientists Retirement Fund many things are possible[^guy2]
+
+[^guy2]:
+     Guy says you're still going to need to wear the silly hat though. At
+     least I think that's what he said. I always listen very carefully.

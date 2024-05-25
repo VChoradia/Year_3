@@ -1,0 +1,66 @@
+{
+    "name": "todo",
+    "roles": [
+        "todo"
+    ],
+    "lookups": [
+        "free-text",
+        "keywords"
+    ],
+    "keywords": [
+        {
+            "keyword": "buy a pen",
+            "synonyms": [
+                "buy a pen"
+            ]
+        },
+        {
+            "keyword": "buy groceries",
+            "synonyms": [
+                "buy groceries"
+            ]
+        },
+        {
+            "keyword": "buy the book",
+            "synonyms": [
+                "buy the book"
+            ]
+        },
+        {
+            "keyword": "buy unphone",
+            "synonyms": [
+                "buy unphone"
+            ]
+        },
+        {
+            "keyword": "check emails",
+            "synonyms": [
+                "check emails"
+            ]
+        },
+        {
+            "keyword": "complete assignment",
+            "synonyms": [
+                "complete assignment"
+            ]
+        },
+        {
+            "keyword": "email Hamish",
+            "synonyms": [
+                "email hamish"
+            ]
+        },
+        {
+            "keyword": "fill out the checkllist",
+            "synonyms": [
+                "fill out the checkllist"
+            ]
+        },
+        {
+            "keyword": "finish homework",
+            "synonyms": [
+                "finish homework"
+            ]
+        }
+    ]
+}

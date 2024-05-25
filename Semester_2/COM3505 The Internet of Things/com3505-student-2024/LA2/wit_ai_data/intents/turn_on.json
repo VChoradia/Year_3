@@ -1,0 +1,6 @@
+{
+    "name": "turn_on",
+    "entities": [
+        "lights:lights"
+    ]
+}

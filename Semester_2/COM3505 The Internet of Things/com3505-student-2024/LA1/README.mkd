@@ -1,0 +1,125 @@
+
+# COM3505 Lab Assessment 1
+
+This repository contains firmware code and documentation illustrating **provisioning** and **update** functions along with a visual indication of stages. 
+
+## Author(s)
+- Vivek Choradia - vvchoradia1@sheffield.ac.uk 
+- Siya Pradhan - sbpradhan1@sheffield.ac.uk 
+
+## Folder Structure
+
+- `rubric.mkd` - Instructions for the assessment provided by the module leader.
+- `pair.txt` - Provides email addresses of the authors of the folder.
+- `PrAndUpThing/` - contains all the firmware code, including binary files and a version.txt file. 
+- `PrAndUpThing/PrAndUpThing.ino` provides the actual firmware code which is burnt to Adafruit ESP32S3 featherboard. 
+
+## Video Demonstration
+Here's the link to the video demnostration - showing the working of our firmware - https://drive.google.com/file/d/1gwMG9uORJcRKINaHyaIwHU9NZHKXMKpr/view?usp=sharing.
+
+(DISCLAIMER: Please mute the video and change it to highest resolution.)
+
+## Dependencies
+
+This project uses the following libraries:
+
+- `Arduino.h` - Core library for Arduino framework.
+- `WiFi.h` - Manages Wi-Fi connectivity.
+- `WebServer.h` - Provides HTTP server functionalities.
+- `WiFiClientSecure.h` - Handles secure client connections.
+- `HTTPClient.h` - Manages HTTP client requests.
+- `Update.h` - Enables OTA firmware update capabilities.
+
+## Hardware Setup
+
+This section will demonstrate how the different hardware components are assembled and describes the function of each hardware component, facilitating the construction and documentation of a device that visually indicates the stages of provisioning and updating.
+
+### Hardware Components
+
+1. Adafruit ESP32S3 Featherboard
+2. Breadboard
+3. 1 x Red LED
+4. 1 x Yellow LED
+5. 1 x Green LED
+6. 3 x Resistors (appropriate resistance for the LEDs
+7. Wires for facilitating connections
+8. 1 x Push button (for OTA updates)
+
+![alt_text](./images/1.jpg)
+
+### Assesmbly Setup
+
+The assembly instructions detail the placement and installation of each component, outlining the systematic process of constructing the hardware setup.
+
+**Featherboard Placement:**
+
+The Adafruit ESP32S3 Featherboard should be placed in the centre.
+
+
+![alt_text](./images/2.jpg)
+
+**Button Setup:**
+
+Connect a push button to the ⁠ BUTTON_PIN (GPIO 12) ⁠ for initiating OTA updates.
+
+![alt_text](./images/3.jpg)
+
+**Resistor Integration:**
+
+Connect 3  resistors for each LED's cathode.
+
+![alt_text](./images/4.jpg)
+
+**Adding the wires for connections**
+
+
+Connect wires to GPIO pins - from where the LEDs are controlled
+
+![alt_text](./images/5.jpg)
+
+**LED Connections:**
+
+
+Connect LEDs to GPIO pins defined for ⁠ `RED_LED` (GPIO 6)  ⁠, ⁠ `YELLOW_LED` (GPIO 9)  ⁠, and ⁠ `GREEN_LED` (GPIO 10)  .
+
+![alt_text](./images/6.jpg)
+
+
+## Usage (Steps)
+
+### Access Point Mode
+
+The device starts in AP mode, creating a Wi-Fi access point. Connect to this network using a Wi-Fi enabled device to configure the ESP32's Wi-Fi client settings or check its status.
+
+### Web Server
+
+Access the web server by navigating to the ESP32's IP address in a web browser. The server provides pages for:
+
+- Wi-Fi network selection and configuration.
+- Device status information.
+- Triggering OTA firmware updates (initiated via button press).
+
+### OTA Firmware Update Process
+
+To check for and apply firmware updates:
+
+1. Press the button connected to `BUTTON_PIN`.
+2. The device checks for the latest firmware version from the configured server.
+3. If a newer version is available, it is downloaded and applied. The device reboots with the updated firmware.
+
+## Visual Indication
+
+1. **HTTP server initiated** - `RED_PIN` will blink 3 times. 
+2. **WiFi connection successful** - `YELLOW_PIN` will blink 3 times.
+3. **Button Pressed** *(transitioning from provisioning to updating)* - `RED_PIN`, `YELLOW_PIN` and `GREEN_PIN` blinks in loop 3 times. 
+4. **Firmware updating** - `YELLOw_PIN` will blink 3 times.
+5. **Firmware updated** - `GREEN_PIN` will blink 3 times.
+
+## Testing
+
+To ensure the ESP32 IoT Device Framework operates correctly, follow these testing procedures:
+
+-  Verify that your ESP32 is connected to the same network to where your firmware's server is hosted.
+-  On the web server, do check the wifi status page before heading on to the updating stage.
+-  Verify that your firmware's server is hosted appropriately by launching `localhost:8000` and if you can see the directory path.
+   

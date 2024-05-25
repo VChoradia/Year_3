@@ -1,0 +1,6 @@
+{
+    "name": "tell_joke",
+    "entities": [
+        "joke:joke"
+    ]
+}

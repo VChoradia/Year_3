@@ -1,0 +1,4 @@
+
+# IFTTTThing ################################################################
+
+A basic ESP32 example that triggers an IFTTT event.

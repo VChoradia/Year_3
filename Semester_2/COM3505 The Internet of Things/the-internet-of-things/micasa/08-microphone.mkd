@@ -1,0 +1,86 @@
+
+### Sound Input #############################################################
+
+We used to use Adafruit's [I2S microphone breakout
+board](https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout).
+Figuring out how to wire and drive it is a little tricky but not impossible :)
+
+More recently we've been experimenting with Chris Greening's ICS-43434 mic
+board. There's documentation and code from [his github
+here](https://github.com/atomic14/ICS-43434-breakout-board).
+
+
+#### CMG ICS-43434 ##########################################################
+
+[Chris Greening's ESP32-based
+Alexa-alike](https://github.com/atomic14/diy-alexa) uses a custom microphone
+board:
+
+[ ![](images/cmg-mic-01-350x263.jpg "CMG mic board") ](images/cmg-mic-01.jpg)
+
+I wired this up to the Huzzah ESP32 like this:
+
+[ ![](images/diy-alexa-02-350x263.jpg "wiring CMG to huzzah32") ](images/diy-alexa-02.jpg)
+
+There's code to drive it [and collect the audio
+here](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/MicML).
+Note that the Feather Huzzah pins to connect the mic to are:
+
+- serial clock (SCK, config field `.bck_io_num`): pin 13
+- left/right clock, or word select (WS, `.ws_io_num`): pin 15
+- serial data (SD, `.data_in_num`): pin 21
+
+(Config field `.data_out_num` is for outward communication on I2S and should
+be set to `I2S_PIN_NO_CHANGE` as we're only listening to the mic in this
+case.)
+
+To (re-)create [the lib/tfmicro
+tree](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/MicML)
+in MicML [follow his instructions
+here](https://github.com/atomic14/platformio-tensorflow-lite).
+
+
+
+#### Adafruit SPH0645LM4H ###################################################
+
+Try this:
+
+- wire the pins like this (the colours refer to the diagram on [Adafruit's
+  example](https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout)
+  and in the pictures below):
+  - BCLK (or BCK, "bit clock", or "serial clock") to GPIO 13 (blue)
+  - LRCL ("left-right clock", or WS, "word select") to GPIO 15 (yellow)
+  - DOUT (or DO, "data out", or SD, "serial data") to GPIO 21 (orange)
+  - 3V and ground to the 3V3 and GND pins (red, black)
+- consult [Adafruit for the ESP32
+  pinouts](https://learn.adafruit.com/adafruit-huzzah32-esp32-feather/pinouts)
+- there's an example in
+  [exercises/MicML](https://gitlab.com/hamishcunningham/the-internet-of-things/-/tree/master/exercises/MicML)
+- there's also example IDF code at `esp-idf/examples/peripherals/i2s` (which
+  is probably in `~/esp` if you've used `magic.sh` or the Espressif Linux
+  instructions for setup)
+
+Then you can try this to test:
+
+```bash
+cd ...the-internet-of-things/exercises/MicML
+./magic.sh arduino-ide
+```
+
+And open `Tools>SerialPlotter`.
+
+You should see something like this:
+
+[ ![](images/micml-01-350x245.png "plotting mic output") ](images/micml-01.png)
+
+The hardware setup will look something like this (with a white wire for
+ground, instead of black):
+
+[ ![](images/i2s-mic-1-350x284.png "i2s mic rig") ](images/i2s-mic-1.png)
+
+[ ![](images/i2s-mic-2-350x318.png "i2s mic rig") ](images/i2s-mic-2.png)
+
+If you hit problems, there's useful info [in this
+post](https://www.esp32.com/viewtopic.php?t=4997), and [Espressif's I2S
+documentation
+here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html).

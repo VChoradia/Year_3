@@ -1,0 +1,36 @@
+
+### NeoPixels; Dawn Simulator Alarm #########################################
+
+"Show me someone who is bored of LED's and I will show you someone who is
+bored of life". Ahem. This project uses beautiful and useful NeoPixel LEDs to
+simulate dawn:
+
+[ ![](images/neopix-featherwing-350x263.jpg "Neopixel featherwing") ](images/neopix-featherwing.jpg)
+
+Adafruit's NeoPixels are bright multicolour LEDs controlled via a single
+signal wire (plus two for power). [Read up on them
+here](https://learn.adafruit.com/adafruit-neopixel-uberguide?view=all) - we're
+using the [NeoPixel
+stick](https://learn.adafruit.com/adafruit-neopixel-uberguide?view=all#faq-2894396)
+and the [NeoPixel
+Fether](https://learn.adafruit.com/adafruit-neopixel-featherwing).
+
+There used to be a bug with the ESP32 having difficulty with the timing
+see [here](https://github.com/adafruit/Adafruit_NeoPixel/issues/139), but
+hopegfully it was [fixed
+here](https://github.com/adafruit/Adafruit_NeoPixel/pull/253).
+
+To get them working, first solder on three connections for power and data:
+
+![Neopixel wired.](images/neopixel-wired.jpg)
+
+Then connect these to the USB 5V, GND and pin A0 as shown:
+
+![Neopixel on expander](images/neopixel-on-expander.jpg)
+
+
+#### Dawn Simulator: Kit List ###############################################
+
+[NeoPixel array
+featherwing](https://learn.adafruit.com/adafruit-neopixel-featherwing)
+

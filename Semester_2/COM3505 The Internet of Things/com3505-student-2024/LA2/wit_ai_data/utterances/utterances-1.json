@@ -1,0 +1,2346 @@
+{
+    "utterances": [
+        {
+            "text": "A",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Add to my todo list buy the book",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 20,
+                    "end": 32,
+                    "body": "buy the book",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "Add to my todo list complete assignment",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 19,
+                    "end": 39,
+                    "body": " complete assignment",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "Add to my todo list to buy groceries",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 22,
+                    "end": 36,
+                    "body": " buy groceries",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "Add to my todo list to check emails",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 23,
+                    "end": 35,
+                    "body": "check emails",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "Add to my todo list to finish homework",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 23,
+                    "end": 38,
+                    "body": "finish homework",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "Bonjour",
+            "entities": [
+                {
+                    "entity": "morning:morning",
+                    "start": 0,
+                    "end": 7,
+                    "body": "Bonjour",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_morning"
+        },
+        {
+            "text": "Bonne nuit",
+            "entities": [
+                {
+                    "entity": "night:night",
+                    "start": 6,
+                    "end": 10,
+                    "body": "nuit",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_night"
+        },
+        {
+            "text": "Buenos dias",
+            "entities": [
+                {
+                    "entity": "morning:morning",
+                    "start": 0,
+                    "end": 11,
+                    "body": "Buenos dias",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "good_morning"
+        },
+        {
+            "text": "Buenos d\u00edas",
+            "entities": [
+                {
+                    "entity": "morning:morning",
+                    "start": 0,
+                    "end": 11,
+                    "body": "Buenos d\u00edas",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_morning"
+        },
+        {
+            "text": "Call",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Complete the song Sam on",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 18,
+                    "end": 24,
+                    "body": "Sam on",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "Complete the song oops I did it again",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 18,
+                    "end": 37,
+                    "body": "oops I did it again",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "Complete this song what is love",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 19,
+                    "end": 31,
+                    "body": "what is love",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "Dead",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Go",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Good",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Good Afternoon",
+            "entities": [],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ]
+        },
+        {
+            "text": "Good Morning",
+            "entities": [
+                {
+                    "entity": "morning:morning",
+                    "start": 0,
+                    "end": 12,
+                    "body": "Good Morning",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_morning"
+        },
+        {
+            "text": "Good Night",
+            "entities": [
+                {
+                    "entity": "night:night",
+                    "start": 0,
+                    "end": 10,
+                    "body": "Good Night",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_night"
+        },
+        {
+            "text": "Hey",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Hey Facebook",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Hey! My name is Siya",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 16,
+                    "end": 20,
+                    "body": "Siya",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "name"
+        },
+        {
+            "text": "Hey! My name is Vivek",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 16,
+                    "end": 21,
+                    "body": "Vivek",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "name"
+        },
+        {
+            "text": "How is the weather today",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 11,
+                    "end": 18,
+                    "body": "weather",
+                    "entities": []
+                },
+                {
+                    "entity": "weather:weather",
+                    "start": 19,
+                    "end": 24,
+                    "body": "today",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "How is the weather today?",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 11,
+                    "end": 18,
+                    "body": "weather",
+                    "entities": []
+                },
+                {
+                    "entity": "weather:weather",
+                    "start": 19,
+                    "end": 24,
+                    "body": "today",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "How's the weather today",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 10,
+                    "end": 17,
+                    "body": "weather",
+                    "entities": []
+                },
+                {
+                    "entity": "weather:weather",
+                    "start": 18,
+                    "end": 23,
+                    "body": "today",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "Hs",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "I am Aaditya Syal",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 17,
+                    "body": "Aaditya Syal",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Bonita Joon",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 4,
+                    "end": 16,
+                    "body": " Bonita Joon",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Hamish",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 11,
+                    "body": "Hamish",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Jack",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 9,
+                    "body": "Jack",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Nikhil",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 11,
+                    "body": "Nikhil",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Siya",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 9,
+                    "body": "Siya",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Siya Pradhan",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 17,
+                    "body": "Siya Pradhan",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Syal",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 9,
+                    "body": "Syal",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Vidhi Das",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 14,
+                    "body": "Vidhi Das",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Vivek",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 10,
+                    "body": "Vivek",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Vivek Choradia",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 19,
+                    "body": "Vivek Choradia",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "I am Yash",
+            "entities": [],
+            "traits": [],
+            "intent": "good_night"
+        },
+        {
+            "text": "I'm",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Is a good coded viola",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Joe",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Joe send me a joke",
+            "entities": [
+                {
+                    "entity": "joke:joke",
+                    "start": 14,
+                    "end": 18,
+                    "body": "joke",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "tell_joke"
+        },
+        {
+            "text": "Light lights",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Lights",
+            "entities": [
+                {
+                    "entity": "lights:lights",
+                    "start": 0,
+                    "end": 6,
+                    "body": "Lights",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "turn_on"
+        },
+        {
+            "text": "Me a joke",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Mom",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Morning",
+            "entities": [
+                {
+                    "entity": "morning:morning",
+                    "start": 0,
+                    "end": 7,
+                    "body": "Morning",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_morning"
+        },
+        {
+            "text": "My dad",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "My name",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "My name is Alicja",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 17,
+                    "body": "Alicja",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "My name is Hamish.",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 17,
+                    "body": "Hamish",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "My name is Jack",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 15,
+                    "body": "Jack",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "My name is Nikhil",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 17,
+                    "body": "Nikhil",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "My name is Pratheek Vasu",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 24,
+                    "body": "Pratheek Vasu",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "My name is Siya",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 15,
+                    "body": "Siya",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "My name is Siya.",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 3,
+                    "end": 15,
+                    "body": "name is Siya",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "My name is Vivek Choradia",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 25,
+                    "body": "Vivek Choradia",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "My name is Vivek.",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 3,
+                    "end": 17,
+                    "body": "name is Vivek.",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "My name is Yash",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 15,
+                    "body": "Yash",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "My name is Yash Bordia",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 22,
+                    "body": "Yash Bordia",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "Night",
+            "entities": [
+                {
+                    "entity": "night:night",
+                    "start": 0,
+                    "end": 5,
+                    "body": "Night",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "good_night"
+        },
+        {
+            "text": "No",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Ok",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "On",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Red",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Remind me to check emails",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 13,
+                    "end": 25,
+                    "body": "check emails",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "Remind me to fill out the checkllist",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 13,
+                    "end": 36,
+                    "body": "fill out the checkllist",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Search for capital of India",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 27,
+                    "body": "Search for capital of India",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "Search where am I",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 6,
+                    "body": "Search",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "Send Hamish message where did you go?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 11,
+                    "body": "Hamish",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 20,
+                    "end": 36,
+                    "body": "where did you go",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Send Jonathan text where are you?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 13,
+                    "body": "Jonathan",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 19,
+                    "end": 33,
+                    "body": "where are you?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Send a message to Vivek where are you?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 18,
+                    "end": 23,
+                    "body": "Vivek",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 24,
+                    "end": 38,
+                    "body": "where are you?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Send a text to Siya Where are you?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 15,
+                    "end": 19,
+                    "body": "Siya",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 20,
+                    "end": 34,
+                    "body": "Where are you?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Send a text to Vivek where have you reached?",
+            "entities": [
+                {
+                    "entity": "message:message",
+                    "start": 21,
+                    "end": 44,
+                    "body": "where have you reached?",
+                    "entities": []
+                },
+                {
+                    "entity": "name:name",
+                    "start": 15,
+                    "end": 20,
+                    "body": "Vivek",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Send a text to Yash where did you go?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 15,
+                    "end": 19,
+                    "body": "Yash",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 20,
+                    "end": 37,
+                    "body": "where did you go?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Send message to Vivek where are you",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 16,
+                    "end": 21,
+                    "body": "Vivek",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 22,
+                    "end": 35,
+                    "body": "where are you",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Send text to Sia how are you",
+            "entities": [
+                {
+                    "entity": "message:message",
+                    "start": 17,
+                    "end": 28,
+                    "body": "how are you",
+                    "entities": []
+                },
+                {
+                    "entity": "name:name",
+                    "start": 13,
+                    "end": 16,
+                    "body": "Sia",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Send text to Siya how are you?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 13,
+                    "end": 17,
+                    "body": "Siya",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 18,
+                    "end": 30,
+                    "body": "how are you?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Steak",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Tell me",
+            "entities": [],
+            "traits": [],
+            "intent": "tell_joke"
+        },
+        {
+            "text": "Tell me a joke",
+            "entities": [
+                {
+                    "entity": "joke:joke",
+                    "start": 10,
+                    "end": 14,
+                    "body": "joke",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "tell_joke"
+        },
+        {
+            "text": "Text Siya How are you?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 9,
+                    "body": "Siya",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 10,
+                    "end": 22,
+                    "body": "How are you?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Text Siya Where are you?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 9,
+                    "body": "Siya",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 10,
+                    "end": 24,
+                    "body": "Where are you?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Text Siya how are you",
+            "entities": [
+                {
+                    "entity": "message:message",
+                    "start": 10,
+                    "end": 21,
+                    "body": "how are you",
+                    "entities": []
+                },
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 9,
+                    "body": "Siya",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Text Vivek Where are you?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 10,
+                    "body": "Vivek",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 11,
+                    "end": 25,
+                    "body": "Where are you?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Text Yash How are you?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 9,
+                    "body": "Yash",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 10,
+                    "end": 22,
+                    "body": "How are you?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "Text Yash Where are you?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 9,
+                    "body": "Yash",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 10,
+                    "end": 24,
+                    "body": "Where are you?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "The",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "The  Weather",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 5,
+                    "end": 12,
+                    "body": "Weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "The best",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "The weather",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 4,
+                    "end": 11,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "The weather like",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 4,
+                    "end": 11,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "The weather today",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 4,
+                    "end": 11,
+                    "body": "weather",
+                    "entities": []
+                },
+                {
+                    "entity": "weather:weather",
+                    "start": 12,
+                    "end": 17,
+                    "body": "today",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "There",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Today",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Took",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Turn off",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "Turn off the lights",
+            "entities": [
+                {
+                    "entity": "lights:lights",
+                    "start": 5,
+                    "end": 8,
+                    "body": "off",
+                    "entities": []
+                },
+                {
+                    "entity": "lights:lights",
+                    "start": 13,
+                    "end": 19,
+                    "body": "lights",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "turn_off"
+        },
+        {
+            "text": "Weather",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 0,
+                    "end": 7,
+                    "body": "Weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "Weather today",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 0,
+                    "end": 7,
+                    "body": "Weather",
+                    "entities": []
+                },
+                {
+                    "entity": "weather:weather",
+                    "start": 8,
+                    "end": 13,
+                    "body": "today",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "What is the temperature today?",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 12,
+                    "end": 23,
+                    "body": "temperature",
+                    "entities": []
+                },
+                {
+                    "entity": "weather:weather",
+                    "start": 24,
+                    "end": 29,
+                    "body": "today",
+                    "entities": []
+                }
+            ],
+            "traits": []
+        },
+        {
+            "text": "What's",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "What's the weather",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 11,
+                    "end": 18,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": []
+        },
+        {
+            "text": "What's the weather like",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 11,
+                    "end": 18,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "What's the weather like?",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 11,
+                    "end": 18,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": []
+        },
+        {
+            "text": "What's the weather today?",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 11,
+                    "end": 18,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": []
+        },
+        {
+            "text": "What's the weather?",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 11,
+                    "end": 18,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "Yes",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "You",
+            "entities": [],
+            "traits": []
+        },
+        {
+            "text": "add a task to email Hamish",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 14,
+                    "end": 26,
+                    "body": "email Hamish",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "afternoon",
+            "entities": [],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ]
+        },
+        {
+            "text": "buenos noches",
+            "entities": [
+                {
+                    "entity": "night:night",
+                    "start": 7,
+                    "end": 13,
+                    "body": "noches",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_night"
+        },
+        {
+            "text": "can you tell me my tasks",
+            "entities": [],
+            "traits": [],
+            "intent": "tell_todos"
+        },
+        {
+            "text": "complete the song Baby, baby, baby, oh",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 18,
+                    "end": 38,
+                    "body": "Baby, baby, baby, oh",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "complete the song First things first",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 18,
+                    "end": 36,
+                    "body": "First things first",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "complete the song I've got fire for a heart",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 18,
+                    "end": 43,
+                    "body": "I've got fire for a heart",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "complete the song I, oh-I, oh-I",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 18,
+                    "end": 31,
+                    "body": "I, oh-I, oh-I",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "complete the song baby I don't need dollar bills to have fun tonight",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 17,
+                    "end": 68,
+                    "body": " baby I don't need dollar bills to have fun tonight",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "complete the song if you go hard",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 18,
+                    "end": 32,
+                    "body": "if you go hard",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "complete the song oops I did it again",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 18,
+                    "end": 37,
+                    "body": "oops I did it again",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "complete the song tsamina mina eh eh",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 17,
+                    "end": 36,
+                    "body": " tsamina mina eh eh",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "complete the song what is love?",
+            "entities": [
+                {
+                    "entity": "song:song",
+                    "start": 17,
+                    "end": 31,
+                    "body": " what is love?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "song"
+        },
+        {
+            "text": "good evening",
+            "entities": [],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ]
+        },
+        {
+            "text": "good morning buddy",
+            "entities": [
+                {
+                    "entity": "morning:morning",
+                    "start": 0,
+                    "end": 12,
+                    "body": "good morning",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_morning"
+        },
+        {
+            "text": "good night",
+            "entities": [
+                {
+                    "entity": "night:night",
+                    "start": 0,
+                    "end": 10,
+                    "body": "good night",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_night"
+        },
+        {
+            "text": "goood morning",
+            "entities": [
+                {
+                    "entity": "morning:morning",
+                    "start": 0,
+                    "end": 13,
+                    "body": "goood morning",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_morning"
+        },
+        {
+            "text": "goood night",
+            "entities": [
+                {
+                    "entity": "night:night",
+                    "start": 0,
+                    "end": 11,
+                    "body": "goood night",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "good_night"
+        },
+        {
+            "text": "how's the weather like?",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 10,
+                    "end": 17,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "light off",
+            "entities": [
+                {
+                    "entity": "lights:lights",
+                    "start": 6,
+                    "end": 9,
+                    "body": "off",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "turn_off"
+        },
+        {
+            "text": "ligths on",
+            "entities": [
+                {
+                    "entity": "lights:lights",
+                    "start": 0,
+                    "end": 4,
+                    "body": "ligt",
+                    "entities": []
+                },
+                {
+                    "entity": "lights:lights",
+                    "start": 7,
+                    "end": 9,
+                    "body": "on",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "turn_on"
+        },
+        {
+            "text": "make me laugh",
+            "entities": [
+                {
+                    "entity": "joke:joke",
+                    "start": 8,
+                    "end": 13,
+                    "body": "laugh",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "tell_joke"
+        },
+        {
+            "text": "morning",
+            "entities": [
+                {
+                    "entity": "morning:morning",
+                    "start": 0,
+                    "end": 7,
+                    "body": "morning",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_morning"
+        },
+        {
+            "text": "my name is Aakash Basi",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 22,
+                    "body": "Aakash Basi",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "my name is Vidhi Das",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 11,
+                    "end": 20,
+                    "body": "Vidhi Das",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "name"
+        },
+        {
+            "text": "night",
+            "entities": [
+                {
+                    "entity": "night:night",
+                    "start": 0,
+                    "end": 5,
+                    "body": "night",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "good_night"
+        },
+        {
+            "text": "nighty night",
+            "entities": [
+                {
+                    "entity": "night:night",
+                    "start": 0,
+                    "end": 5,
+                    "body": "night",
+                    "entities": []
+                },
+                {
+                    "entity": "night:night",
+                    "start": 7,
+                    "end": 12,
+                    "body": "night",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "good_night"
+        },
+        {
+            "text": "quel temps fait-il aujourd'hui?",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 5,
+                    "end": 10,
+                    "body": "temps",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "remind me to buy a pen",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 12,
+                    "end": 22,
+                    "body": " buy a pen",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "remind me to buy groceries",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 13,
+                    "end": 26,
+                    "body": "buy groceries",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "remind me to buy unphone",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 13,
+                    "end": 24,
+                    "body": "buy unphone",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "remind me to email Hamish",
+            "entities": [
+                {
+                    "entity": "todo:todo",
+                    "start": 13,
+                    "end": 25,
+                    "body": "email Hamish",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "todo"
+        },
+        {
+            "text": "search Los Angeles",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 18,
+                    "body": "search Los Angeles",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search bottle bottle",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 20,
+                    "body": "search bottle bottle",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search for cute",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 15,
+                    "body": "search for cute",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search for honey",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 16,
+                    "body": "search for honey",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search for internet of things",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 29,
+                    "body": "search for internet of things",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search for iot",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 14,
+                    "body": "search for iot",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search for love",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 15,
+                    "body": "search for love",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search what is life",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 19,
+                    "body": "search what is life",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search what is love",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 19,
+                    "body": "search what is love",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search what is love?",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 20,
+                    "body": "search what is love?",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search who is the father of India",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 33,
+                    "body": "search who is the father of India",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "search who is the ruler of the UK",
+            "entities": [
+                {
+                    "entity": "search:search",
+                    "start": 0,
+                    "end": 33,
+                    "body": "search who is the ruler of the UK",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "search"
+        },
+        {
+            "text": "tell a joke",
+            "entities": [
+                {
+                    "entity": "joke:joke",
+                    "start": 6,
+                    "end": 11,
+                    "body": " joke",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "tell_joke"
+        },
+        {
+            "text": "tell joke",
+            "entities": [
+                {
+                    "entity": "joke:joke",
+                    "start": 5,
+                    "end": 9,
+                    "body": "joke",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "tell_joke"
+        },
+        {
+            "text": "tell me the weather",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 12,
+                    "end": 19,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "text siya how are you?",
+            "entities": [
+                {
+                    "entity": "name:name",
+                    "start": 5,
+                    "end": 9,
+                    "body": "siya",
+                    "entities": []
+                },
+                {
+                    "entity": "message:message",
+                    "start": 10,
+                    "end": 21,
+                    "body": "how are you",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "text"
+        },
+        {
+            "text": "turn lights off",
+            "entities": [
+                {
+                    "entity": "lights:lights",
+                    "start": 5,
+                    "end": 11,
+                    "body": "lights",
+                    "entities": []
+                },
+                {
+                    "entity": "lights:lights",
+                    "start": 12,
+                    "end": 15,
+                    "body": "off",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "turn_off"
+        },
+        {
+            "text": "turn lights on",
+            "entities": [
+                {
+                    "entity": "lights:lights",
+                    "start": 5,
+                    "end": 11,
+                    "body": "lights",
+                    "entities": []
+                },
+                {
+                    "entity": "lights:lights",
+                    "start": 12,
+                    "end": 14,
+                    "body": "on",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "turn_on"
+        },
+        {
+            "text": "turn off lights",
+            "entities": [
+                {
+                    "entity": "lights:lights",
+                    "start": 9,
+                    "end": 15,
+                    "body": "lights",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "turn_off"
+        },
+        {
+            "text": "turn on lights",
+            "entities": [
+                {
+                    "entity": "lights:lights",
+                    "start": 8,
+                    "end": 14,
+                    "body": "lights",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "turn_on"
+        },
+        {
+            "text": "weather",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 0,
+                    "end": 7,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "what's on my todo list",
+            "entities": [],
+            "traits": [],
+            "intent": "tell_todos"
+        },
+        {
+            "text": "what's the weather like",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 11,
+                    "end": 18,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "what's the weather today?",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 11,
+                    "end": 18,
+                    "body": "weather",
+                    "entities": []
+                },
+                {
+                    "entity": "weather:weather",
+                    "start": 19,
+                    "end": 24,
+                    "body": "today",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "what's the weather?",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 11,
+                    "end": 18,
+                    "body": "weather",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "\u00bfC\u00f3mo est\u00e1 el clima?",
+            "entities": [
+                {
+                    "entity": "weather:weather",
+                    "start": 14,
+                    "end": 19,
+                    "body": "clima",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "weather"
+        },
+        {
+            "text": "\u0936\u0941\u092d \u0930\u093e\u0924\u094d\u0930\u093f",
+            "entities": [
+                {
+                    "entity": "night:night",
+                    "start": 4,
+                    "end": 10,
+                    "body": "\u0930\u093e\u0924\u094d\u0930\u093f",
+                    "entities": []
+                }
+            ],
+            "traits": [
+                {
+                    "trait": "wit$greetings",
+                    "value": "true"
+                }
+            ],
+            "intent": "good_night"
+        },
+        {
+            "text": "\u0938\u0941\u092a\u094d\u0930\u092d\u093e\u0924",
+            "entities": [
+                {
+                    "entity": "morning:morning",
+                    "start": 0,
+                    "end": 8,
+                    "body": "\u0938\u0941\u092a\u094d\u0930\u092d\u093e\u0924",
+                    "entities": []
+                }
+            ],
+            "traits": [],
+            "intent": "good_morning"
+        }
+    ]
+}

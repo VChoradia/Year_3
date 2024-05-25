@@ -1,0 +1,34 @@
+Mi Casa su Botnet?
+
+As computer scientists and software engineers we spend much of our time with
+machines whose secrets are hidden beneath multiple abstraction layers: BIOS,
+bootloader, operating system, programming language, library API, protocol
+definition, SDK, etc. etc. These layers allow us to build systems of
+incredible power and sophistication, but they also (intentionally) obscure the
+operation of the underlying hardware engine. This course is a chance to rip
+the top off the box of tricks, hotwire the starter motor and delve deep into
+the grungey secrets of the electronic wizardry that makes our discpline
+possible.
+
+The course is also a way to understand how the latest great wave of
+technological transformation is streaming into our lives, enabled by the
+combination of tiny connected microcontrollers, cyber-physical systems and
+ubiquitous networking. This transformation is driven by the same logic as the
+explosive consequences of TCP/IP and HTML, but if the last 20 years were about
+the web, then the next 20 will be about making. Just as always-on connectivity
+and decentralised production in the virtual world made revolutions in
+creating, sharing and consuming on-line, now the same changes are starting in
+the world of manufacturing, and the consequences are likely to be massive.
+
+In the Internet of Things there’s still a space to get in on the ground floor,
+and learn how to make with the foundational hardware of the next wave. Hang on
+to your hat; the future is a whirlwind!
+
+I am indebted to Gareth Coleman for many vital contributions, the staff of the
+Diamond Electronics Lab for creating a brilliant learning environment,
+Valentin Radu for the machine learning sections, and all the Graduate Teaching
+Assistants for helping out over the years. And to the students, for Making
+Stuff Work :) Thanks all!
+
+Hamish Cunningham Professor of Computer Science, University of Sheffield
+          hamish.gate.ac.uk   unphone.net   iot.unphone.net

@@ -1,0 +1,55 @@
+
+# Example firmware setup for the LilygoWatch smartwatch
+
+There's an [example script here](setup-dudley.sh) for firmware setup,
+based on [Bill Dudley's repository](https://github.com/wfdudley/T-watch-2020)
+(thanks Bill!).
+
+Use it with arduino-esp32 core version 1.0.6, (with ESP IDF 3.3.5; it won't
+currently compile with IDF 4+).
+
+It should work reliably on Ubuntu 20.04, and is likely to work on MacOS or on
+other Debian derivatives. On Windoze you might get lucky if you have Cygwin or
+WSL or other GNU Linux emulation.
+
+To run, do
+
+```bash
+  ./setup-dudley.sh
+```
+
+Then (if using the Arduino IDE) copy the libraries to your Arduino/ directory,
+e.g.:
+
+```bash
+  mkdir -p ~/Arduino/libraries
+  rsync -av lib/ ~/Arduino/Libraries/
+```
+
+If you need to install the Arduino ESP32 core, then make sure you've not got
+old Arduino config left over in `~/.arduino15`, then fire up the Arduino IDE.
+(Version 1.8.13 or thereabouts will work.)
+
+Open `File>Preferences` and add the stable release boards manager URL:
+
+```bash
+https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+```
+
+Select `Tools>Board>Boards Manager`, install esp32 1.0.6 and then select TTGO
+T-Watch from `Tools>Boards`. Select the port. Off you go!
+
+(To set wifi and timezone without using your fingers, edit
+`DudleyWatch/my_WiFi.h` and `personal_info.h`.)
+
+
+## Troubleshooting
+
+If you've previously installed a version of the arduino-esp32 core > 1.0.6
+(i.e. 2.0.0-alpha at time of writing) you will likely get compile errors.
+Solution: reinstall your SDK, e.g. by deleting `~/.arduino15` and the
+`Arduino` directory, and starting again. Note that the `magic.sh` installs
+usually include a version of the core, so be careful if using one of those.
+
+Other IDEs and SDKs: chaos! Confusion! See chapter 2 and/or post on the
+discussion board.

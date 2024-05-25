@@ -1,0 +1,672 @@
+
+# Gateway to the Future #####################################################
+
+There are two dishes on the dessert menu.
+
+First, as is frequently noted in the literature, you can't say "IoT" without
+mentioning the network, and we'll fill in one of the blanks in our earlier
+discussions of connectivity by summarising the more common examples of
+off-board communications protocols.
+
+Second, we promised right back in Chapter 1 to return to the subject of
+_[hope](#hope-revisited)_, and so we will do.
+
+
+## Non-Local Communications Protocols #######################################
+
+We __build__ our things using local protocols (or **buses**) to integrate
+their sensors and actuators (e.g. UART, SPI, I2C) — we saw examples of these
+in chapter 5. We get our things __connected__ using network **transports**,
+and get them __talking__ to each other (or to gateways or to the cloud) using
+network **protocols**.
+
+Adafruit's IoT video series (see section [-@sec:further-reading-networks]) is
+excellent on transports (and their key criteria of "power, distance and
+bits"), including:
+
+- micro-hop, or Personal Area Network (PAN) transports:
+    - Bluetooth
+    - RFID, NFC
+    - 433 MHz radio
+    - ZigBee, Z-Wave
+- short-hop, or Local Area Network (LAN) transports:
+    - Ethernet
+    - WiFi
+- long-haul, or Wide Area Network (WAN) transports:
+    - cellular
+    - satellite
+    - LoRa and LoRaWAN
+    - SigFox
+    - LTE-M, NB-IoT
+
+Transports deliver bits between devices, and between devices and gateways or
+devices and the cloud. Transports are like the telegraph, or smoke signals:
+they pass along data, but without imposing an interpretation on that data.
+Protocols sit on top of transports; we can think of them as the language that
+devices use to speak to each other (a bit like morse code, or "three puffs
+means the Vikings are coming!"). The rest of this section looks at off-board
+(or _non-local_) networking options for the IoT, and finishes with a look at
+LPWAN options.
+
+So far we’ve used: HTTP(S) over WiFi. Other important options exist at the
+application layer (and LPWAN is important):
+
+[ ![](images/network-layers-350x193.png "network layers") ](images/network-layers.png)[^network-layers]
+
+[^network-layers]:
+     [Image source.](http://selvarajkesavan.blogspot.com/2019/01/)
+
+HTTP, and REST (a set of conventions plus JSON or XML on top of HTTP), is
+probably the most popular protocol (see below). The big three non-HTTP
+protocols are:
+
+- MQTT: circa 1999 publish / subscribe little in-built security, but often
+  paired with SSL/TLS supported by AWS IoT and Azure IoT; single broker and
+  multiple clients
+- AMQP: circa 2003 pub/sub or request/response supported by Azure IoT
+- CoAP: 2010, (standardised in) 2014; pub/sub or request/response; REST-like,
+  but both stateless and sessionless, low bandwidth, but relatively uncommon
+
+[ ![](images/iot-protocols-350x183.jpg "iot protocols") ](images/iot-protocols.jpg)
+
+More recently web sockets have become an options, lower overhead than HTTP but
+also lower level).
+
+Important differences include the security models (often not baked in to the
+earlier protocols, later layered on with SSL/TLS), QoS, levels of support:
+
+[ ![](images/protocols-table-350x197.png "protocols table") ](images/protocols-table.png)[^protocols-table]
+
+[^protocols-table]:
+     Choice of Effective Messaging Protocols for IoT Systems: MQTT, CoAP, AMQP
+     and HTTP, N. Naik, IEEE Xplore, 2017.
+
+Their relative popularity was summarised by an Eclipse Foundation survey:
+
+[ ![](images/protocols-usage-350x184.jpg "protocols usage") ](images/protocols-usage.jpg)
+
+
+### Lower Power WANs and TTN ################################################
+
+The rest of this section concentrates on Lower Power Wide Area Networks
+(LPWAN) IoT connectivity options, and especialy LoRaWAN and [The Things
+Network](https://www.thethingsnetwork.org/).
+
+WiFi is popular, but it is designed for high bandwidth devices, which may be
+quite wasteful in this context (our IoT gizmos are probably not going to be
+streaming HD video!). Because of this a variety of LPWAN options are coming
+that more closely mirror IoT specificities (very low data rates, low power
+radio options). The leading examples:
+
+- LoRa, LoRaWAN (spread spectrum)
+- Ultra Narrow Band (UNB), e.g. Sigfox
+- LTE-M and NB-IoT from cellular providers
+
+One solution to all this choice is the 'throw in the kitchen sink' approach —
+e.g. [Pycom supporting 5
+networks](https://www.youtube.com/watch?v=uW8XQxh1h08).
+
+The LoRa (Long Range) radio protocol is a (physical layer), spread spectrum
+(~125 kHz) protocol employing a frequency-modulated (FM) chirp. LoRaWAN is a
+media access control (MAC) protocol (network layer) layered on top of LoRa.
+Upload / download are symmetrical. More details in [Andreas Spiess'
+video](https://youtu.be/hMOwbNUpDQA):
+
+- LPWAN overview 0:36-6:00
+- LoRa vs LTE 11:51-12:50
+- LoRaWAN 13:10-
+- Commercial vs community 13:44-15:08
+
+LoRaWAN has come to particular prominence recently because of the success of
+the Things Network. This crowdfunded LoRaWAN initiative enables distributed
+LoRaWAN has been very successful in spreading across the world, based on its
+[democratising
+manifesto](https://www.thethingsnetwork.org/community/berlin/post/the-ttn-manifesto):
+
+> Everything that carries power will be connected to Internet eventually.
+> Controlling the network that makes this possible means controlling the
+> world. We believe that this power should not be restricted to a few people,
+> companies or nations. Instead this should be distributed over as many people
+> as possible without the possibility to be taken away by anyone.
+
+[ ![](images/ttn-architecture-350x222.png "ttn architecture") ](images/ttn-architecture.png)[^ttn-architecture]
+
+[^ttn-architecture]:
+     Example TTN architecture.
+
+There are two main families of alternative to LoRaWAN: UNB (e.g. Sigfox) and
+the new cellular offerings (LTE-M and NB-IOT). Ultra Narrow Band (UNB) uses
+less spectrum than LoRa, and experiences lower noise (interference) levels as
+a result. Upload / download are **a**symmetrical (download, or network to
+device, is lower bandwidth than upload, or device to network). Both Sigfox and
+NB IoT use UNB.
+
+Sigfox is a global LPWAN network operator that: tries to build adoption at the
+device (hardware) level by minimising connections costs; makes money by
+selling bandwidth; competes with current mobile telecoms providers. NB IoT and
+LTE-M are from the big telecoms companies.
+
+<!--
+Some relevant sources:
+
+- https://www.telensa.com/news/why-ultra-narrow-band-unb-is-rewriting-the-economics-of-iot
+  (Telensa, smart street lighting, e.g.
+  https://www.telensa.com/technology#flexible-and-open-architecture )
+- M2COMM, LPWAN supplier
+  https://www.m2comm.co/front-page/technology/wan-ultra-narrow-band-unb/
+- modulation (Microwaves & RF consultants):
+  http://www.mwrf.com/markets/understanding-ultra-narrowband-modulation 
+-->
+
+The mobile operators (working together as 3GPP) have made several responses to
+LPWAN competition:
+
+- NB IoT is recently standardised, still rolling out (?); deployed “in-band”
+  in spectrum allocated to Long Term Evolution (LTE)
+- LTE-M is more mature and “allows IoT devices to connect directly to a 4G
+  network, without a gateway and on batteries”
+
+The key criteria are bandwidth vs. range and vs. power:
+
+[ ![](images/bandwidth-vs-range-350x231.png "bandwidth vs range") ](images/bandwidth-vs-range.png)
+
+(The other protocols: mentionned are: ZigBee, but this is more about PANs
+(personal area networks) than WANs; BlueTooth and BlueTooth LE, ditto.
+These make sense as device-to-gateway protocols, and if we assume that the
+gateway has mains power, then it is likely to use WiFi or wired ethernet.)
+
+[ ![](images/power-vs-bandwidth-350x263.png "power vs bandwidth") ](images/power-vs-bandwidth.png)
+
+This has been a whistle-stop tour of IoT network transports and protocols.
+
+
+## Hope, Revisited ##########################################################
+
+On day one of the fourth iteration of the IoT course from which these notes
+originated (last year), I had the unexpected and slightly unsettling pleasure
+of inviting one hundred (mostly) strangers into my bedroom (mediated, of
+course, by our Zoom-alike video conferencing tool) for my first lecture of
+2021. The forward view from my Sheffield home was of more lockdown, more
+illness, more poverty, and less of the pleasures of human company that sustain
+and nourish us as members of our [miraculously social and cooperative
+species](https://hamish.gate.ac.uk/posts/2007/01/01/cooperation/). There had
+to be, I thought, some silver linings hiding in this vast and ugly grey cloud.
+There were three that I came up with then.
+
+**First**, chaos is the new normal. Don't worry if you're blown off course.
+Don't stress about that code that doesn't compile. We're only human, and the
+world is a difficult place to live. Try your best to keep smiling, expect
+others to sympathise and they probably will, and make sure to have a silly hat
+ready to hand at all times.
+
+**Second**, like banging your head against a wall, it will feel _really good_
+when it stops![^iterregnum]
+
+[^iterregnum]:
+     Writing this in January 2022 the view from my (fortunate, privileged)
+     desk is much more optimistic, with the NHS vaccination programme having
+     helped reduce the seriousness of infection, and omicron seeming to be
+     milder than previous variants. Space to live again. If this isn't true
+     where you are, my sympathies, and, wherever you live, the disgracefull
+     concentration of vaccine availability in the rich countries has turned
+     large parts of the world into covid petri dishes, generating new strains
+     that are not at all guaranteed to be milder than their predecessors and
+     putting us all at risk. Madness.
+
+We'll get to the third in a minute, but I've since thought of a **fourth**
+silver lining, which is how well the need to isolate to protect each other has
+proved our respect and love for our fellow strugglers. Most especially the
+wonderful extent to which the young and strong and healthy have carefully
+isolated and distanced in order to protect others from infection. Everyone is
+a hero, and you are all beautiful.
+
+The one that I'd like to delve into here, though, was **silver lining #3**,
+viz.: it is more obvious than ever that our social systems are profoundly
+broken, and that the old ways don't work. Those ways are what got us into this
+nightmare in the first place! So we have to build back **differently**. I'll
+finish this section by summarising a little of why that has to be true (which
+is all a bit of a downer; feel free to skip ahead!) and then share a few
+glints of optimism, a few shards of hope, poking their bright beams through
+the overcast. And hope there is; so heads up!
+
+
+### The Depressing Bit ######################################################
+
+(Skip to the next section if you're feeling low!)
+
+The pandemic, [climate
+change](https://hamish.gate.ac.uk/posts/2017/01/01/the-future/), a decade of
+austerity ended by a massive spree for corrupt procurement: we are not, my
+friends, floating gently along the River of Contentment. As noted by Peter
+Wadhams in his _Farewell to Ice_ [@Wadhams2017-bl],
+
+> ...the existing level of carbon dioxide in the atmosphere is sufficient to
+> cause unacceptable amounts of warming in the future. We no longer have a
+> ‘carbon budget’ that we can burn through before feeling worried that we have
+> caused massive climate change. We have burned through the budget and are
+> causing the change now. ... By now it is too late. The CO₂ levels in the
+> atmosphere are already so high that when their warming potential is realized
+> in a few decades, the resulting temperature rise will be catastrophic. (p.
+> 192)
+
+What to do? The first thing is to recognise that the problems are neither the
+accidental consequence of imperfect electoral systems nor the outcome of
+unpleasant character or greedy individuals. Not to say that these things don't
+exist and aren't significant at any particular point in time, but they are not
+the causes of the underlying tendency towards disaster that we are,
+unfortunately, firmly routed on.
+
+No, the problems are **systemic**, and **structural**.
+
+Lord Stern, who was commissioned by the UK government in the mid-naughties to
+study _The Economics of Climate Change_ [@Stern2007-iv] advocated aiming for a
+likely 3 degree temperature rise as being "economically viable", and rejected
+all other options as non-viable. The report then included all sorts of
+evidence that shows the 3 degree rise to be a huge gamble, with odds of 50:50
+in some cases of much worse consequences.
+
+In other words, as set out by Stern at the behest of the UK Treasury, our
+economic system cannot support odds better than the toss of a coin for
+avoiding catastrophic change. Can we conclude anything other than that the
+economic system itself is at fault? And the situation has only worsenned since
+then. **If it is not economically viable to save the planet, then the economic
+system is wrong.**
+
+It is common to think that markets find efficient solutions. They don't: they
+find _profitable solutions_. And our markets are dominated by a quite small
+number of truly humungous corporations, vying to become even larger. In a 2011
+article on _the Network of Global Corporate Control_, complex systems
+specialists from a Swiss university [@Vitali2011-fr] analysed "the
+relationships between 43,000 transnational corporations" and "identified a
+relatively small group of companies, mainly banks, with disproportionate power
+over the global economy" (New Scientist, October 2011). The study "combines
+the mathematics long used to model natural systems with comprehensive
+corporate data to map ownership among the world's transnational corporations
+(TNCs)" and uses data on "37 million companies and investors" with details of
+"all 43,060 TNCs". The research "revealed a core of 1318 companies" that
+"represented 20 per cent of global operating revenues" and "the majority of
+the world's large blue chip and manufacturing firms — the 'real' economy —
+representing a further 60 per cent of global revenues". Further, "it found
+much of it tracked back to a 'super-entity' of 147 even more tightly knit
+companies ... that controlled 40 per cent of the total wealth ... Most were
+financial institutions. The top 20 included Barclays Bank, JPMorgan Chase &
+Co, and The Goldman Sachs Group." In other words, 150 or so organisations
+(mostly banks) control the lion's share of world production. Another 1000 or
+so control much of the rest.
+
+One thing that the markets dominated by these huge corporations _do_ often
+drive is competition. (Not all the time: when the banks cease to be
+competitive the state bails them out; when a powerful group of companies
+stitches up one sector then they'll inflate prices. But as a general rule,
+markets are competitive arenas.) Competition in our economy means that each
+company has to grow (or else your competitor will get big enough to buy you or
+undercut you or otherwise get their hands on your share of the pie). Infinite
+growth is built in to the fundamental model of our economy. Of course there
+are, in reality, limits to growth: common sense can tell you all you need to
+know here, but if that doesn't cut it then get a few of your friends or
+colleagues to rendezvous in the bathroom or the stationary cupboard and then
+just keep on packing them in. Economists may tell you that 'externalities'
+mean that growth is unlimited, but your friends will tell you that things are
+getting pretty stuffy already and to please stop being such a dozy wazzock. As
+globalisation has spread corporate competition across the world, so growth
+gets less and less viable within existing markets.
+
+Competition also means that if one corporation or country manages to drive
+down the wages and social services of their workforce then they automatically
+put pressure on their competitors to do the same. Otherwise the higher profits
+of the cheapskates will let them encroach on the markets of the higher paying.
+Over time this creates a race to the bottom.
+
+And all this destructive chaos is the basis of our food system, and the
+zoonotic melting pots that it has created; as Wallace wrote presciently in
+2016, "Highly capitalized agriculture may be farming pathogens as much as
+chickens or corn" [@Wallace2016-xv].
+
+So much, so depressing. Bleugh.
+
+
+### The Third Certainty: Change #############################################
+
+It is sometimes said that the only certainties in life are death and taxes. I
+think we can safely add a third certainty: _change_. The systemic tendencies
+(towards infinite growth or minimal wages) which we can see working themselves
+out in our food system (progenitor of the covid pandemic[^covidfood]) or our
+environment (and the melting ice caps) or our health systems (where PPE stocks
+became an afterthought) create a structure which is both massively dynamic and
+permanently unstable. I think that if we raise our heads and look far enough
+ahead, even as we judder and shake atop this swirling cauldron there is every
+chance that we can steer a course to a more rational world, and save ourselves
+from the whirlpool at the center.
+
+[^covidfood]:
+     As Wiebers and Feigin state in [@Wiebers2020-jt], "...in the midst of all
+     of the pandemonium and destruction, and as we begin to find our way
+     through this crisis, it is imperative for us as a society and species to
+     focus and reflect deeply upon what this and other related human health
+     crises are telling us about our role in these increasingly frequent
+     events and about what we can do to avoid them in the future. Failure to
+     do so may result in the unwitting extermination of all or a good part of
+     our species from this planet. Although it is tempting for us to lay the
+     blame for pandemics such as COVID-19 on bats, pangolins, or other wild
+     species, it is human behavior that is responsible for the vast majority
+     of zoonotic diseases that jump the species barrier from animals to
+     humans."
+
+Why? Three reasons.[^blogsources]
+
+[^blogsources]:
+     Some of the following previously appeared as articles on [my
+     blog](https://hamish.gate.ac.uk/).
+
+
+#### Democratising... Stuff? ################################################
+
+The net revolutionised the virtual world and made publishing free to all. But
+what about the chair your sit on or the fork you eat with? What if we get the
+ability to share, modify and build anything, in the same way we can publish
+anything? What if we can democratise the creation and recreation of the
+physical world? What if we can devolve manufacturing to individuals and
+communities? Perhaps we would make different choices? Perhaps we wouldn't put
+profit before people?
+
+If the last 20 years were about the web, then the next 20 will be about
+_making_. Why? Ubiquitous connectivity and decentralised production in the
+virtual world have made revolutions in creating, sharing and consuming
+on-line. Now the same changes are starting in the world of manufacturing, and
+the consequences are likely to be massive.
+
+Remember how hard it used to be to publish? Photocopiers spawned a whole
+generation of fliers and fanzines, but the big-time of global distribution
+used to be a very closed world. When we publish we _share_, and the web has
+let us share as never before -- but, until recently, we've mostly used the web
+to share information (in the form of bit streams of one sort or another). The
+next revolutionary wave of technology brings the ability to share into the
+physical world -- it brings the information revolution *from bits to atoms*.
+And as [Chris Anderson](http://about.me/andersonchris) writes in his
+[Makers](http://www.makers-revolution.com/#2aa/custom_plain)[^makersbooks] the
+physical world dwarfs the virtual. (There's perhaps an 80-20 ratio between
+economic activity devoted to atoms in comparison to bits.)
+
+[^makersbooks]:
+     The title and the theme echo [Cory Doctorow](http://craphound.com/)'s
+     [Makers](http://craphound.com/makers/); read them both!
+
+Capitalism drives innovation, which brings with it continual waves of
+technological revolution.[^joelbakan]
+
+[^joelbakan]:
+     The unfortunate thing, of course, is that it doesn't do this in service
+     of _human need_, but as part of the competition for _corporate profit_ --
+     hence our inability to stop the degradation of our environment, or the
+     banker-oriented response to the economic crisis, or the continual wars
+     over oil in the Middle east. This isn't about bad people, or even bad
+     ideas -- it is the central logic of the system that revolves around
+     competition between vast corporations, and everything else is secondary.
+     See [Joel Bakan](http://www.joelbakan.com/)'s [The
+     Coporation](http://thecorporation.com/) for a good description of how
+     this works (or doesn't!).
+
+Anderson's book quotes Cory Doctorow saying that increasingly "the money on
+the table is like krill" -- many many tiny chunks of nutrition that suits a
+new type of sieve, smaller and more distributed (a "long tail"). Both authors
+imagine the changes that will take place when the means of production become
+minituarised, localised, and -- in a sense -- democratised. At least under
+some circumstances the small and the open and the fast moving can sneak
+beneath the corporate radar long enough to become viable alternatives -- like
+my friends at [Pimoroni](http://pimoroni.com/) in Sheffield, for example, who
+sold tens of thousands of locally-made boxes for the [Raspberry
+Pi](http://raspberrypi.org/).
+
+The new methods of manufacturing (CAD-CAM designs driving CNC routers, 3D
+printing and laser cutting), and the new culture of open source and dynamic
+virtual organisations start to challenge corporate dominance, at least around
+the edges. China's explosive growth and its willingness to ignore the west's
+definition of "intellectual property" helps too (though bringing with it the
+labour relations of the sweatshop).
+
+Anderson talks of a "future where the Maker Movement is more about
+self-sufficiency... than it is about building businesses...". This, he says,
+is "closer to the original ideas of the Homebrew Computing Club or the _Whole
+Earth Catalogue_. The idea, then, was not to create big companies, but rather
+to _free ourselves from big companies_" (pp. 225-226)
+
+We can also make a link into the argument for localist economics made by
+organisations like the [Transition Network](http://www.transitionnetwork.org/)
+(e.g. in [Rob Hopkins](http://www.transitionnetwork.org/blogs/rob-hopkins)'
+books) -- peak oil, social instability and environmental crisis all point to
+the local and the small scale as a key source of sustainability and
+resilience. The more stuff we can manufacture within short distances of where
+we live, the safer we are (not to mention the saved carbon in long-distance
+transport).
+
+Welcome to the future -- perhaps it will be of our own making :-)
+
+
+#### IoT: from their Cloud to our Fog? ######################################
+
+> Industry was pumping private data into its clouds like the hydrocarbon
+> barons had pumped CO₂ into the atmosphere. Like those fossil fuel
+> billionaires, the barons of the surveillance economy had a vested interest
+> in sowing confusion about whether and how all this was going to bite us in
+> the ass. By the time climate change can no longer be denied, it’ll be too
+> late: we’ll have pumped too much CO₂ into the sky to stop the seas from
+> swallowing the world; by the time the datapocalypse is obvious even to
+> people whose paychecks depended on denying it, it would be too late. Any
+> data you collect will probably leak, any data you retain will definitely
+> leak, and we’re putting data-collection capability into fucking lightbulbs
+> now. It’s way too late to decarbonize the surveillance economy.
+> Cory Doctorow, _Attack Surface_ [@Doctorow2020-vq]
+
+Cloud computing has driven miraculous reductions in the difficulty of large
+scale data collection, analysis and distribution. This has allowed us to
+conquer many previouly insoluble problems, and, to a degree, democratised
+access to massively scaleable computation. It has also had two more negative
+consequences. In the context of the market-driven imperative to sell the next
+plastic widget to ever more passive and isolated consumers, advertising has
+become the rationale for a surveillance system more pervasive and
+all-encompassing than the worst dystopian nightmares or our forebears. (As part
+of the same process, the carbon footprint of the global datacenter has reached
+a significant fraction of our total energy uses, including a troubling
+quantity of energy devoted to blockchains[^robertscrypto].)
+
+[^robertscrypto]:
+     As [Michael Roberts
+     writes](https://thenextrecession.wordpress.com/2021/04/09/financial-fiction-part-two-the-new-ones-spacs-nfts-cryptocurrencies/),
+     "A particular negative of the NFT craze is that encoding artwork or an
+     idea onto a blockchain involves complex computations that are highly
+     energy intensive. In six months, a single NFT by one crypto artist
+     consumed electricity equivalent to an EU citizen’s average energy
+     consumption over 77 years. This naturally results in a significant carbon
+     footprint. And this is an issue that applies to blockchain technology
+     more generally."
+
+And then there's the spies. [Half a dozen years ago I
+wrote](https://hamish.gate.ac.uk/posts/2014/08/22/worse-than-i-thought/):
+
+> If you've been paying more than a gnat's hair's width of attention to All
+> Things Internet in the past year or so, you'll know that the US and the UK
+> have been spending the odd spare billion of taxpayers' hard-earned on a
+> programme of indiscriminate surveillance of everything you, I and the dog do
+> on-line.
+>
+> (This is fine of course. I've nothing to hide. You're welcome to pop round
+> and put a microphone in my toilet and a webcam in my bedroom — though I may
+> demand the right to fit the same gear in your house first... That ok? And I
+> reserve the right to point out that a couple of hundred thousand people have
+> the same access to all your data that Edward Snowden had shortly before he
+> walked out of a US government building in Hawaii with several gigabytes of
+> leak. If he can do it, how many others? And do you trust them all? You do?
+> Great! Now, please email your credit card numbers and a selection of
+> explicit selfies to me. It's for your own good, honest.)
+
+The spies like to cultivate back doors in the cryptography that protects
+on-line transactions. Even if that was ok, there's no way to have a backdoor
+that only a spy can use. Four years ago, in the wake of a massive attack on UK
+medical computing, [I wrote
+that](https://hamish.gate.ac.uk/posts/2017/05/15/wanna-cry-nhs-attack/):
+
+> The ransomware cyber attack on the NHS is horrifying — and as a computer
+> scientist I feel ashamed that the world my field helped create is now at the
+> mercy of such destructive scammers. It didn’t have to be this way!
+>
+> This note looks at the context of the attack — why did the NSA help the
+> attackers?! — and explains the “kill switch” and how it slowed the spread of
+> the WannaCry worm. It concludes with ways we can avoid this type of
+> nightmare in the future.
+>
+> First, the spooks: the NSA (and GCHQ) believe that they need (and have the
+> right) to see every piece of digital communication made by any citizen at
+> any time under any circumstances. More than that — they also believe that
+> they’re entitled to turn on your computer or phone or TV and listen on its
+> microphone or watch on its camera. (That’s why Facebook’s Mark Zuckerberg
+> tapes over his laptop’s webcam!)
+>
+> There’s a problem: just as we don’t leave home without locking our doors, we
+> don’t leave our computer systems unguarded. How are the spies to cope? They
+> do two things:
+>
+> 1. “Persuade” software companies to leave deliberate holes in their
+> security. (This is a little like convincing all lock installers to post a
+> copy of every key to the local constabulary, only worse: digital keys are
+> much easier to copy or steal. When Amber Rudd says WhatsApp needs a handy
+> backdoor for law enforcement purposes, this is what she means!)
+>
+> 2. Break into computer systems, subvert their security mechanisms and suck
+> up the data from your email, chats, documents, etc. etc.
+>
+> This second activity is what has helped bring the NHS’s computer systems to
+> their knees. One of the NSA’s programs for breaking into Microsoft software
+> (codenamed Eternalblue) was stolen and publicly released in April. The black
+> hat hackers behind WannaCry adapted it to their own nefarious purposes, and
+> we’re now suffering the results.
+>
+> Government not only supports the spies in these efforts, they allow them to
+> do their worst in total secrecy, even in the courts. In the UK we’re now
+> banned by the Investigatory Powers Act from hearing in court about what
+> evidence was collected in this way and how — giving a whole range of
+> government agencies and employees carte blanche to compromise our online
+> security with impunity.
+
+Since then the [Solar Winds
+hack](https://www.schneier.com/blog/archives/2020/12/russias-solarwinds-attack.html)
+has demonstrated even more powerfully how vulnerable this process (and the
+closed-source software that makes it possible) makes us all. Open source is
+part of the answer, but the situation is urgent; what to do?
+
+Tim Berners-Lee's answer, from [his company Inrupt](https://inrupt.com/), is
+the [Solid project](https://solidproject.org/) to decentralise personal data
+storage. With a longer pedigree, [Freedombox](https://freedombox.org/) has
+been building personal servers to move the basic functions of cloud-based SaaS
+into our homes. Hook these up with the IoT, with programmable personal devices
+and open systems, and we're starting to see ways to claw back our data: to
+build our own [fog](#learning-in-the-fog-ai-on-the-edge) from our domestic
+gateways and personal IoT devices.
+
+There's another potential upside here, to do with prospects for deconvergence,
+disaggregation, and device respecialisation. Sherry Turkle's fantastic but
+terrifying book [Alone
+Together](https://www.basicbooks.com/titles/sherry-turkle/alone-together/9780465093656/)
+explains how "Technology has become the architect of our intimacies. Online,
+we fall prey to the illusion of companionship, gathering thousands of Twitter
+and Facebook friends, and confusing tweets and wall posts with authentic
+communication. But this relentless connection leads to a deep solitude." The
+mental health penalties of this contradiction are increasingly commonplace,
+especially amongst the young, our digital natives.
+
+The project I would like to do is about making it easier not to look at my
+phone so often (and about sharing less of my personal data with the internet
+behemoths). We have spent a decade squeezing all the information processing
+functionality in our lives into a single device (and a marvellous device it
+has become: smartphones aren't going away any time soon). My problem is that
+whenever I decide to step away from the beast for a little while (to get a
+break from all the messaging, for example, or rest my eyes on a paper book for
+a change) one of the other functions of the phone calls me back almost
+immediately (I want to put some music on, or check a recipe, or etc. etc.
+etc.). What I would like is to separate out some of those functions into
+special-purpose devices: informational appliances that are more restricted,
+less all-encompassing. This is partly what smarthome gadgets like Echo or
+HomePod or Nest attempt to do, but at the cost of sending yet more data to the
+cloud (and from there to identity thieves, or, whenever it feels the need, to
+the state -- see above).
+
+In this context I'm excited by the possibilities of connected microcontrollers
+like the ESP32, which are low energy and low cost enough to be used in volume,
+but powerful enough to do useful things in a smartwatch package [like this
+one](https://www.hackster.io/news/lilygo-s-upgraded-ttgo-t-watch-2020-ditches-the-bulk-puts-display-sensors-and-esp32-on-your-wrist-22cdc19fb9d3),
+for example. IoT devices exist at the edge of the cloud. If they become more
+peer-to-peer, more foggy, (and if we include the substantial computate power
+now available on the gateway ARM processors[^pigateway]) then we can reduce reliance on
+the cloud.
+
+[^pigateway]:
+     The Pi 4 makes a great P2P secure hosting and home gateway when
+     [installed with FreedomBox](https://wiki.debian.org/FreedomBox) (and is
+     now capable of being a decent desktop replacement, fact).
+
+So: informational device disagreggation! New privacy in the fog! Unlimited
+free biscuits for all nerds! You heard it here first.
+
+
+#### Transition: from Sustainability to Resilience? #########################
+
+When not seen through the distorted lens of their supposed efficiency, markets
+are destructive. Instead we need to think of efficiency as what best meets
+human needs. This means that:
+
+> ...“what’s good is what’s good for the biosphere.” In light of that
+> principle, many efficiencies are quickly seen to be profoundly destructive,
+> and many inefficiencies can now be understood as unintentionally
+> salvational. Robustness and resilience are in general inefficient; but they
+> are robust, they are resilient. And we need that by design. Kim Stanley
+> Robinson, _The Ministry for the Future_ [@Robinson2020-rf]
+
+Resilience is the ability to bounce back from stresses, strains and shocks. A
+society is resilient if it can supply its needs (e.g. for food, shelter or
+health) without relying on systems outside of its control. A society is not
+resilient if it relies on shipping large parts of its needs half way around
+the world. We are vulnerable to disruption brought by war, or the chaotic
+weather systems brought by climate change, or the volatile price of oil.
+
+[The Transition Network](http://www.transitionnetwork.org/) make a strong case
+for the benefits of working towards community resilience, not least because
+the act of making positive change, even when that change is necessarily
+partial and incomplete, is a great way to enjoy life! Connecting to our
+locality, to the people around us, is a great way to feel genuine togetherness
+and to reduce our reliance on the virtual variety analysed by Turkle. And the
+spin-offs are to make us all stronger: for example, increasing local food
+production can help us adapt to change and make our communities more
+resilient.
+
+There's lots to do! Dive in!
+
+
+### The Main Reason #########################################################
+
+> ...the strongest, in the existence of any social species, are those who are
+> the most social. In human terms, most ethical... There is no strength to be
+> gained from hurting one another. Only weakness. (Ursula le Guin, _The
+> Dispossessed_)
+
+Ok, I'm not very good at counting (that's perhaps why I've spent most of my
+working life with computers; they do the numbers!). There are more than three
+reasons for hope; almost uncountable reasons, and the main one is you!
+
+Thanks for coming out to play, and best of luck with your journey! Let's leave
+the last word to our old mate Albert, who knew a thing or two...
+
+> A human being is a part of this whole, called by us "Universe", a part
+> limited in time and space. He experiences himself, his thoughts and feelings
+> as something separated from the rest — a kind of optical delusion of
+> consciousness. This delusion is a kind of prison for us, restricting us to
+> our personal desires and to apportion for a few persons nearest to us. Our
+> task must be to free ourselves from this prison by widening our circle of
+> compassion to embrace all living creatures and the whole of nature in its
+> beauty. (Albert Einstein.)
+
+
+## COM3505 Week 12 Notes ####################################################
+
+### Learning Objectives #####################################################
+
+Our objective this week is to finish, commit and push the project work. Good
+luck, and bon voyage!

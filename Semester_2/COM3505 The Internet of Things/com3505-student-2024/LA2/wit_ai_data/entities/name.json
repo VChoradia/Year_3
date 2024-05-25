@@ -1,0 +1,138 @@
+{
+    "name": "name",
+    "roles": [
+        "name"
+    ],
+    "lookups": [
+        "free-text",
+        "keywords"
+    ],
+    "keywords": [
+        {
+            "keyword": "Aaditya Syal",
+            "synonyms": [
+                "aaditya syal"
+            ]
+        },
+        {
+            "keyword": "Aakash Basi",
+            "synonyms": [
+                "aakash basi"
+            ]
+        },
+        {
+            "keyword": "Alicja",
+            "synonyms": [
+                "alicja"
+            ]
+        },
+        {
+            "keyword": "Bonita Joon",
+            "synonyms": [
+                "bonita joon"
+            ]
+        },
+        {
+            "keyword": "Hamish",
+            "synonyms": [
+                "hamish"
+            ]
+        },
+        {
+            "keyword": "Jack",
+            "synonyms": [
+                "jack"
+            ]
+        },
+        {
+            "keyword": "Jonathan",
+            "synonyms": [
+                "jonathan"
+            ]
+        },
+        {
+            "keyword": "Nikhil",
+            "synonyms": [
+                "nikhil"
+            ]
+        },
+        {
+            "keyword": "Pratheek Vasu",
+            "synonyms": [
+                "pratheek vasu"
+            ]
+        },
+        {
+            "keyword": "Sia",
+            "synonyms": [
+                "sia"
+            ]
+        },
+        {
+            "keyword": "Siya",
+            "synonyms": [
+                "siya"
+            ]
+        },
+        {
+            "keyword": "Siya Pradhan",
+            "synonyms": [
+                "siya pradhan"
+            ]
+        },
+        {
+            "keyword": "Syal",
+            "synonyms": [
+                "syal"
+            ]
+        },
+        {
+            "keyword": "Vidhi Das",
+            "synonyms": [
+                "vidhi das"
+            ]
+        },
+        {
+            "keyword": "Vivek",
+            "synonyms": [
+                "vivek"
+            ]
+        },
+        {
+            "keyword": "Vivek Choradia",
+            "synonyms": [
+                "vivek choradia"
+            ]
+        },
+        {
+            "keyword": "Yash",
+            "synonyms": [
+                "yash"
+            ]
+        },
+        {
+            "keyword": "Yash Bordia",
+            "synonyms": [
+                "yash bordia"
+            ]
+        },
+        {
+            "keyword": "name is Siya",
+            "synonyms": [
+                "name is siya"
+            ]
+        },
+        {
+            "keyword": "name is Vivek.",
+            "synonyms": [
+                "name is vivek."
+            ]
+        },
+        {
+            "keyword": "tsamina mina eh eh",
+            "synonyms": [
+                "tsamina mina eh eh"
+            ]
+        }
+    ]
+}

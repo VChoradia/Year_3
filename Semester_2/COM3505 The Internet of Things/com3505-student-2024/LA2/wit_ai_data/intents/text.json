@@ -1,0 +1,8 @@
+{
+    "name": "text",
+    "entities": [
+        "message:message",
+        "name:name",
+        "todo:todo"
+    ]
+}

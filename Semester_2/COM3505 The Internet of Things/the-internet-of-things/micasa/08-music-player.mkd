@@ -1,0 +1,13 @@
+
+### MP3 Player ##############################################################
+
+The ESP32 feather can be attached to a featherwing with a [VS1053 MP3 decoder
+chip](http://www.vlsi.fi/en/products/vs1053.html) which can also do a nice job
+of [synthesising MIDI
+input](http://www.vlsi.fi/fileadmin/software/VS10XX/vs1053mid.mp3). Store your
+`.mp3` files on an SD card (after formatting it to FAT), and see the example
+code for how to play via the headphone jack.
+
+Note that streaming audio is a blocking operation for at least one of the
+ESP32's cores, so your UI will have to find clever ways to squeeze into
+available processing power!

@@ -1,0 +1,642 @@
+# Machine Learning and Analytics in the Cloud ###############################
+
+It is time to step back a little from the device and its local protocols for
+talking to sensors and actuators. Below we'll discuss processing your data to
+produce efficient prediction models that can run at the edge, and how machine
+learning plays out in the IoT. But first, a little digression about AI.
+
+
+## Is AI about Intelligence?                                       {#sec:ai}
+
+I was talking to a friend of mine recently who consults for UK universities on
+e-learning tech and is writing a book about critical reasoning in the age of
+algorithmic intelligence. In the 1980s we studied cognitive science and
+artificial intelligence (AI) together, and have watched with interest the
+recent resurgence in the latter. When we started out AI was first and foremost
+a project to _understand_ human intelligence by modelling it on computer. By
+contrast, in the twenty twenties AI is about using applied
+statistics[^neuralnets] to estimate the probability of a translation fragment,
+or steer a self-driving car, or recommend a product to someone who just surfed
+to the page of a similar item. It is also _much_ better funded and _much_ more
+noise is made about how transformative it may be or become.[^aiprof] How has
+this happenned? Were there specific breakthroughs? Changes in social and
+economic context?
+
+My friend and I ended up swapping emails on the following question:
+
+[^aiprof]:
+     Until around a decade ago my day job was computational infrastructure for
+     the extraction of information from human language text, which, depending
+     on which funding agency or research lab was paying the bills, was either
+     down-to-earth software engineering or flight-of-fancy pioneering AI.
+     There is an argument that the crossover space between literary and
+     technical competence is what allows the EU to gain competitive advantage
+     and still avoid falling foul of World Trade Organisation anti-subsidy
+     rules: people like me write the science fiction wrapper that allows
+     states to fund "research" which might otherwise just be "development".
+     One unfortunate downside of this arrangement is that those who have only
+     the literary (or marketing) competence and no real technical skill or
+     commitment can also sometimes slip in to join the party, with the result
+     that the core pre-requisites of science and engineering (evidence,
+     repeatability, transparency) sometimes become lip-service window
+     dressing, and the corporatisation of university research takes another
+     step towards the inconsequential mirroring of advertising fantasy. But I
+     digress!
+
+[^neuralnets]:
+     Aren't deep learning algorithms (and the neural network models that
+     underlie them) more than just "applied statistics"? Maybe. It is true
+     that neural net architectures are inspired by human brain biology, but
+     also true that in their typical current form they have little biological
+     plausibility: the neurons in our heads are more complex, more analogue,
+     more connected. Our brains are also at the center of hugely complex
+     organisms with vast input ranges and rich feedback loops -- and wants,
+     desires, needs... The neural nets that are used for deep learning are
+     good at generalising over a large amount of data, and perhaps they are
+     better at doing that than other more obviously statistical methods. I
+     suspect, however, that the key to the success of their modern
+     applications are the truly enormous datasets that have been created (by
+     human beings) as part of our rush to move all types of information
+     persistence and sharing onto the web. They are learning count-based
+     abstractions over human authored data, rather than modelling the
+     processes by which humans originate that data in the first place.
+
+> To what extent -- if at all -- does the claim survive that AI replicates,
+> reproduces or tells us something useful about human intelligence? Is there
+> an acknowledged end to that narrative (and if so, when and why?)
+
+I think that what happened is that it became vastly profitable to use applied
+statistics (aka Machine Learning) to tailor ecommerce websites to recommend
+products to customers that other customers have previously bought when
+shopping for similar items. This is the foundation of the business models of
+Google and Facebook, for example. In the case of the former, their initial
+rise to prominence (and ability to sell advertising) was, of course, based on
+web search, and this led by various paths to them becoming key defenders of an
+open web (in the sense invented by Berners-Lee). If Google can't index it, you
+can't search it, and someone else (e.g. Facebook in their partly walled
+garden, or Apple in theirs) gets to sell the advertising instead. This
+polarisation of digital corporate conflict encouraged Google in providing all
+sorts of Really Useful Infrastructure, from satnav and maps to calendars and
+gmail, and to making these offerings all work as well as possible, mostly for
+free -- or in exchange for your data, of which they amassed a volume for which
+the term humungous rapidly became quite inadequate....
+
+And it turns out that if you have a really huge number of examples of human
+beings behaving in particular ways (especially if those ways involve a finite
+set of decisions: which book to buy, or who to include in an email cc. list,
+or which route to drive around a traffic jam), then you can get computers to
+do Really Useful Stuff in supporting human intelligence. (Not least: get
+speech recognition to work well enough that lots of people now want to use it
+in their homes, on Alexa or Home or Siri. We've got a lovely example of that
+in this course with [the Marvin project](#marvin) from [Chris
+Greening](https://www.cmgresearch.com/2020/10/15/diy-alexa.html). For a
+counter-example of the inflexibility of machine learning in face of real world
+data, see [Andreas Spiess' video](https://youtu.be/d_u8c3bu-zg) on reading
+digits from an electric meter with an ESP32. YMMV!)
+
+Is this AI, in any sense that the original researchers of that field would
+have recognised? Probably not, but by now few people remember or care. The
+amounts of money being made are vast, and they drive the research agenda and
+reward the acolytes who, of course, invent new rafts of terminology to repel
+the casual boarder and valourise their knowledge. AI became almost synonymous
+with Machine Learning (counting lots of occurrences to inform probabilistic
+choice); Deep Learning (using perceptrons and other network representation
+models, and stacking them) became one of the chief mysteries; "Big Data"(and
+data analytics) came to be touted as the saviour of high tech
+UK[^internetmemory]; and so on.
+
+[^internetmemory]:
+     A decade ago I was luck enough to spend a short year working as [ANR
+     Chaire d'Excellence](http://www.agence-nationale-recherche.fr/) at the
+     [Internet Memory
+     Foundation](https://en.wikipedia.org/wiki/Internet_Memory_Foundation) in
+     Paris with Julien Masanès and colleagues. They used to run the UK
+     national archives web provision, so for several years if you went to a UK
+     government webpage that no longer existed you would be forwarded to an
+     archival copy served out of a datacenter in Amsterdam managed by French
+     sysadmins, partly paid for by EU high tech research budgets. They worked
+     on early big data infrastructure and analytics using map reduce over HDFS
+     in Hadoop, sucked down from the web by their custom crawler. Ahead of
+     their time!
+
+The project of understanding human intelligence, then, is now rather eclipsed
+(at least in my neck of the woods), by the "let's get some data and count
+features and do prediction" school. Will this trend connect up again with the
+original project? Will progress be more substantial now that we have increased
+our data set sizes by orders of magnitude? Or is it, as one of the [first web
+browser engineers](https://www.jwz.org/about.html)[^jwzstyle] once said, the
+fate of our generation to spend our best years working on advertising?!
+
+[^jwzstyle]:
+     [Jamie Zawinski](https://www.jwz.org/)'s
+     [website](https://www.jwz.org/blog/) is so beautiful! I want one!
+
+You have more chance of finding out than I do. Enjoy the chase!
+
+[ ![](images/jwz-500x310.png "Jamie Zawinski") ](images/jwz.png)
+
+
+## IoT, Big Data Analytics, and Deep Learning ###############################
+
+### Machine Learning at the Edge [^mledge]
+
+[^mledge]:
+     This section contributed by Valentin Radu.
+
+Machine Learning has gone through some tremendous growth during the last
+decade, mostly driven by progress in training deep neural networks. Their
+benefits are impacting more and more applications, used in image
+classification, object detection, speech recognition, translations and many
+more. Wherever data is being generated, it is likely that machine learning can
+be used to automate some tasks. That is why it is important to study machine
+learning in the context of data generated by IoT devices.
+
+Currently, machine learning operates under a common computing paradigm. Data
+is moved to the cloud (or a centralised server) for data processing. There,
+data is labeled and sanitised for quality control, and can be used to train
+machine learning models. How these models are used can differ: either continue
+to upload data to the cloud for run-time inference (e.g., voice recognition
+with Alexa, or Siri), or move the model to the edge to perform inferences
+close to the data source. Due to privacy concerns the latter is likely to grow
+in adoption over the coming year. Here, we are going to explore the process of
+training a neural network model and how this can be made available and used at
+the edge (on your IoT device).
+
+
+#### Motivation
+
+Edge computing devices are usually constrained by resources (battery, memory,
+computing power, etc.). The amount of computation they do is thus limited, and
+so should the machine learning models running at the edge.
+
+If you have ever used the Google personal assistant on your phone, you would
+know that this can be triggered by using a keyword “Okay Google”. This relies
+on a voice recognition model running continuously on the phone to detect when
+you are calling it. Because the CPU is often turned off in idle mode to save
+battery, on most devices the keyword spotting task runs on a DSP (Digital
+Signal Processing) unit. The DSP consumes just milliWatts (mW) of power, but
+it is limited in its computing resources, having just kilobytes (KB) of memory
+available. So the keyword spotting model needs to be really small. For
+instance, the Google assistant voice wake-up model is just 14 KB. The same
+resource constraints we find on microcontrollers, having just KB or memory. We
+will see in this section how we can build such small machine learning models
+and how these can be deployed on small devices. 
+
+
+#### Introduction to Machine Learning
+
+Although Machine Learning may see daunting at first, involving a lot of maths
+and statistics, some basic concepts can be applied out of the box, without
+going too much into details of how these work and how you can develop the
+optimal training process for your task. The latter is still an active research
+area, and even machine learning specialists cannot agree on the optimal
+methods. But getting satisfactory results from your machine learning models
+can be achieved with default options and some parameter tuning as we will
+learn in this section.     
+
+We use Machine Learning when the patterns in data are not immediately obvious
+to us for how to programme about them. For instance, we know for sure that
+water boils at 100°C, so if we have a reliable thermometer we can programme
+with a hard threshold on that value. That is how the common thermostats in
+boilers and refrigerators are built. But if we work with noisy data, or the
+data exhibits patterns that are too complex for us to spot at a quick glance,
+it is better to use machine learning for those tasks. Voice recognition is one
+example, where direct thresholds are hard to impose. That is because each time
+we utter a word or phrase there is some slight deviation in the tone,
+pronunciation, opening of the mouth, angle to the microphone, background noise
+and many other altering conditions. But machine learning can extract
+information from a lot of data examples to automatically focus on the more
+meaningful attributes during *training*. Once such a *model* is trained, we
+can use it in our programmes to make *inferences* in the real-world without
+understanding the complexity of the data ourselves.
+
+There are many different approaches to machine learning. One of the most
+popular is deep learning, which is based on a simplified idea of how the human
+brain might work. In deep learning, an artificial neural network is trained to
+model the relationships between various inputs and outputs. We call it deep
+because modern network architectures have many stacked layers of parameters or
+weights (resembling the connections between brain neurons). Each architecture
+is designed for specific tasks and a lot of effort has been going in research
+over the last few years to determine the best architectures for each task. For
+instance, image classification works well with Convolutional Neural Networks,
+whereas text translations benefit from Recurrent Neural Networks. 
+
+In the following sections we are going to have a crash course on the most
+essential part of deep learning to get you started with training and deploying
+a machine learning model. It is by no means complete of what you can do in
+machine learning, but we hope this will get you curious and excited about this
+topic so you will study it in greater details in other courses.
+
+
+#### Training Deep Neural Networks
+
+Training is the process by which a model learns to produce the correct output
+for a given set of inputs. It involves feeding training data through a model
+and making small adjustments to it until it makes the most accurate
+predictions possible.
+
+Training a neural network will require a sizable dataset of plausible
+examples. It is important that your model is trained on a distribution of data
+which is as close as possible to the real data. Assuming you have a dataset of
+labeled instances (annotated with the ground-truth class, for example the
+uttered word in keyword spotting), you will assign a portion of that data for
+*training*, a smaller fraction for *validation* (to evaluate the choices of
+parameters you make during training) and finally a *test set* that you never
+touch until the very end when you are happy with your model’s performance on
+the validation set and you want to determine its final performance (inference
+accuracy) on the test set. A common split is 60%:20%:20%, with the largest set
+always for training.
+
+During the training process, internal parameters of the network (weights and
+biases) are adjusted so that prediction errors on your training set are slowly
+diminished. In the forward-pass through the network, the input is transferred
+at each layer in the network, all the way to the final layer which produces a
+data format that is easily interpretable. The most common output format of a
+classification neural network is a vector of activations where each position
+is associated with a different class. The vector position with the highest
+value indicates the winning class. For instance, if we want to detect a short spoken 
+command (Yes/No), we estimate between the following classes “Yes”, “No”, “Silent” and “Unknown” (in that
+order in the output vector). If our network produces the following output
+vector: [0.9, 0.02, 0.0, 0.08], we will associate the estimation to the class
+“Yes”. The network is trained by adjusting the weights of the network such
+that the output will get as close as possible to [1, 0, 0, 0] if “Yes” is indeed
+the ground-truth for the spoken word. This is done by training on many more
+examples at once, each contributing to the adjustment of weight values. This is 
+repeated several times over the same training set (epochs). The
+training stops when the model’s performance stops improving. 
+
+<!-- <img src="demo_net.png" width="60%" /> -->
+[ ![](images/demo-net-350x218.png "example network") ](images/demo-net.png)
+
+
+During training we look at two metrics to assess the quality of the training:
+accuracy and loss, in particular on samples selected from a validation set 
+(different from the training set). The loss metric gives us a numerical 
+indication of how far the model is from the
+expected answer, and the accuracy indicates the percentage of times the model
+chooses the correct class. The aim is to have high accuracy (close to 100%)
+and low loss value (close to 0). The training and validation sets should have 
+a fair distribution of samples from all the classes. 
+Of course, these are task dependent and for other more complex tasks even getting 
+to 70% accuracy is considered a very good achievement.
+
+<!-- <img src="accuracy_loss.jpg" width="40%" /> -->
+[ ![](images/accuracy-loss-350x234.jpg "accuracy loss") ](images/accuracy-loss.jpg)
+
+The figure above shows a common training behaviour pattern. Over a number of
+epochs (iterations over the training set), the accuracy increases and
+stabilizes at a certain value -- at which point we say that the model has
+covered; and the loss decreases towards its convergence point.
+
+Training neural networks is usually based on try and error in choosing the
+right training parameters (or hyperparameters because they are empirically
+determined). After each adjustment, the network training is repeated and
+metrics visualised until we get to an acceptable performance. The common
+hyperparameters adjusted during training are: learning rate, which indicates
+how much the values of weights should be updated at each epoch. A common value
+to start with is 0.001, network structure -- number of layers and the number
+of neurons per layer, learning optimisation parameters (such as momentum,
+etc.), activation functions (sigmoid, tanh, ReLU), number of training epochs.
+
+Once we are happy with the model produced during training, we test it on the
+test set to assess its final accuracy. We are then ready for deployment to the
+device where inferences will be produced. But there are some more
+optimisations that can be performed to make the model run more efficiently on
+the device.
+
+
+#### Neural Network Quantization
+
+When deep neural networks first emerged, the hard challenge was getting them
+to work at all. Naturally, researchers paid more attention to training methods
+and model recognition accuracy, and little on inference performance on
+hardware. It was much easier for researchers to work with floating-point
+numbers, and little attention was given to other numerical formats.
+
+But as these models become more relevant for many applications, more focus is
+now going into making the inference more efficient on the target device. While
+the cost of training a model is dominated by the cost of the data engineer
+time, the operational cost of running inefficient models on millions of
+devices dramatically outbalance the development cost. This is why companies
+are now so interested in designing and training the best machine learning
+models that can run efficiently on edge computing devices.
+
+Quantization is one popular solution to make neural networks smaller. Instead
+of storing the weights of neural networks in the traditional 32-bit
+floating-point numerical representation, quantization allows us to reduce the
+number of bits required to store weights and their activations. Here we will
+look at quantization, reducing weights to 8-bit fixed-point representation.
+
+**Definition**: Quantization is an optimisation that works by **reducing the
+precision** of numbers used to represent the model’s parameters, which by
+default are 32-bit floating-point numbers. This results in smaller model size,
+better portability and faster computations.
+
+<!-- <img src="quantization_accurcy.png" width="50%" /> -->
+[ ![](images/quantization-accuracy-350x121.png "quantisation accuracy") ](images/quantization-accuracy.png)
+
+Floating-point representations are essential during the training process for
+very small nudges of the weight values based on gradient descent. While that
+data representation makes a lot of sense for infinitely small adjustment of
+the weights in several passes over the training set, during the inference time
+an approximated result for the estimation will likely still determine the same
+class (although with less intensity on the last layer of the network). This is
+possible because deep neural networks are generally robust to noise in the
+data, and quantized values could be interpreted as such.
+
+The effect of applying quantization is a little bit of loss in accuracy (the
+approximated result will not always match that produced by the trained model
+in 32-bit floating-point representation). But the gains in terms of
+performance on latency (inference time) and memory bandwidth (on device and in
+network communication) are justifiable.
+
+#### The Quantization Method
+
+Neural networks can take a lot of space. The original AlexNet, one of the
+first deep neural networks for computer vision, needed about 200 MB in storage
+space for its weights.
+
+To take an example, let’s say we want to quantize in 8-bit fixed-point (using
+integer values between 0 and 255), the weights of a neural network layer that
+has values between -2.5 and 6.5 in 32-bit floating-point representation. We
+associate the smallest weight value with the start of the quantized interval
+(-2.5 will be represented as 0) and the largest with the maximum value (6.5
+will become 255). Anything between the min and max will be associated with the
+closest integer value in a linear mapping of [-2.5, 6.5] to [0, 255]. So with
+this mapping, 2.4912 will be 127 because it falls approximately at the middle
+of the interval.
+
+<!-- <img src="Quantization.png" width="80%" /> -->
+[ ![](images/quantization-350x124.png "quantisation") ](images/quantization.png)
+
+```
+scale = (max(weights) - min(weights)) / 256
+
+x_code = quant(x) = (x - min(weights)) / scale
+
+x_reconstruct = dequant(x_code) = min(weights) + x_code * scale
+```
+
+The first benefit is that the storage of the model is reduced by 75% (from 32
+bits down to 8 bits representation of each weight). This can give substantial
+benefits if only just for communication cost and flash storage and loading. In
+the simplest form of device implementation, the numbers can be converted back
+to 32-bit representation and using the same computation approach in 32-bit
+precision to perform the inference. But with newer computation frameworks
+(e.g., TensorFlow Light) the weights can be used directly in 8-bit
+representation for integer operations (inputs are also quantized to 8-bit
+precision). This will also take advantage of the hardware support for
+accelerating to perform the operations in parallel in a single instruction
+with SIMD (single instruction multiple data) configurations. With this, 4
+times more 8-bit values are loaded from flash in the same instruction and more
+values are stored in a single register and in the cache. If implemented
+efficiently, theoretically this can speed up the execution by 4x (performing 4
+different 8-bit operations in the same clock time needed for one 32-bit
+operation). Not to mention that integer operations are generally more
+efficient in hardware, so they consume less energy compared to floating-point
+computations.
+
+The advantages of quantization:
+
+- Model size -- networks can take upto 4 times less memory in 8-bit
+  representation vs the 32-bit ones.
+- Latency -- if implemented correctly in hardware, the models can be a lot
+  faster also.
+- Portability -- not all microcontrollers can run 32-bit operations, so
+  quantized models may be their only option.
+
+In summary, quantizations are great, because if you reduce the model
+representation from 32-bit floating-point representations to 8-bit fixed-point
+representations you save storage space, memory bandwidth on loads, and even
+speed up computations and energy consumption where hardware permits it. And
+for some devices (such as 8-bit microcontroller) using quantization may be the
+only option to run inference models on them.
+
+
+#### Keyword spotting exercise
+
+Has a lot of applications to enable the triggering of speech recognition. For
+instance okay google, or Alexa are keywords that trigger the device to start
+recording your commands. Your voiced commands are then sent through the
+internet to the cloud for speech recognition, to interpret your commands into
+computer instructions. However, knowing when to start recording your commands
+is important. It would be too costly to stream continuous recording to the
+cloud, not to mention privacy invasive. But running the keyword spotting
+algorithm locally, on your device in the home is safe and cost effective. The
+audio is streamed to the microcontroller which analyses with small and
+efficient algorithms to spot when the enabling word is used.
+
+
+Step 1 Data collection
+
+For Keyword Spotting we need a dataset aligned to individual words that
+includes thousands of examples which are representative of real world audio
+(e.g., including background noise).
+
+Step 2: Data Preprocessing
+
+For efficient inference we need to extract features from the audio signal and
+classify them using a NN. To do this we convert analog audio signals collected
+from microphones into digital signals that we then convert into spectrograms
+which you can think of as images of sounds.
+
+Step 3: Model Design
+
+In order to deploy a model onto our microcontroller we need it to be very
+small. We explore the tradeoffs of such models and just how small they need to
+be (hint: it’s tiny)!
+
+Step 4: Training
+
+We will train our model using standard training techniques explored in Course
+1 and will add new power ways of analyzing your training results, confusion
+matrices. You will get to train your own keyword spotting model to recognize
+your choice of words from our dataset. You will get to explore just how
+accurate (or not accurate) your final model can be!
+
+Step 5: Evaluation
+
+We will then explore what it means to have an accurate model and running
+efficient on your device.
+
+
+## COM3505 Week 06 Notes ####################################################
+
+### Learning Objectives #####################################################
+
+Our objectives this week are to:
+
+- learn about machine learning and the IoT
+- make sure we've properly understood provisioning and update
+- look beyond the device and examine options for cloud-based data logging,
+  analysis, and remote triggers or control
+
+Note: soon we're going to ask you to choose project hardware.
+This year there will be three main options:
+
+- [an ESP32-based
+  'smartwatch'](https://www.hackster.io/news/lilygo-s-upgraded-ttgo-t-watch-2020-ditches-the-bulk-puts-display-sensors-and-esp32-on-your-wrist-22cdc19fb9d3)
+  (V3, now [including a
+  microphone](https://www.lilygo.cc/products/t-watch-2020-v3))
+- [the unPhone](https://unphone.net/)
+- [a DIY Alexa (Marvin)](https://iot.unphone.net/#sec:marvin)
+
+(Other options are possible but need to be agreed with me in advance.)
+
+Start thinking about what you would like to play with!
+
+
+### Assignments #############################################################
+
+<!--
+- **Ex11**: captive portal to your OTA/provisioning system
+- **Ex12**: send your project choice priority list to our cloud server
+    - adapt the code from Ex08 to send your preferences for project hardware
+      to the server
+    - do this from code (not from a browser or wget)
+    - send your GET request with parameters `order=number`, e.g. `1st=3` would
+      mean that project number 3 is your first choice, and `1st=3&2nd=2&3rd=1`
+      would mean that project 2 was your second choice and project 1 you third
+      choice
+    - the list of projects:
+        - 1 TODO
+        - 2 campus panic button
+        - 3 RoboThing
+        - 4 WaterElf: sustainable food tech
+        - 5 Peer-to-Peer voting systems
+        - 6 other (by arrangement!)
+-->
+
+- Create firmware to trigger an [IFTTT event](https://ifttt.com/). For
+  example, you might use the [ESP's touch sensing](#the-esps-sense-of-touch)
+  capability to Tweet whenever you tap it three times (handy for sending
+  secret messages from boring lectures?). (**NOTE:** this is pretty fiddly to
+  get right! There's an example in the `exercises/` tree, but the IFTTT and
+  Twitter sides need to be set up just so too... If you're behind with any of
+  the previous exercises feel free to catch up with them instead, or to
+  experiment with a cloud service like `Adafruit.io` or etc.)
+- Revise the lectures, reading material and notes for weeks 1 through 7 ready
+  for the mock exam (in week 9 or 10).
+
+
+#### Coding Hints ###########################################################
+
+#### Setting up an IFTTT Applet #############################################
+
+IFTTT stands for "if this, then that". We can think of the "this" as an
+incoming notification (or source), and the "that" as a triggered action (or
+sink). IFTTT "applets" accept notifications from diverse sources and trigger
+actions on diverse sinks. For example, we can set up an HTTP-based trigger
+(using their "webhooks" service) that causes Twitter to tweet a message.
+
+First create an account on [ifttt.com](https://ifttt.com) and/or download the
+app for your phone. (You'll need a [Twitter](https://twitter.com) account too
+if you want to tweet.) In IFTTT navigate your way to new applet creation. This
+varies depends on what app or URL you're accessing through, but e.g.:
+
+- in a web browser click on `My Applets`, then `Create`
+- in a web browser click on `Explore`, or go to
+  [ifttt.com/discover](https://ifttt.com/discover)
+- in the Android app: click on `Get more`
+- now click on `+` (`Make your own Applets from scratch`)
+
+When you've found the "create applet" dialogue, it will bring up `If +__This__
+Then That`. Run through these steps:
+
+- click on the `+__This__` (or `Add`) and select `Webhooks`
+- select `Receive a web request`
+- give an `Event name` (e.g. `my-first-ifttt-trigger`) and do `Create trigger`
+
+This brings up `If (hook logo) Then +__That__` (or `Add`). Now:
+
+- click on the `+__That__` (or `Add`)
+- select an `action`, e.g. `Twitter`
+- select `Post a tweet`
+- edit the `Tweet text` message to be meaningful to you; you might want to
+  Tweet a particular account (by starting the message with `@account`) to
+  avoid polluting your Twitter account's tweet stream; for example:
+  - `@COM3505T the event named "{{EventName}}" occurred on the IFTTT Maker
+    service. Payload = {{Value1}}; ran at {{OccurredAt}}`
+- hit `Continue`; hit `Finish` to create your applet
+
+We've now set up most of what we need on IFTTT, but we need to copy a token to
+allow our ESP to authenticate against the server. To do this either
+
+- (on phone) navigate to `My services` and then `Webhooks`, then open
+  settings and click the URL that appears under `Account info` (something like
+  `https://maker.ifttt.com/use/my-long-key-string`)
+- (on browser) open
+  [ifttt.com/maker_webhooks](https://ifttt.com/maker_webhooks), and click on
+  `Documentation`
+
+This will give you a page saying something like:
+
+```
+Your key is: my-long-key-string
+Back to service
+To trigger an Event
+Make a POST or GET web request to:
+
+https://maker.ifttt.com/trigger/{event}/with/key/my-long-key-string
+...
+You can also try it with curl from a command line.
+
+curl -X POST https://maker.ifttt.com/trigger/{event}/with/key/my-long-key-string
+```
+
+Replace `{event}` with your event name, e.g. `my-first-ifttt-trigger` and
+click `Test it`, or copy the `curl` statement and try it from the command
+line.
+
+**NOTE:** IFTTT services sometimes have quite a high latency, and this seems
+particularly true for Twitter. You might have to wait 10 minutes or more for
+the tweet to appear in public! (You should be able to test the service without
+waiting for that to happen though, as the POST request will return a
+`Congratulations! You've fired the {event} event` message if it succeeds. Also
+check the `Webhook>Settings>Activity` page to see if Twitter accepted the
+trigger or if some other problem may have occured. YMMV!
+
+**Make a note of your key**, and the URL that the service lives at. (Following
+the style of previous weeks' exercises, you could put the key in your
+`private.h` file, e.g.: `#define _IFTTT_KEY "j7sdkfsdfkjsdflk77sss"`.
+
+
+#### Accessing the IFTTT Applet from Firmware ###############################
+
+Now that we have a working service, we just need to get the ESP32 to call it
+over HTTP(S). [This
+example](https://github.com/espressif/arduino-esp32/blob/master/libraries/HTTPClient/examples/BasicHttpsClient/BasicHttpsClient.ino)
+from the ESP32 Arduino core can be adapted to talk to IFTTT with a little
+work. If we define a `doPOST` method (based on the example) that takes a URL
+and a JSON fragment in IFTTT format, we can do the service trigger job like
+this:
+
+```cpp
+void doPOST(String url, String body) {
+// ...
+}
+
+void iftttTweet(String messageDetails) {
+  String url(
+    "https://maker.ifttt.com/trigger/{event}/with/key/" _IFTTT_KEY
+  );
+  doPOST(url, messageDetails);
+}
+```
+
+(You need to define the `_IFTTT_KEY` in your `private.h` file in the normal
+way.)
+
+Good luck!
+
+The course GitLab repository contains `exercises/IFTTTThing`, a model solution
+to the exercise. (Note: this code can be controlled by an ultrasonic sensor
+attached to pins A0 and A2 [like this](images/ifttt.jpg). By default this is
+turned off; define `USE_ULTRASONICS` to turn it on.)
+
+
+## Further Reading ##########################################################
+
+Pete Warden and Daniel Situnayake, TinyML: Machine Learning with TensorFlow
+Lite on Arduino and Ultra-Low-Power Microcontrollers, O'Reilly Media, 2019
+[@Warden2019-ki].

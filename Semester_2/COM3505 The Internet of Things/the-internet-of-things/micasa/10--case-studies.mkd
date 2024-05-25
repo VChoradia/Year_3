@@ -1,0 +1,340 @@
+
+# WaterElves, Gripples and Fish Poo: IoT Case Studies #######################
+
+## Aquaponic Control Systems ################################################
+
+In section [-@sec:creatingunphone] I referred to _aquaponics_, a sustainable
+intensive agriculture technology. Myself and colleagues work on monitoring and
+control systems that attempt to make the technology simpler to use, and we
+build those systems using IoT technology. This section will spend a little
+bandwidth looking at an IoT system for intensive sustainable agriculture with
+aquaponics: the _WaterElf_. First a little context.
+
+
+### Urban Agriculture #######################################################
+
+Why bother growing things in towns and cities? Most of our agricultural land
+is already being farmed, and most of our food production is part of a system
+which prioritises profit over costs like pollution, soil degradation or
+injustice.
+
+How can we grow more food in more places (and grow it quickly)? My colleague
+[Jill
+Edmondson](https://www.sheffield.ac.uk/biosciences/people/aps-staff/academic/jill-edmondson)
+ran a project called [My Harvest](https://myharvest.org.uk/) (for which my
+team in [Computer Science](https://www.sheffield.ac.uk/dcs) built the database
+backend). Jill's team used the data from that project (collected from
+allotment growers across the UK) and a geospatial analysis of Sheffield city
+green (and grey[^greyspaces]) spaces to estimate the amount of food that could
+be produced within the city boundaries. The results (published in Nature food
+[@Edmondson2020-tv]) are surprising: urban spaces have the potential to host
+large-scale growing that can make a significant contribution to our food
+supplies.
+
+[^greyspaces]:
+     "Grey spaces" are transient, informal and other less easily categorised
+     areas of urban development.
+
+To do this we need intensive agricultural methods that don't need soil. Whilst
+the go-to option there is _hydroponics_ (growing vegetables in disolved
+fertiliser), the difficulty is that fertilisers are either a scarce natural
+resource (e.g. potash) or produced using the Haber-Bosch nitrogen fixation
+process (which is currently responsible for something on the order 1 or 2% of
+the world's total energy consumption). The combination of fish and vegetables
+in a closed loop system — or _aquaponics_ — has both low environmental impact
+and high productivity.
+
+[ ![](images/ponics-350x529.gif "ponics") ](images/ponics.gif)[^ponics]
+
+[^ponics]:
+     The virtuous circle of aquaponics.
+
+At Regather's Club Garden the Institute for Sustainable Food are building an
+urban farming demonstrator to showcase the potential of the technology, and
+hopefully to become part of an established urban food hub, on the edge of
+Sheffield's [https://www.facebook.com/LansdowneEstate/](Lansdowne Estate).
+
+Aquaponics replaces the fertilisers used in hydroponic growing with fish food,
+and uses only as much water as the plants need. It works all year round, and
+can fit into the nooks and crannies of urban spaces. Vegetarians use
+ornamental fish; others use edible species.
+
+[ ![](images/fao-ponics-350x204.png "fao ponics") ](images/fao-ponics.png)[^fao-ponics]
+
+[^fao-ponics]:
+     _Small scale aquaponics_: [@Somerville2014-hd].
+
+The technique creates a symbiotic ecosystem of fish and plants that is
+necessarily clean — if we tried to add fertilisers or pesticides to the
+growbeds we would soon damage the fish, as would growth factors or
+prophylactic antibiotics fed to the fish. The widespread use of agrochemicals
+in our current food production industries drives down resilience — most are
+dependent on oil, and many inject toxicity into our environment and compromise
+the long-term sustainability of agriculture. The integrated ecosystem present
+in aquaponics (combining fish, vegetables, bacteria and worms) results in less
+disease and faster growth, removing the need for agrochemicals and
+pharmaceuticals.
+
+[ ![](images/aquaponics-nitrogen-cycle-350x308.jpg "aquaponics nitrogen cycle") ](images/aquaponics-nitrogen-cycle.jpg)[^nitrogenponics]
+
+[^nitrogenponics]:
+     Graphic courtesy of I. Karonent, adapted for aquaponics by S. Friend.
+
+
+### Research Questions ######################################################
+
+The catch? Balancing the ecosystem is tricky, and we don’t know enough about
+the optimum setups for cooler climates (or about the systems sizes that suit
+typical UK greenhouses or sheds). Research questions we're addressing to meet
+these challenges include:
+
+**Connectivity**. New-generation microcontrollers like ESP8266 and ESP32 bring
+a mature wifi stack and modern micro compute resource to the existing Arduino
+ecosystem, and WiFi is winning the Internet of Things (IoT) connectivity
+battle in cases where power is easily available. In other cases LoRaWAN,
+Sigfox, LTE-M and NB-IoT are all candidates vying for uptake. We're combining
+WiFi and LoRaWAN, and developing multi-mode device provisioning that will work
+in both well-resourced, WiFi and power-rich environments and in low resource
+economies where long range low power radio is more appropriate.
+
+**Monitoring**. Aquaponics relies on three interdependent sets of organisms
+(plants, fish and nitrifying bacteria), all of which have to operate within
+certain parameters. Monitoring water quality (pH, temperature), light levels
+(lux), and air quality (temperature and humidity), and providing cloud-based
+data recording for produce outputs, can make managing this balancing act
+easier and bring the technology in reach of many more users.
+
+[ ![](images/dripdash--2019-09-05-350x183.png "dripdash 2019 09 05") ](images/dripdash--2019-09-05.png)[^dripdash-2019-09-05]
+
+[^dripdash-2019-09-05]:
+     The DripDash cloudside control and analytics suite.
+
+**Control**. The bacterial populations that we rely on for converting ammonia
+to nitrates thrive in some types of hydroponic growth media that are highly
+oxygenated, and the resultant combination of nitrate concentrations and oxygen
+also promote high plant growth rates. A good way to create that type of
+environment is _ebb and flow_ (or _flood and drain_) irrigation, which
+requires solenoid control of growth bed water flows. Industrial solenoids are
+expensive; we're experimenting with several cheaper valves appropriate to low
+resource environments and driving them via MOSFET circuits. We also control
+lighting, air and water pumps using a 433 MHz transmitter and COTS (commodity)
+mains switching devices which are widely available (and therefore remove the
+need to deal with mains voltages in our circuitry).
+
+**Analytics**. Our connected devices interface with the new generation of IoT
+cloudside logging, visualisation, event generation, platform integration and
+analytics (for example on Adafruit.io or IFTTT), along with lower-level data
+logging on AWS-based cloud VMs that offer high-reliability (EBS) multiregion
+data storage. An example dashboard:
+
+[ ![](images/aqua-garden-350x306.png "aqua garden") ](images/aqua-garden.png)[^aqua-garden]
+
+[^aqua-garden]:
+     From Todmorden's [_Incredible Edible_
+     aquagarden](https://www.facebook.com/incredibleaquagarden/) (now sadly
+     closed).
+
+At the heart of the approach is an IoT device called the _WaterElf_, which
+pairs an ESP32 microcontroller with environmental sensing (for lux, air and
+water temperature, humidity and water levels) and water flow control. The
+device is open hardware supported by open source firmware on [the unphone
+gitlab repository](https://gitlab.com/hamishcunningham/unphone). An example
+schematic:
+
+[ ![](images/elf-schematic-350x242.png "elf schematic") ](images/elf-schematic.png)
+
+WaterElf is an ESP32-based control, monitoring and communications device for
+aquaponics. It combines several features characteristic of different
+greenhouse control systems and water quality monitors used in aquaculture and
+hydroponics. The latest version of the WaterElf features wireless sensors to
+measure pH, light intensity (LUX), water temperature, air temperature and
+humidity as well as three ultrasonic sensors that enable the monitoring of
+water levels in three growbeds from a single device. A programme controlling
+the opening and closing of valves, thereby regulating water levels, runs
+locally in the Elf. The timing of this is controlled by the water level (high
+water levels sending a signal to stop the flow) – if for any reason this
+signal does not come, filling of tanks will automatically stop after 15
+minutes to prevent overflow.
+
+Saving the world with fish poo plus electronics. You heard it here first :)
+
+
+## COM3505 Week 10 Notes ####################################################
+
+### Learning Objectives #####################################################
+
+Our objectives this week are to:
+
+- start preparing to test our knowledge of the theoretical material of the
+  course with a mock exam
+- continue working on projects: two more weeks left! We recommend that you:
+    - iterate through design documentation, implementation, testing, progress
+      documentation
+    - keep checking in and pushing to GitLab
+    - always keep half an eye on your plan for documenting the work (how will
+      you show all of your projects functions? how will you maximise
+      readability? what should your video show?)
+
+
+## Further Reading                             {#sec:further-reading-networks}
+
+As noted in [an earlier chapter](#scheduling-tasks-gestating-new-devices),
+[Adafruit's "All the
+IoT"](https://www.digikey.com/en/resources/iot-resource-center/videos) series
+has lots of useful background on IoT connectivity options. Hera are the
+Adafruit-hosted copies:
+    - [episode 1, transports](https://learn.adafruit.com/alltheiot-transports?view=all)
+    - [episode 2, protocols](https://learn.adafruit.com/alltheiot-protocols?view=all)
+    - [episode 3, services](https://learn.adafruit.com/all-the-internet-of-things-episode-three-services?view=all)
+    - [episode 4, Adafruit.io](https://learn.adafruit.com/all-the-internet-of-things-episode-four-adafruit-io?view=all)
+    - [episode 5, security](https://learn.adafruit.com/all-the-internet-of-things-episode-five-the-s-in-iot-is-for-security?view=all)
+
+More details on application-layer communication protocols:
+
+- [@Naik2017-bm] _Choice of Effective Messaging Protocols for IoT Systems:
+  MQTT, CoAP, AMQP and HTTP_, N. Naik, [IEEE Xplore,
+  2017](https://core.ac.uk/download/pdf/160743474.pdf)
+- _A Comparison of AMQP and MQTT_, Raphael Cohn, StormMQ, [Oasis Open lists,
+  accessed
+  2019](https://lists.oasis-open.org/archives/amqp/201202/msg00086/StormMQ_WhitePaper_-_A_Comparison_of_AMQP_and_MQTT.pdf)
+  (note the author's affiliation though!)
+- [@Dizdarevic2019-ld] _A Survey of Communication Protocols for Internet of
+  Things and Related Challenges of Fog and Cloud Computing Integration_, J
+  Dizdarevic et al, [ACM Computing Surveys,
+  2019](https://arxiv.org/pdf/1804.01747.pdf)
+- _MQTT & IoT protocols comparison_, Paolo Patierno, [Microsoft Embedded
+  Conference
+  2014](https://www.slideshare.net/paolopat/mqtt-iot-protocols-comparison)
+- See also _various provider sources_, e.g. [Azure IoT protocol developer
+  guide](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-protocols)
+  or [AWS IoT message
+  broker](https://docs.aws.amazon.com/iot/latest/developerguide/protocols.html)
+
+Cautionary tales:
+
+- [@Hunn2018-dk] [UK smart
+  meters](https://www.nickhunn.com/british-smart-meters-cost-28-million-each/)
+
+
+<!--
+old unphone lorawan/ttn/ifttt stuff
+
+- understand more of the alternatives for connecting IoT devices to networks,
+  including the differences between WiFi and LPWan (low power WAN) protocols
+- experiment with firmware for LoRaWAN, using the Things Network and IFTTT
+  integration
+- learn more about cloud-side IoT systems
+
+
+### Assignments and Assessment
+
+Your GitLab repository will now contain:
+
+- `unPhoneThing`, a rough-and-ready test rig for the unPhone
+- `LoRaWANThing`, a sketch for sending data to the Things Network (TTN)
+
+Your tasks for this week are:
+
+- configure the `LoRaWANThing` sketch to talk to your own TTN account, and get
+  that account to trigger an IFTTT notification
+- figure out which project you want to do, and sign up for it in the lab
+
+
+### Coding Hints / Configuration Instructions
+
+### The IBM LMIC (LoraMAC-in-C) Library
+
+The unPhone LoRaWAN module requires a modified version of the LMIC library,
+which is now installed on the lab machines. If you're using your own machine,
+you need to copy it into your `Arduino/libraries` directory. I've pushed a
+copy of the LMIC tree to `lmic` in your repositories for this purpose.
+
+
+### Talking to TTN, Triggering IFTTT
+
+**TODO** some of this material (the IFTTT) is now in week 7
+
+Create an account on https://ifttt.com and download the app for your phone,
+log into your new IFTTT account on the app. (If you don't have a smart phone
+or prefer to use a computer, this will all work on a web browser instead,
+though you will then need to use twitter or email integration to send
+notifications.)
+
+**TODO** the below IFTTT is a bit out of date
+
+Create a New Applet in IFTTT, click on the `+this` and choose `webhooks`.
+Click on the blue box `Receive webhook` and enter an event name like
+`unphone`. Click on the `create trigger` button.
+
+Now click on the `+that` part of the screen to configure the action. Search
+for notifications and click the bell icon (if you're using the smart phone
+app; if not, click on e.g. gmail or twitter). Choose the `Send a notification
+from the IFTTT app` option, and click on the `Create action` button. Click the
+`finish` button to create the applet.
+
+Now click on the webhooks word where it is to the right of `My Applets` — or
+you can navigate to the page https://ifttt.com/maker_webhooks. Then click on
+the documentation button to show your personal key — leave this page open as
+you will need this to connect to the things network.
+
+Now go to https://www.thethingsnetwork.org/ and sign up for an account. Once
+that is created and you have logged in, click on your account in the top right
+of the screen and go to console. Click on applications and then `add
+application`.
+
+Give your application a name like `myapp` or something more imaginative if you
+like. You can add a description to help you remember what the application
+does. The EUI is created automatically and the handler should be set to
+`ttn-handler-eu`. Hit the `add application` button.
+
+Now you should be looking at the overview page for your new application — go
+to the devices tab and click on `register device`. Give your device a `Device
+ID` like `myunphone` or better, and click on the icon in the `Device EUI`
+field to have it generated for you. The other fields will also be generated
+for us. Click on the `register` button to create your device.
+
+Now we need to set our device to use the ABP activation method — so go into the settings
+and choose `ABP` as the `Activation Method` and then click `Save`.
+
+Now we need to copy the three keys from the ttn device overview into the
+firmware for the device (using `LoRaWANThing.ino` in your repository). Next to
+`Network Session Key` click on the `<>` button to see the key in C format. Copy this array
+of numbers into the `LoRaWANThing.ino` sketch where the `NWKSKEY` is defined,
+replacing the default array of zeros. It looks like this:
+
+```C
+static const PROGMEM u1_t NWKSKEY[16] =
+  { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+```
+
+Repeat this for the `App Session Key`, copying this into the `APPSKEY`
+definition. Finally do the same for the `Device Address` — except this time
+just copy it without clicking on the `<>` button. For example:
+
+```C
+static const u4_t DEVADDR = 0x00000000 ;
+```
+
+You should see that the keys you are replacing have the same formats as the
+keys you have created. With these three keys copied into your sketch it should
+now be able to send a message using LoRaWAN.
+
+The last step is to join the application receiving data on the things network
+with the IFTTT applet. Click on the name of your application (where it appears
+near the top of the page in the navigation breadcrumbs) to get to the
+application overview page on the things network console webpage. Click on
+`integrations`, then `add integration`, then choose `IFTTT maker`. For
+`process ID` you can give any name. For `event name` give the exact name you
+used to create the applet in IFTTT — for example `unphone`. Now you need to
+copy the key from the IFTTT page we opened earlier into your TTN integration
+`Key` field.
+
+Once you click `Add integration` (and when you've burned LoRaWANThing to your
+unPhone) — your phone's IFTTT app (or email or twitter according to what you
+chose) should notify you every minute or so as messages are sent from your
+code via LoRaWAN to a nearby gateway, then to a ttn application, via an
+integration to the IFTTT service, and from their to the TTN app on your phone.
+
+Simple, right?
+
+-->

@@ -1,0 +1,43 @@
+{
+    "name": "weather",
+    "roles": [
+        "weather"
+    ],
+    "lookups": [
+        "free-text",
+        "keywords"
+    ],
+    "keywords": [
+        {
+            "keyword": "clima",
+            "synonyms": [
+                "clima"
+            ]
+        },
+        {
+            "keyword": "temperature",
+            "synonyms": [
+                "temperature"
+            ]
+        },
+        {
+            "keyword": "temps",
+            "synonyms": [
+                "temps"
+            ]
+        },
+        {
+            "keyword": "today",
+            "synonyms": [
+                "today",
+                "weather"
+            ]
+        },
+        {
+            "keyword": "weather",
+            "synonyms": [
+                "weather"
+            ]
+        }
+    ]
+}

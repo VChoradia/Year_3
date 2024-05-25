@@ -1,0 +1,8 @@
+
+# TimingThing ################################################################
+
+A basic ESP32 example that reads a switch and flashes an external LED using
+interrupts instead of delays.
+
+The code is in `sketch/`. There's also a version in `simplified/` that DOESN'T
+use timers and interrupts, for comparison purposes.
